@@ -1,0 +1,11 @@
+AudioOffset:0
+Title:basic_6k
+
+scenecontrol(500,enwidencamera,300,1);
+scenecontrol(1200,enwidencamera,300,0);
+scenecontrol(500,enwidenlanes,300,1);
+scenecontrol(1200,enwidenlanes,300,0);
+
+(600,2);
+hold(650,950,3);
+arc(700,1100,-0.10,1.10,s,0.20,0.40,1,none,false);

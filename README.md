@@ -1,81 +1,67 @@
-ARCAEA自动游玩项目，代码源于arcaea-sap
-可以在arcaea的全量安装包中提取aff文件
+ARCAEA 自动游玩项目，基于 arcaea-sap 演进。
 
+## 免责声明
 
-Click here to switch English
-https://github.com/AeonS-D/arcaea-auto-play/blob/main/README_EN.md
+本项目仅供学习交流使用。
+任何恶意使用导致的纠纷与本项目无关。
 
-## 免责声明：
+## 环境要求
 
-该项目仅供学习交流，关于恶意使用引起的纠纷与该项目无关
+- Python `3.11`（推荐，更新版本可能报错）
+- `adb` 已安装并配置到 `PATH`
+- 根目录存在 `scrcpy-server-v*.jar`
 
+安装依赖：
 
+```bash
+python -m pip install -r requirements.txt
+```
 
-## 关于修改项目：
+## 启动方式
 
-   + 1.增加了timinggroup的支持
-  
-   + 2.修改操作模式，手动开始模拟触控，即在note下落的一瞬间开始模拟
+- 中文入口：`python main_CN.py`
+- 英文入口：`python main_EN.py`
 
-   + 3.记忆功能，现在不需要每次重启脚本后重复进行输入坐标，但请不要删去目录下配置文件，会闪退（懒得修），如果包里面没有配置文件，在code处下载并放置在脚本根目录
+## 重构状态（v4）
 
-   + 4.快捷修改各个参数，也可以在配置文件中修改
+项目已按职责重构为分层架构，同时保留旧行为兼容：
 
-   + 5.增加6k触控模式
+- `autoplay/domain`：谱面/配置/错误等纯数据模型
+- `autoplay/parser`：AFF 解析与扫描工具
+- `autoplay/analyzer`：`scenecontrol` 与 4K/6K 区段分析
+- `autoplay/solver`：统一 4K/6K 核心求解流程（profile 差异）
+- `autoplay/runtime`：配置持久化与触控事件运行时
+- `autoplay/cli`：中英文共用主流程，文案按语言分层
 
-   + 6.加入一堆屎山代码（别喷）
+以下兼容入口文件仍保留：
 
-   
+- `chart.py`
+- `solve.py`
+- `sixk_solve.py`
+- `sixk_manager.py`
 
-## 关于注意事项
+## 验证命令
 
-   + 1.建议使用python3.11，用3.11往后版本可能报错（经测试，3.13会报）
+语法编译检查：
 
-   + 2.安装目录下requirements依赖包
+```bash
+python -m py_compile main_EN.py main_CN.py chart.py solve.py sixk_solve.py sixk_manager.py control.py easing.py algo\algo_base.py autoplay\cli\app.py autoplay\parser\aff_parser.py autoplay\analyzer\mode_analyzer.py autoplay\solver\core.py autoplay\runtime\player.py autoplay\domain\chart.py autoplay\domain\config.py
+```
 
-    pip install -r requirements.txt
+回归测试：
 
-   + 3.下载scrcpy-server置放到根目录
+```bash
+python -m pytest tests
+```
 
-    https://github.com/Genymobile/scrcpy/releases/
+## 测试覆盖
 
-   + 4.安装Android debug bridge，并配置好相应环境
+`tests/samples/` 和测试模块当前覆盖以下关键场景：
 
-   + 5.配置文件中为小米平板5的各项参数，理论上来说为11寸平板通用
-
-   + 6.win11下，使用windows powershell可能会导致一些奇奇怪怪的bug，请更换默认控制台cmd使用脚本
-
-   + 6.5.并不打算再增加愚人节谱面的支持，尝试过，效果不尽人意
-   
-   + 7.如果出现arc头部夹着note或者hold（反之亦然）并且执行操作时会使arc断触，只需要微调延迟至note判定为pure（early）即可
-
-   + 8.当出现t1等于t2，即间隔为零的直角蛇的时候，脚本可能会由于类似“惯性”的东西额外滑动一段距离，导致断触，正在尝试修复中…(已经修了三个大版本的说)
-   
-   + 9.qualia byd 中会存在两个触控不到的arctap，暂时没找着原因是什么，如果要玩请手动操作
-
-   + 10.arcwiki指出，在Designant.的异象谱面中出现了特殊的红色天键，并且一部分超出了梯形界，于是脚本在操作时可能会无法触控一些arctap
-
-   + 11.关于各个点的坐标如下：
-   ![413854432-ea62cdad-0c67-4c66-b3fc-aaebe0772622](https://github.com/user-attachments/assets/b1c6e676-9016-4349-a4bf-f14583dae300)
-
-   
-
-## 关于将要加入的功能：
-
-  + 将其做成gui（打算而已）
-  
-
-## 日志
-25年8月8日凌晨1点28分，奥托先生成功理论byd风暴，可喜可贺，可喜可贺
-
-
-![Screenshot_2025-08-08-01-28-57-496_moe inf arc 1](https://github.com/user-attachments/assets/d2f0e3dc-563f-410f-9f3a-28dcc7f93256)
-
-25年12月13日下午5点22分，完成了6k模式的制作，奥托先生pm byd ttf，这个脚本最后一块拼图被我完成了🥰，但是还是存在一些小bug，只能说不太影响使用吧
-
-![Screenshot_2025-12-13-16-30-36-228_moe inf arc](https://github.com/user-attachments/assets/200884e2-ede9-4c0b-8e9d-83db00fc46b9)
-
-26年2月7日，奥托先生理论 byd ttf，全球第19（开玩笑的）
-
-![Screenshot_2026-02-07-22-23-01-702_moe inf arc](https://github.com/user-attachments/assets/06f4bc28-c42e-447c-a0e4-3c269a224b02)
-
+- 普通 4K
+- 含 `scenecontrol` 的普通 6K
+- 含 `timinggroup`
+- 含 `arctap`
+- 含 `designant`
+- 零长度 arc 边界
+- 异常/非法 AFF 行
