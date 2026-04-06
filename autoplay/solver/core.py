@@ -216,8 +216,6 @@ def _resolve_connected_same_color_arc_boundaries(
                 down_event = events[down_idx]
                 if up_event.source_note_id == down_event.source_note_id:
                     continue
-                if not _is_same_logical_point(up_event, down_event):
-                    continue
                 remove_indices.add(up_idx)
                 remove_indices.add(down_idx)
                 used_down.add(down_idx)

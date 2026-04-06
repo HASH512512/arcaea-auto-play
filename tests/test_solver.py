@@ -160,6 +160,41 @@ def test_connected_same_color_arcs_do_not_lift_at_boundary() -> None:
     assert up_count == 1
 
 
+def test_connected_same_color_arcs_keep_pointer_without_xy_match() -> None:
+    content = "\n".join(
+        [
+            "AudioOffset:0",
+            "Title:connected_same_color_arcs_without_xy_match",
+            "",
+            "arc(1000,1400,0.10,0.30,s,0.20,0.40,1,none,false);",
+            "arc(1400,1800,0.80,0.95,s,0.75,0.90,1,none,false);",
+        ]
+    )
+    chart = parse_aff_chart(content, designant_choice=True)
+    events = solve_4k(chart, _converter())
+
+    boundary_events = events.get(1400, [])
+    assert not any(
+        event.source_type == "arc" and event.action.name == "DOWN"
+        for event in boundary_events
+    )
+    assert not any(
+        event.source_type == "arc" and event.action.name == "UP"
+        for event in boundary_events
+    )
+
+    all_arc_events = [
+        event
+        for items in events.values()
+        for event in items
+        if event.source_type == "arc"
+    ]
+    down_count = sum(1 for event in all_arc_events if event.action.name == "DOWN")
+    up_count = sum(1 for event in all_arc_events if event.action.name == "UP")
+    assert down_count == 1
+    assert up_count == 1
+
+
 def test_enwidencamera_projects_arc_logical_space_to_screen_space() -> None:
     content = "\n".join(
         [
