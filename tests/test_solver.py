@@ -147,6 +147,10 @@ def test_connected_same_color_arcs_do_not_lift_at_boundary() -> None:
         event.source_type == "arc" and event.action.name == "UP"
         for event in boundary_events
     )
+    assert any(
+        event.source_type == "arc" and event.action.name == "MOVE"
+        for event in boundary_events
+    )
 
     all_arc_events = [
         event
@@ -180,6 +184,10 @@ def test_connected_same_color_arcs_keep_pointer_without_xy_match() -> None:
     )
     assert not any(
         event.source_type == "arc" and event.action.name == "UP"
+        for event in boundary_events
+    )
+    assert any(
+        event.source_type == "arc" and event.action.name == "MOVE"
         for event in boundary_events
     )
 
@@ -252,3 +260,26 @@ def test_enwidencamera_transition_generates_arc_move_for_fixed_logical_x() -> No
     move_events = [event for event in arc_events if event.action.name == "MOVE"]
     assert move_events
     assert any(event.x != x_by_tick[1000] for event in move_events)
+
+
+def test_enwidenlanes_transition_projects_tap_x_linearly() -> None:
+    content = "\n".join(
+        [
+            "AudioOffset:0",
+            "Title:enwidenlanes_transition_tap",
+            "",
+            "scenecontrol(1000,enwidenlanes,1000.00,1);",
+            "(1500,0);",
+        ]
+    )
+    chart = parse_aff_chart(content, designant_choice=True)
+    logical_events = build_logical_events_for_chart(chart)
+
+    tap_down = next(
+        event
+        for event in logical_events
+        if event.source_type == "tap" and event.action.name == "DOWN"
+    )
+
+    assert tap_down.tick == 1500
+    assert tap_down.x == -0.625

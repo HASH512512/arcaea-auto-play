@@ -4,8 +4,6 @@ import ctypes
 import threading
 import time
 
-import keyboard
-
 from control import DeviceController
 
 
@@ -43,21 +41,33 @@ def _is_console_focused() -> bool:
     return user32.GetForegroundWindow() == kernel32.GetConsoleWindow()
 
 
+def _read_hotkey_edges(
+    get_async_key_state,
+    previous_state: dict[int, bool],
+    vk_to_command: dict[int, str],
+) -> list[str]:
+    commands: list[str] = []
+    for vk, command in vk_to_command.items():
+        is_down = bool(get_async_key_state(vk) & 0x8000)
+        was_down = previous_state[vk]
+        previous_state[vk] = is_down
+        if is_down and not was_down:
+            commands.append(command)
+    return commands
+
+
 def start_input_listener(state: FineTuneState, on_command) -> threading.Thread:
+    user32 = ctypes.windll.user32
     keymap = {
-        "+": "+",
-        "plus": "+",
-        "add": "+",
-        "-": "-",
-        "minus": "-",
-        "subtract": "-",
-        "0": "0",
-        "num 0": "0",
+        0x5A: "z",  # Z
+        0x58: "x",  # X
+        0x52: "r",  # R
     }
 
     def input_listener() -> None:
         # Do not globally hook all keyboard events here.
         # Poll focused keys to avoid echoing characters into the terminal input line.
+        previous_state = {vk: False for vk in keymap}
         while state.input_listener_active:
             try:
                 if not state.automation_started:
@@ -69,14 +79,14 @@ def start_input_listener(state: FineTuneState, on_command) -> threading.Thread:
                     continue
 
                 triggered = False
-                for name, command in keymap.items():
-                    if keyboard.is_pressed(name):
-                        on_command(command)
-                        triggered = True
-                        time.sleep(0.08)
-                        while keyboard.is_pressed(name):
-                            time.sleep(0.01)
-                        break
+                commands = _read_hotkey_edges(
+                    user32.GetAsyncKeyState,
+                    previous_state,
+                    keymap,
+                )
+                for command in commands:
+                    on_command(command)
+                    triggered = True
 
                 if not triggered:
                     time.sleep(0.01)

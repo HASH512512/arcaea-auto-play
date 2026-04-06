@@ -56,13 +56,13 @@ TEXT = {
         "designant_choice_true": "Designant mode enabled",
         "designant_choice_false": "Designant mode disabled, designant notes will be ignored",
         "automation_head": "Fine-tuning control:",
-        "automation_plus": "  Press +: Advance {step} milliseconds",
-        "automation_minus": "  Press -: Delay {step} milliseconds",
-        "automation_zero": "  Press 0: Reset fine-tuning offset",
+        "automation_plus": "  Press Z: Advance {step} milliseconds",
+        "automation_minus": "  Press X: Delay {step} milliseconds",
+        "automation_zero": "  Press R: Reset fine-tuning offset",
         "ready": "Ready, press Enter to start...",
         "done": "Execution completed, exiting in 3 seconds...",
         "event_empty": "No touch events generated",
-        "unknown_cmd": "[Hint] Unknown command: {cmd}, available commands: +, -, 0",
+        "unknown_cmd": "[Hint] Unknown command: {cmd}, available commands: z, x, r",
         "fine_plus": "[Fine-tune] Advance {step}ms, current offset: {offset:.3f}s",
         "fine_minus": "[Fine-tune] Delay {step}ms, current offset: {offset:.3f}s",
         "fine_reset": "[Fine-tune] Offset reset: {offset:.3f}s",
@@ -99,13 +99,13 @@ TEXT = {
         "designant_choice_true": "已启用蚂蚁异象模式",
         "designant_choice_false": "已禁用蚂蚁异象模式，将忽略蚂蚁异象note",
         "automation_head": "微调控制:",
-        "automation_plus": "  按 + : 提前{step}毫秒",
-        "automation_minus": "  按 - : 延后{step}毫秒",
-        "automation_zero": "  按 0 : 重置微调偏移",
+        "automation_plus": "  按 Z : 提前{step}毫秒",
+        "automation_minus": "  按 X : 延后{step}毫秒",
+        "automation_zero": "  按 R : 重置微调偏移",
         "ready": "准备就绪，按回车开始...",
         "done": "执行完毕，3秒后自动退出...",
         "event_empty": "未生成任何触控事件",
-        "unknown_cmd": "[提示] 未知命令: {cmd}，可用命令: +, -, 0",
+        "unknown_cmd": "[提示] 未知命令: {cmd}，可用命令: z, x, r",
         "fine_plus": "[微调] 提前{step}毫秒，当前偏移: {offset:.3f}秒",
         "fine_minus": "[微调] 延后{step}毫秒，当前偏移: {offset:.3f}秒",
         "fine_reset": "[微调] 偏移已重置: {offset:.3f}秒",
@@ -157,7 +157,6 @@ def _prompt_quick_edit_choice() -> str:
     # Debounce held keys from previous stages.
     previous_state = {vk: bool(user32.GetAsyncKeyState(vk) & 0x8000) for vk in watched}
 
-    print("[Input] Press 1/2/3/4 within 5 seconds, or Enter to skip...", flush=True)
     _clear_console_input_buffer()
 
     start = time.time()
@@ -399,13 +398,13 @@ def _run(locale: str, app_config) -> None:
     state = FineTuneState(cfg.fine_tune_step)
 
     def on_command(command: str) -> None:
-        if command == "+":
+        if command == "z":
             offset = state.increment()
             print(_text(locale, "fine_plus", step=cfg.fine_tune_step, offset=offset))
-        elif command == "-":
+        elif command == "x":
             offset = state.decrement()
             print(_text(locale, "fine_minus", step=cfg.fine_tune_step, offset=offset))
-        elif command == "0":
+        elif command == "r":
             offset = state.reset()
             print(_text(locale, "fine_reset", offset=offset))
         elif command:

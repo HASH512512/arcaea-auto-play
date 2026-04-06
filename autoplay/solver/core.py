@@ -90,6 +90,13 @@ def _merge_and_sort_ticks(base_ticks: list[int], extra_ticks: set[int]) -> list[
     return sorted(merged)
 
 
+def _project_ground_lane_x_for_mode(lane: float, lane_widen_ratio: float) -> float:
+    ratio = max(0.0, min(1.0, lane_widen_ratio))
+    x_4k = PROFILE_4K.map_lane_to_x(lane)
+    x_6k = PROFILE_6K.map_lane_to_x(lane)
+    return x_4k + (x_6k - x_4k) * ratio
+
+
 def _arc_pointer_from_color(color: int) -> int:
     if color < 0:
         color = 0
@@ -198,6 +205,7 @@ def _resolve_connected_same_color_arc_boundaries(
         by_tick_pointer.setdefault((event.tick, event.pointer), []).append(idx)
 
     remove_indices: set[int] = set()
+    inserted_moves: list[LogicalTouchEvent] = []
 
     for _, indices in by_tick_pointer.items():
         down_indices = [
@@ -216,14 +224,40 @@ def _resolve_connected_same_color_arc_boundaries(
                 down_event = events[down_idx]
                 if up_event.source_note_id == down_event.source_note_id:
                     continue
+
+                has_boundary_move = any(
+                    event.tick == up_event.tick
+                    and event.pointer == up_event.pointer
+                    and event.action is TouchAction.MOVE
+                    and idx not in remove_indices
+                    for idx, event in enumerate(events)
+                )
+                if not has_boundary_move:
+                    inserted_moves.append(
+                        LogicalTouchEvent(
+                            tick=up_event.tick,
+                            x=down_event.x,
+                            y=down_event.y,
+                            action=TouchAction.MOVE,
+                            pointer=up_event.pointer,
+                            source_note_id=down_event.source_note_id,
+                            source_type="arc",
+                        )
+                    )
+
                 remove_indices.add(up_idx)
                 remove_indices.add(down_idx)
                 used_down.add(down_idx)
                 break
 
-    if not remove_indices:
+    if not remove_indices and not inserted_moves:
         return events
-    return [event for idx, event in enumerate(events) if idx not in remove_indices]
+    resolved = [event for idx, event in enumerate(events) if idx not in remove_indices]
+    resolved.extend(inserted_moves)
+    resolved.sort(
+        key=lambda item: (item.tick, item.pointer, ACTION_PRIORITY.get(item.action, 99))
+    )
+    return resolved
 
 
 def _build_logical_events(
@@ -261,9 +295,8 @@ def _build_logical_events(
         angley = int(note.group_properties.get("angley", 0))
 
         if isinstance(note, TapIR):
-            lane_mode = timeline.lane_mode_at(note.tick)
-            lane_profile = PROFILE_6K if lane_mode == "6k" else PROFILE_4K
-            x = lane_profile.map_lane_to_x(note.lane)
+            lane_ratio = timeline.lane_widen_ratio_at(note.tick)
+            x = _project_ground_lane_x_for_mode(note.lane, lane_ratio)
             y = 0.0
             append_event(
                 note.tick,
@@ -286,12 +319,10 @@ def _build_logical_events(
             continue
 
         if isinstance(note, HoldIR):
-            lane_mode_start = timeline.lane_mode_at(note.start)
-            lane_mode_end = timeline.lane_mode_at(note.end)
-            start_profile = PROFILE_6K if lane_mode_start == "6k" else PROFILE_4K
-            end_profile = PROFILE_6K if lane_mode_end == "6k" else PROFILE_4K
-            x_start = start_profile.map_lane_to_x(note.lane)
-            x_end = end_profile.map_lane_to_x(note.lane)
+            lane_ratio_start = timeline.lane_widen_ratio_at(note.start)
+            lane_ratio_end = timeline.lane_widen_ratio_at(note.end)
+            x_start = _project_ground_lane_x_for_mode(note.lane, lane_ratio_start)
+            x_end = _project_ground_lane_x_for_mode(note.lane, lane_ratio_end)
             pointer = int(round(note.lane)) + 100
             append_event(
                 note.start,
