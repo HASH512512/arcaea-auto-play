@@ -1,0 +1,11931 @@
+# Autoplay Debug Report
+
+## Stats
+
+```json
+{
+  "timings": 3,
+  "notes": 149,
+  "scene_controls": 16,
+  "logical_events": 291,
+  "touch_event_ticks": 269,
+  "touch_events_total": 291
+}
+```
+
+## Notes
+
+```json
+[
+  {
+    "tick": 0,
+    "bpm": 160.0,
+    "beats_per_measure": 4.0
+  },
+  {
+    "tick": 0,
+    "bpm": 80.0,
+    "beats_per_measure": 4.0
+  },
+  {
+    "tick": 31500,
+    "bpm": 260.0,
+    "beats_per_measure": 4.0
+  },
+  {
+    "tick": 39461,
+    "track": 3
+  },
+  {
+    "tick": 39807,
+    "track": 2
+  },
+  {
+    "tick": 39923,
+    "track": 1
+  },
+  {
+    "tick": 40038,
+    "track": 1
+  },
+  {
+    "tick": 40153,
+    "track": 1
+  },
+  {
+    "tick": 40730,
+    "track": 4
+  },
+  {
+    "tick": 40788,
+    "track": 2
+  },
+  {
+    "tick": 40846,
+    "track": 3
+  },
+  {
+    "tick": 40903,
+    "track": 2
+  },
+  {
+    "tick": 40961,
+    "track": 4
+  },
+  {
+    "tick": 42115,
+    "track": 3
+  },
+  {
+    "tick": 42230,
+    "track": 3
+  },
+  {
+    "tick": 42346,
+    "track": 1
+  },
+  {
+    "tick": 42461,
+    "track": 1
+  },
+  {
+    "start": 37961,
+    "end": 38884,
+    "start_x": 0.5,
+    "end_x": 1.0,
+    "easing": "SiSi",
+    "start_y": 3.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 37961,
+    "end": 38870,
+    "start_x": 0.0,
+    "end_x": -0.5,
+    "easing": "SiSi",
+    "start_y": 3.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 37961,
+    "end": 38870,
+    "start_x": 1.0,
+    "end_x": 1.5,
+    "easing": "SiSi",
+    "start_y": 3.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 37961,
+    "end": 38884,
+    "start_x": 0.5,
+    "end_x": 0.0,
+    "easing": "SiSi",
+    "start_y": 3.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": [
+      {
+        "tick": 38884
+      }
+    ]
+  },
+  {
+    "start": 38870,
+    "end": 38885,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 38870,
+    "end": 38885,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 38884,
+    "end": 38899,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 38884,
+    "end": 38899,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 38884,
+    "end": 39230,
+    "start_x": 0.0,
+    "end_x": 0.75,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": [
+      {
+        "tick": 39000
+      },
+      {
+        "tick": 39115
+      }
+    ]
+  },
+  {
+    "start": 38884,
+    "end": 39000,
+    "start_x": 1.0,
+    "end_x": 0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 0.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": false,
+    "taps": []
+  },
+  {
+    "start": 38899,
+    "end": 39100,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 38899,
+    "end": 39100,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39000,
+    "end": 39346,
+    "start_x": 0.5,
+    "end_x": 0.5,
+    "easing": "Linear",
+    "start_y": 0.0,
+    "end_y": 0.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": false,
+    "taps": []
+  },
+  {
+    "start": 39100,
+    "end": 39115,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39100,
+    "end": 39115,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39115,
+    "end": 39130,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39115,
+    "end": 39130,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39130,
+    "end": 39331,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39130,
+    "end": 39331,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39230,
+    "end": 39461,
+    "start_x": 0.75,
+    "end_x": 0.75,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": false,
+    "taps": []
+  },
+  {
+    "start": 39331,
+    "end": 39346,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39331,
+    "end": 39346,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39346,
+    "end": 39361,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39346,
+    "end": 39361,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39361,
+    "end": 39562,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39361,
+    "end": 39562,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39461,
+    "end": 39576,
+    "start_x": 0.75,
+    "end_x": 0.25,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 0.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": false,
+    "taps": []
+  },
+  {
+    "start": 39461,
+    "end": 39576,
+    "start_x": 0.75,
+    "end_x": 0.0,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39562,
+    "end": 39577,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39562,
+    "end": 39577,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39576,
+    "end": 39807,
+    "start_x": 1.0,
+    "end_x": 1.0,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": false,
+    "taps": []
+  },
+  {
+    "start": 39576,
+    "end": 39730,
+    "start_x": 0.25,
+    "end_x": 0.25,
+    "easing": "Linear",
+    "start_y": 0.0,
+    "end_y": 0.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": false,
+    "taps": []
+  },
+  {
+    "start": 39576,
+    "end": 40730,
+    "start_x": 0.0,
+    "end_x": 0.0,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": [
+      {
+        "tick": 40384
+      },
+      {
+        "tick": 40615
+      }
+    ]
+  },
+  {
+    "start": 39577,
+    "end": 39592,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39577,
+    "end": 39592,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39592,
+    "end": 39793,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39592,
+    "end": 39793,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39793,
+    "end": 39808,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39793,
+    "end": 39808,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39807,
+    "end": 39822,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39807,
+    "end": 40038,
+    "start_x": 1.0,
+    "end_x": 0.25,
+    "easing": "SiSi",
+    "start_y": 1.0,
+    "end_y": 0.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": false,
+    "taps": []
+  },
+  {
+    "start": 39807,
+    "end": 39822,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39822,
+    "end": 40023,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 39822,
+    "end": 40023,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40023,
+    "end": 40038,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40023,
+    "end": 40038,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40038,
+    "end": 40192,
+    "start_x": 0.25,
+    "end_x": 1.0,
+    "easing": "SoSo",
+    "start_y": 0.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": false,
+    "taps": []
+  },
+  {
+    "start": 40038,
+    "end": 40053,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40038,
+    "end": 40053,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40053,
+    "end": 40254,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40053,
+    "end": 40254,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40192,
+    "end": 40269,
+    "start_x": 1.0,
+    "end_x": 1.0,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": [
+      {
+        "tick": 40269
+      }
+    ]
+  },
+  {
+    "start": 40254,
+    "end": 40269,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40254,
+    "end": 40269,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40269,
+    "end": 40284,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40269,
+    "end": 40284,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40269,
+    "end": 40730,
+    "start_x": 1.0,
+    "end_x": 1.0,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": [
+      {
+        "tick": 40500
+      }
+    ]
+  },
+  {
+    "start": 40284,
+    "end": 40485,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40284,
+    "end": 40485,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40485,
+    "end": 40500,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40485,
+    "end": 40500,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40500,
+    "end": 40515,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40500,
+    "end": 40515,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40515,
+    "end": 40716,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40515,
+    "end": 40716,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40716,
+    "end": 40731,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40716,
+    "end": 40731,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40730,
+    "end": 41076,
+    "start_x": 0.0,
+    "end_x": 0.0,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40730,
+    "end": 41076,
+    "start_x": 1.0,
+    "end_x": 1.0,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40730,
+    "end": 40745,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40730,
+    "end": 40745,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40745,
+    "end": 40946,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40745,
+    "end": 40946,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40946,
+    "end": 40961,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40946,
+    "end": 40961,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40961,
+    "end": 40976,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40961,
+    "end": 40976,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40976,
+    "end": 41177,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 40976,
+    "end": 41177,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41076,
+    "end": 41769,
+    "start_x": 0.0,
+    "end_x": 0.0,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": [
+      {
+        "tick": 41769
+      }
+    ]
+  },
+  {
+    "start": 41076,
+    "end": 41192,
+    "start_x": 1.0,
+    "end_x": 1.0,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": false,
+    "taps": []
+  },
+  {
+    "start": 41177,
+    "end": 41192,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41177,
+    "end": 41192,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41192,
+    "end": 41207,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41192,
+    "end": 41307,
+    "start_x": 1.0,
+    "end_x": 0.62,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": false,
+    "taps": []
+  },
+  {
+    "start": 41192,
+    "end": 41207,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41207,
+    "end": 41408,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41207,
+    "end": 41408,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41307,
+    "end": 41423,
+    "start_x": 0.62,
+    "end_x": 0.62,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": false,
+    "taps": []
+  },
+  {
+    "start": 41408,
+    "end": 41423,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41408,
+    "end": 41423,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41423,
+    "end": 41438,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41423,
+    "end": 41538,
+    "start_x": 0.62,
+    "end_x": 0.25,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": false,
+    "taps": []
+  },
+  {
+    "start": 41423,
+    "end": 41438,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41438,
+    "end": 41639,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41438,
+    "end": 41639,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41538,
+    "end": 41692,
+    "start_x": 0.25,
+    "end_x": 0.25,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": false,
+    "taps": []
+  },
+  {
+    "start": 41639,
+    "end": 41654,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41639,
+    "end": 41654,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41653,
+    "end": 41668,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41653,
+    "end": 41668,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41668,
+    "end": 41869,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41668,
+    "end": 41869,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41769,
+    "end": 41826,
+    "start_x": 0.0,
+    "end_x": 0.25,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41826,
+    "end": 41884,
+    "start_x": 0.25,
+    "end_x": 0.0,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": [
+      {
+        "tick": 41884
+      },
+      {
+        "tick": 41826
+      }
+    ]
+  },
+  {
+    "start": 41869,
+    "end": 41884,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41869,
+    "end": 41884,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41884,
+    "end": 41899,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41884,
+    "end": 42000,
+    "start_x": 0.0,
+    "end_x": 0.0,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": [
+      {
+        "tick": 42000
+      }
+    ]
+  },
+  {
+    "start": 41884,
+    "end": 41899,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41899,
+    "end": 42100,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 41899,
+    "end": 42100,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42000,
+    "end": 42115,
+    "start_x": 0.0,
+    "end_x": 0.0,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42100,
+    "end": 42115,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42100,
+    "end": 42115,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42115,
+    "end": 42230,
+    "start_x": 0.0,
+    "end_x": 0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42115,
+    "end": 42130,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42115,
+    "end": 42130,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42130,
+    "end": 42331,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42130,
+    "end": 42331,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42230,
+    "end": 42346,
+    "start_x": 0.5,
+    "end_x": 0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42331,
+    "end": 42346,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42331,
+    "end": 42346,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42346,
+    "end": 42461,
+    "start_x": 0.5,
+    "end_x": 1.0,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42346,
+    "end": 42361,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42346,
+    "end": 42361,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42361,
+    "end": 42562,
+    "start_x": -0.5,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42361,
+    "end": 42562,
+    "start_x": 1.5,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42461,
+    "end": 42576,
+    "start_x": 1.0,
+    "end_x": 1.0,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42562,
+    "end": 42577,
+    "start_x": 1.5,
+    "end_x": 1.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42562,
+    "end": 42577,
+    "start_x": -0.5,
+    "end_x": -0.6,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42576,
+    "end": 42922,
+    "start_x": 1.0,
+    "end_x": 0.25,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": [
+      {
+        "tick": 42692
+      },
+      {
+        "tick": 42807
+      },
+      {
+        "tick": 42576
+      }
+    ]
+  },
+  {
+    "start": 42576,
+    "end": 42591,
+    "start_x": 1.6,
+    "end_x": 1.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42576,
+    "end": 42591,
+    "start_x": -0.6,
+    "end_x": -0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 1.0,
+    "color": 1,
+    "unknown": null,
+    "trace_arc": true,
+    "taps": []
+  },
+  {
+    "start": 42576,
+    "end": 42692,
+    "start_x": 0.0,
+    "end_x": 0.5,
+    "easing": "Linear",
+    "start_y": 1.0,
+    "end_y": 0.0,
+    "color": 0,
+    "unknown": null,
+    "trace_arc": false,
+    "taps": []
+  }
+]
+```
+
+## Chart IR
+
+```json
+{
+  "options": {
+    "AudioOffset": "0"
+  },
+  "notes": [
+    {
+      "note_id": 1,
+      "group_id": 0,
+      "group_properties": {},
+      "tick": 39461,
+      "lane": 3.0
+    },
+    {
+      "note_id": 2,
+      "group_id": 0,
+      "group_properties": {},
+      "tick": 39807,
+      "lane": 2.0
+    },
+    {
+      "note_id": 3,
+      "group_id": 0,
+      "group_properties": {},
+      "tick": 39923,
+      "lane": 1.0
+    },
+    {
+      "note_id": 4,
+      "group_id": 0,
+      "group_properties": {},
+      "tick": 40038,
+      "lane": 1.0
+    },
+    {
+      "note_id": 5,
+      "group_id": 0,
+      "group_properties": {},
+      "tick": 40153,
+      "lane": 1.0
+    },
+    {
+      "note_id": 6,
+      "group_id": 0,
+      "group_properties": {},
+      "tick": 40730,
+      "lane": 4.0
+    },
+    {
+      "note_id": 7,
+      "group_id": 0,
+      "group_properties": {},
+      "tick": 40788,
+      "lane": 2.0
+    },
+    {
+      "note_id": 8,
+      "group_id": 0,
+      "group_properties": {},
+      "tick": 40846,
+      "lane": 3.0
+    },
+    {
+      "note_id": 9,
+      "group_id": 0,
+      "group_properties": {},
+      "tick": 40903,
+      "lane": 2.0
+    },
+    {
+      "note_id": 10,
+      "group_id": 0,
+      "group_properties": {},
+      "tick": 40961,
+      "lane": 4.0
+    },
+    {
+      "note_id": 11,
+      "group_id": 0,
+      "group_properties": {},
+      "tick": 42115,
+      "lane": 3.0
+    },
+    {
+      "note_id": 12,
+      "group_id": 0,
+      "group_properties": {},
+      "tick": 42230,
+      "lane": 3.0
+    },
+    {
+      "note_id": 13,
+      "group_id": 0,
+      "group_properties": {},
+      "tick": 42346,
+      "lane": 1.0
+    },
+    {
+      "note_id": 14,
+      "group_id": 0,
+      "group_properties": {},
+      "tick": 42461,
+      "lane": 1.0
+    },
+    {
+      "note_id": 15,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 37961,
+      "end": 38884,
+      "start_x": 0.5,
+      "end_x": 1.0,
+      "easing": "SiSi",
+      "start_y": 3.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 16,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 37961,
+      "end": 38870,
+      "start_x": 0.0,
+      "end_x": -0.5,
+      "easing": "SiSi",
+      "start_y": 3.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 17,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 37961,
+      "end": 38870,
+      "start_x": 1.0,
+      "end_x": 1.5,
+      "easing": "SiSi",
+      "start_y": 3.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 18,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 37961,
+      "end": 38884,
+      "start_x": 0.5,
+      "end_x": 0.0,
+      "easing": "SiSi",
+      "start_y": 3.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [
+        38884
+      ],
+      "smoothness": null
+    },
+    {
+      "note_id": 19,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 38870,
+      "end": 38885,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 20,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 38870,
+      "end": 38885,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 21,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 38884,
+      "end": 38899,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 22,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 38884,
+      "end": 38899,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 23,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 38884,
+      "end": 39230,
+      "start_x": 0.0,
+      "end_x": 0.75,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [
+        39000,
+        39115
+      ],
+      "smoothness": null
+    },
+    {
+      "note_id": 24,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 38884,
+      "end": 39000,
+      "start_x": 1.0,
+      "end_x": 0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 0.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": false,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 25,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 38899,
+      "end": 39100,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 26,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 38899,
+      "end": 39100,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 27,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39000,
+      "end": 39346,
+      "start_x": 0.5,
+      "end_x": 0.5,
+      "easing": "Linear",
+      "start_y": 0.0,
+      "end_y": 0.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": false,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 28,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39100,
+      "end": 39115,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 29,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39100,
+      "end": 39115,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 30,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39115,
+      "end": 39130,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 31,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39115,
+      "end": 39130,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 32,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39130,
+      "end": 39331,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 33,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39130,
+      "end": 39331,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 34,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39230,
+      "end": 39461,
+      "start_x": 0.75,
+      "end_x": 0.75,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": false,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 35,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39331,
+      "end": 39346,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 36,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39331,
+      "end": 39346,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 37,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39346,
+      "end": 39361,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 38,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39346,
+      "end": 39361,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 39,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39361,
+      "end": 39562,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 40,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39361,
+      "end": 39562,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 41,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39461,
+      "end": 39576,
+      "start_x": 0.75,
+      "end_x": 0.25,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 0.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": false,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 42,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39461,
+      "end": 39576,
+      "start_x": 0.75,
+      "end_x": 0.0,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 43,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39562,
+      "end": 39577,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 44,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39562,
+      "end": 39577,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 45,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39576,
+      "end": 39807,
+      "start_x": 1.0,
+      "end_x": 1.0,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": false,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 46,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39576,
+      "end": 39730,
+      "start_x": 0.25,
+      "end_x": 0.25,
+      "easing": "Linear",
+      "start_y": 0.0,
+      "end_y": 0.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": false,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 47,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39576,
+      "end": 40730,
+      "start_x": 0.0,
+      "end_x": 0.0,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [
+        40384,
+        40615
+      ],
+      "smoothness": null
+    },
+    {
+      "note_id": 48,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39577,
+      "end": 39592,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 49,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39577,
+      "end": 39592,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 50,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39592,
+      "end": 39793,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 51,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39592,
+      "end": 39793,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 52,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39793,
+      "end": 39808,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 53,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39793,
+      "end": 39808,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 54,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39807,
+      "end": 39822,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 55,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39807,
+      "end": 40038,
+      "start_x": 1.0,
+      "end_x": 0.25,
+      "easing": "SiSi",
+      "start_y": 1.0,
+      "end_y": 0.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": false,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 56,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39807,
+      "end": 39822,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 57,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39822,
+      "end": 40023,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 58,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 39822,
+      "end": 40023,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 59,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40023,
+      "end": 40038,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 60,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40023,
+      "end": 40038,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 61,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40038,
+      "end": 40192,
+      "start_x": 0.25,
+      "end_x": 1.0,
+      "easing": "SoSo",
+      "start_y": 0.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": false,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 62,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40038,
+      "end": 40053,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 63,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40038,
+      "end": 40053,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 64,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40053,
+      "end": 40254,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 65,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40053,
+      "end": 40254,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 66,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40192,
+      "end": 40269,
+      "start_x": 1.0,
+      "end_x": 1.0,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [
+        40269
+      ],
+      "smoothness": null
+    },
+    {
+      "note_id": 67,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40254,
+      "end": 40269,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 68,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40254,
+      "end": 40269,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 69,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40269,
+      "end": 40284,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 70,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40269,
+      "end": 40284,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 71,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40269,
+      "end": 40730,
+      "start_x": 1.0,
+      "end_x": 1.0,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [
+        40500
+      ],
+      "smoothness": null
+    },
+    {
+      "note_id": 72,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40284,
+      "end": 40485,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 73,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40284,
+      "end": 40485,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 74,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40485,
+      "end": 40500,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 75,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40485,
+      "end": 40500,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 76,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40500,
+      "end": 40515,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 77,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40500,
+      "end": 40515,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 78,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40515,
+      "end": 40716,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 79,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40515,
+      "end": 40716,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 80,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40716,
+      "end": 40731,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 81,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40716,
+      "end": 40731,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 82,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40730,
+      "end": 41076,
+      "start_x": 0.0,
+      "end_x": 0.0,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 83,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40730,
+      "end": 41076,
+      "start_x": 1.0,
+      "end_x": 1.0,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 84,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40730,
+      "end": 40745,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 85,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40730,
+      "end": 40745,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 86,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40745,
+      "end": 40946,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 87,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40745,
+      "end": 40946,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 88,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40946,
+      "end": 40961,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 89,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40946,
+      "end": 40961,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 90,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40961,
+      "end": 40976,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 91,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40961,
+      "end": 40976,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 92,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40976,
+      "end": 41177,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 93,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 40976,
+      "end": 41177,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 94,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41076,
+      "end": 41769,
+      "start_x": 0.0,
+      "end_x": 0.0,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [
+        41769
+      ],
+      "smoothness": null
+    },
+    {
+      "note_id": 95,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41076,
+      "end": 41192,
+      "start_x": 1.0,
+      "end_x": 1.0,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": false,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 96,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41177,
+      "end": 41192,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 97,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41177,
+      "end": 41192,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 98,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41192,
+      "end": 41207,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 99,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41192,
+      "end": 41307,
+      "start_x": 1.0,
+      "end_x": 0.62,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": false,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 100,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41192,
+      "end": 41207,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 101,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41207,
+      "end": 41408,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 102,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41207,
+      "end": 41408,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 103,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41307,
+      "end": 41423,
+      "start_x": 0.62,
+      "end_x": 0.62,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": false,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 104,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41408,
+      "end": 41423,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 105,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41408,
+      "end": 41423,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 106,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41423,
+      "end": 41438,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 107,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41423,
+      "end": 41538,
+      "start_x": 0.62,
+      "end_x": 0.25,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": false,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 108,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41423,
+      "end": 41438,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 109,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41438,
+      "end": 41639,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 110,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41438,
+      "end": 41639,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 111,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41538,
+      "end": 41692,
+      "start_x": 0.25,
+      "end_x": 0.25,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": false,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 112,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41639,
+      "end": 41654,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 113,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41639,
+      "end": 41654,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 114,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41653,
+      "end": 41668,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 115,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41653,
+      "end": 41668,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 116,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41668,
+      "end": 41869,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 117,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41668,
+      "end": 41869,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 118,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41769,
+      "end": 41826,
+      "start_x": 0.0,
+      "end_x": 0.25,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 119,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41826,
+      "end": 41884,
+      "start_x": 0.25,
+      "end_x": 0.0,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [
+        41884,
+        41826
+      ],
+      "smoothness": null
+    },
+    {
+      "note_id": 120,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41869,
+      "end": 41884,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 121,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41869,
+      "end": 41884,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 122,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41884,
+      "end": 41899,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 123,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41884,
+      "end": 42000,
+      "start_x": 0.0,
+      "end_x": 0.0,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [
+        42000
+      ],
+      "smoothness": null
+    },
+    {
+      "note_id": 124,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41884,
+      "end": 41899,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 125,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41899,
+      "end": 42100,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 126,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 41899,
+      "end": 42100,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 127,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42000,
+      "end": 42115,
+      "start_x": 0.0,
+      "end_x": 0.0,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 128,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42100,
+      "end": 42115,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 129,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42100,
+      "end": 42115,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 130,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42115,
+      "end": 42230,
+      "start_x": 0.0,
+      "end_x": 0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 131,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42115,
+      "end": 42130,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 132,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42115,
+      "end": 42130,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 133,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42130,
+      "end": 42331,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 134,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42130,
+      "end": 42331,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 135,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42230,
+      "end": 42346,
+      "start_x": 0.5,
+      "end_x": 0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 136,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42331,
+      "end": 42346,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 137,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42331,
+      "end": 42346,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 138,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42346,
+      "end": 42461,
+      "start_x": 0.5,
+      "end_x": 1.0,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 139,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42346,
+      "end": 42361,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 140,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42346,
+      "end": 42361,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 141,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42361,
+      "end": 42562,
+      "start_x": -0.5,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 142,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42361,
+      "end": 42562,
+      "start_x": 1.5,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 143,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42461,
+      "end": 42576,
+      "start_x": 1.0,
+      "end_x": 1.0,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 144,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42562,
+      "end": 42577,
+      "start_x": 1.5,
+      "end_x": 1.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 145,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42562,
+      "end": 42577,
+      "start_x": -0.5,
+      "end_x": -0.6,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 146,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42576,
+      "end": 42922,
+      "start_x": 1.0,
+      "end_x": 0.25,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [
+        42692,
+        42807,
+        42576
+      ],
+      "smoothness": null
+    },
+    {
+      "note_id": 147,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42576,
+      "end": 42591,
+      "start_x": 1.6,
+      "end_x": 1.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 148,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42576,
+      "end": 42591,
+      "start_x": -0.6,
+      "end_x": -0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 1.0,
+      "color": 1,
+      "hitsound": null,
+      "trace_arc": true,
+      "taps": [],
+      "smoothness": null
+    },
+    {
+      "note_id": 149,
+      "group_id": 0,
+      "group_properties": {},
+      "start": 42576,
+      "end": 42692,
+      "start_x": 0.0,
+      "end_x": 0.5,
+      "easing": "Linear",
+      "start_y": 1.0,
+      "end_y": 0.0,
+      "color": 0,
+      "hitsound": null,
+      "trace_arc": false,
+      "taps": [],
+      "smoothness": null
+    }
+  ],
+  "timings": [
+    {
+      "tick": 0,
+      "bpm": 160.0,
+      "beats_per_measure": 4.0,
+      "group_id": 0
+    },
+    {
+      "tick": 0,
+      "bpm": 80.0,
+      "beats_per_measure": 4.0,
+      "group_id": 1
+    },
+    {
+      "tick": 31500,
+      "bpm": 260.0,
+      "beats_per_measure": 4.0,
+      "group_id": 0
+    }
+  ],
+  "scene_controls": [
+    {
+      "tick": 19500,
+      "control_type": "enwidencamera",
+      "param1": 3000.0,
+      "param2": 1,
+      "group_id": 1
+    },
+    {
+      "tick": 19500,
+      "control_type": "enwidenlanes",
+      "param1": 3000.0,
+      "param2": 1,
+      "group_id": 1
+    },
+    {
+      "tick": 25500,
+      "control_type": "enwidenlanes",
+      "param1": 750.0,
+      "param2": 0,
+      "group_id": 1
+    },
+    {
+      "tick": 25500,
+      "control_type": "enwidencamera",
+      "param1": 4875.0,
+      "param2": 0,
+      "group_id": 1
+    },
+    {
+      "tick": 89653,
+      "control_type": "enwidencamera",
+      "param1": 8275.0,
+      "param2": 1,
+      "group_id": 1
+    },
+    {
+      "tick": 89653,
+      "control_type": "enwidenlanes",
+      "param1": 8275.0,
+      "param2": 1,
+      "group_id": 1
+    },
+    {
+      "tick": 115070,
+      "control_type": "enwidencamera",
+      "param1": 1143.0,
+      "param2": 0,
+      "group_id": 1
+    },
+    {
+      "tick": 115070,
+      "control_type": "enwidenlanes",
+      "param1": 286.0,
+      "param2": 0,
+      "group_id": 1
+    },
+    {
+      "tick": 116213,
+      "control_type": "enwidencamera",
+      "param1": 9143.0,
+      "param2": 1,
+      "group_id": 1
+    },
+    {
+      "tick": 125356,
+      "control_type": "enwidenlanes",
+      "param1": 3000.0,
+      "param2": 1,
+      "group_id": 1
+    },
+    {
+      "tick": 193187,
+      "control_type": "enwidenlanes",
+      "param1": 6429.0,
+      "param2": 0,
+      "group_id": 1
+    },
+    {
+      "tick": 193187,
+      "control_type": "enwidencamera",
+      "param1": 6429.0,
+      "param2": 0,
+      "group_id": 1
+    },
+    {
+      "tick": 243171,
+      "control_type": "enwidencamera",
+      "param1": 12000.0,
+      "param2": 1,
+      "group_id": 1
+    },
+    {
+      "tick": 243171,
+      "control_type": "enwidenlanes",
+      "param1": 12000.0,
+      "param2": 1,
+      "group_id": 1
+    },
+    {
+      "tick": 326051,
+      "control_type": "enwidencamera",
+      "param1": 6068.0,
+      "param2": 0,
+      "group_id": 1
+    },
+    {
+      "tick": 326051,
+      "control_type": "enwidenlanes",
+      "param1": 6068.0,
+      "param2": 0,
+      "group_id": 1
+    }
+  ]
+}
+```
+
+## Timeline
+
+```json
+{
+  "max_tick": 332119,
+  "lane_segments": [
+    {
+      "start": 0,
+      "end": 19500,
+      "mode": "4k"
+    },
+    {
+      "start": 19500,
+      "end": 21000,
+      "mode": "4k"
+    },
+    {
+      "start": 21000,
+      "end": 25500,
+      "mode": "6k"
+    },
+    {
+      "start": 25500,
+      "end": 25875,
+      "mode": "6k"
+    },
+    {
+      "start": 25875,
+      "end": 89653,
+      "mode": "4k"
+    },
+    {
+      "start": 89653,
+      "end": 93790,
+      "mode": "4k"
+    },
+    {
+      "start": 93790,
+      "end": 115070,
+      "mode": "6k"
+    },
+    {
+      "start": 115070,
+      "end": 115213,
+      "mode": "6k"
+    },
+    {
+      "start": 115213,
+      "end": 125356,
+      "mode": "4k"
+    },
+    {
+      "start": 125356,
+      "end": 126856,
+      "mode": "4k"
+    },
+    {
+      "start": 126856,
+      "end": 193187,
+      "mode": "6k"
+    },
+    {
+      "start": 193187,
+      "end": 196401,
+      "mode": "6k"
+    },
+    {
+      "start": 196401,
+      "end": 243171,
+      "mode": "4k"
+    },
+    {
+      "start": 243171,
+      "end": 249171,
+      "mode": "4k"
+    },
+    {
+      "start": 249171,
+      "end": 326051,
+      "mode": "6k"
+    },
+    {
+      "start": 326051,
+      "end": 329085,
+      "mode": "6k"
+    },
+    {
+      "start": 329085,
+      "end": 332119,
+      "mode": "4k"
+    }
+  ],
+  "sky_segments": [
+    {
+      "start": 0,
+      "end": 19500,
+      "mode": "4k"
+    },
+    {
+      "start": 19500,
+      "end": 21000,
+      "mode": "4k"
+    },
+    {
+      "start": 21000,
+      "end": 25500,
+      "mode": "6k"
+    },
+    {
+      "start": 25500,
+      "end": 27937,
+      "mode": "6k"
+    },
+    {
+      "start": 27937,
+      "end": 89653,
+      "mode": "4k"
+    },
+    {
+      "start": 89653,
+      "end": 93790,
+      "mode": "4k"
+    },
+    {
+      "start": 93790,
+      "end": 115070,
+      "mode": "6k"
+    },
+    {
+      "start": 115070,
+      "end": 115641,
+      "mode": "6k"
+    },
+    {
+      "start": 115641,
+      "end": 116213,
+      "mode": "4k"
+    },
+    {
+      "start": 116213,
+      "end": 120784,
+      "mode": "4k"
+    },
+    {
+      "start": 120784,
+      "end": 193187,
+      "mode": "6k"
+    },
+    {
+      "start": 193187,
+      "end": 196401,
+      "mode": "6k"
+    },
+    {
+      "start": 196401,
+      "end": 243171,
+      "mode": "4k"
+    },
+    {
+      "start": 243171,
+      "end": 249171,
+      "mode": "4k"
+    },
+    {
+      "start": 249171,
+      "end": 326051,
+      "mode": "6k"
+    },
+    {
+      "start": 326051,
+      "end": 329085,
+      "mode": "6k"
+    },
+    {
+      "start": 329085,
+      "end": 332119,
+      "mode": "4k"
+    }
+  ]
+}
+```
+
+## Logical Events
+
+```json
+[
+  {
+    "tick": 38884,
+    "x": 0.0,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 1000,
+    "source_note_id": 18,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 38884,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 5001,
+    "source_note_id": 24,
+    "source_type": "arc"
+  },
+  {
+    "tick": 38893,
+    "x": 0.9612,
+    "y": 0.9224,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 24,
+    "source_type": "arc"
+  },
+  {
+    "tick": 38896,
+    "x": 0.0,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 1000,
+    "source_note_id": 18,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 38903,
+    "x": 0.9181,
+    "y": 0.8362,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 24,
+    "source_type": "arc"
+  },
+  {
+    "tick": 38913,
+    "x": 0.875,
+    "y": 0.75,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 24,
+    "source_type": "arc"
+  },
+  {
+    "tick": 38922,
+    "x": 0.8362,
+    "y": 0.6724,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 24,
+    "source_type": "arc"
+  },
+  {
+    "tick": 38932,
+    "x": 0.7931,
+    "y": 0.5862,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 24,
+    "source_type": "arc"
+  },
+  {
+    "tick": 38942,
+    "x": 0.75,
+    "y": 0.5,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 24,
+    "source_type": "arc"
+  },
+  {
+    "tick": 38951,
+    "x": 0.7112,
+    "y": 0.4224,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 24,
+    "source_type": "arc"
+  },
+  {
+    "tick": 38961,
+    "x": 0.6681,
+    "y": 0.3362,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 24,
+    "source_type": "arc"
+  },
+  {
+    "tick": 38971,
+    "x": 0.625,
+    "y": 0.25,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 24,
+    "source_type": "arc"
+  },
+  {
+    "tick": 38980,
+    "x": 0.5862,
+    "y": 0.1724,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 24,
+    "source_type": "arc"
+  },
+  {
+    "tick": 38990,
+    "x": 0.5431,
+    "y": 0.0862,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 24,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39000,
+    "x": 0.2514450867052023,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 1001,
+    "source_note_id": 23,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 39009,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39012,
+    "x": 0.2514450867052023,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 1001,
+    "source_note_id": 23,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 39019,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39029,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39039,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39049,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39059,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39069,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39079,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39088,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39098,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39108,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39115,
+    "x": 0.5007225433526011,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 1002,
+    "source_note_id": 23,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 39118,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39127,
+    "x": 0.5007225433526011,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 1002,
+    "source_note_id": 23,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 39128,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39138,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39148,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39158,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39168,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39177,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39187,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39197,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39207,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39217,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39227,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39230,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39237,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39239,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39247,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39249,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39257,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39258,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39266,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39268,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39276,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39278,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39286,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39287,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39296,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39297,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39306,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39307,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39316,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39316,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39326,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39326,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39335,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39336,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39345,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39346,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 5001,
+    "source_note_id": 27,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39355,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39364,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39374,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39384,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39393,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39403,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39412,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39422,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39432,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39441,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39451,
+    "x": 0.75,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 34,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39461,
+    "x": 0.75,
+    "y": 0.0,
+    "action": "DOWN",
+    "pointer": 3,
+    "source_note_id": 1,
+    "source_type": "tap"
+  },
+  {
+    "tick": 39470,
+    "x": 0.7109,
+    "y": 0.9217,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 41,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39480,
+    "x": 0.6674,
+    "y": 0.8348,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 41,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39481,
+    "x": 0.75,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 3,
+    "source_note_id": 1,
+    "source_type": "tap"
+  },
+  {
+    "tick": 39489,
+    "x": 0.6283,
+    "y": 0.7565,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 41,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39499,
+    "x": 0.5848,
+    "y": 0.6696,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 41,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39508,
+    "x": 0.5457,
+    "y": 0.5913,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 41,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39518,
+    "x": 0.5022,
+    "y": 0.5043,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 41,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39528,
+    "x": 0.4587,
+    "y": 0.4174,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 41,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39537,
+    "x": 0.4196,
+    "y": 0.3391,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 41,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39547,
+    "x": 0.3761,
+    "y": 0.2522,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 41,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39556,
+    "x": 0.337,
+    "y": 0.1739,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 41,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39566,
+    "x": 0.2935,
+    "y": 0.087,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 41,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39576,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39585,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39585,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39595,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39595,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39604,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39604,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39614,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39614,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39624,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39624,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39633,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39633,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39643,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39643,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39653,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39653,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39662,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39662,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39672,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39672,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39681,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39681,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39691,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39691,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39701,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39701,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39710,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39710,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39720,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39720,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39730,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 5000,
+    "source_note_id": 46,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39730,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39739,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39749,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39758,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39768,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39778,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39787,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39797,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 45,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39807,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "DOWN",
+    "pointer": 2,
+    "source_note_id": 2,
+    "source_type": "tap"
+  },
+  {
+    "tick": 39816,
+    "x": 0.9541,
+    "y": 0.961,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39826,
+    "x": 0.9034,
+    "y": 0.9177,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39827,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 2,
+    "source_note_id": 2,
+    "source_type": "tap"
+  },
+  {
+    "tick": 39835,
+    "x": 0.8581,
+    "y": 0.8788,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39845,
+    "x": 0.8083,
+    "y": 0.8355,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39855,
+    "x": 0.7595,
+    "y": 0.7922,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39864,
+    "x": 0.7165,
+    "y": 0.7532,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39874,
+    "x": 0.67,
+    "y": 0.71,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39884,
+    "x": 0.625,
+    "y": 0.6667,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39893,
+    "x": 0.586,
+    "y": 0.6277,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39903,
+    "x": 0.5444,
+    "y": 0.5844,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39912,
+    "x": 0.5089,
+    "y": 0.5455,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39922,
+    "x": 0.4715,
+    "y": 0.5022,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39923,
+    "x": -0.25,
+    "y": 0.0,
+    "action": "DOWN",
+    "pointer": 1,
+    "source_note_id": 3,
+    "source_type": "tap"
+  },
+  {
+    "tick": 39932,
+    "x": 0.4365,
+    "y": 0.4589,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39941,
+    "x": 0.4073,
+    "y": 0.4199,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39943,
+    "x": -0.25,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 1,
+    "source_note_id": 3,
+    "source_type": "tap"
+  },
+  {
+    "tick": 39951,
+    "x": 0.3775,
+    "y": 0.3766,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39961,
+    "x": 0.3505,
+    "y": 0.3333,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39970,
+    "x": 0.3288,
+    "y": 0.2944,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39980,
+    "x": 0.3076,
+    "y": 0.2511,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39989,
+    "x": 0.2912,
+    "y": 0.2121,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 39999,
+    "x": 0.2762,
+    "y": 0.1688,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40009,
+    "x": 0.2645,
+    "y": 0.1255,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40018,
+    "x": 0.2569,
+    "y": 0.0866,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40028,
+    "x": 0.2517,
+    "y": 0.0433,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 55,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40038,
+    "x": -0.25,
+    "y": 0.0,
+    "action": "DOWN",
+    "pointer": 1,
+    "source_note_id": 4,
+    "source_type": "tap"
+  },
+  {
+    "tick": 40047,
+    "x": 0.2532,
+    "y": 0.0584,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40057,
+    "x": 0.264,
+    "y": 0.1234,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40058,
+    "x": -0.25,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 1,
+    "source_note_id": 4,
+    "source_type": "tap"
+  },
+  {
+    "tick": 40066,
+    "x": 0.2804,
+    "y": 0.1818,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40076,
+    "x": 0.3056,
+    "y": 0.2468,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40086,
+    "x": 0.3381,
+    "y": 0.3117,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40095,
+    "x": 0.3732,
+    "y": 0.3701,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40105,
+    "x": 0.4184,
+    "y": 0.4351,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40115,
+    "x": 0.4697,
+    "y": 0.5,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40124,
+    "x": 0.5205,
+    "y": 0.5584,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40134,
+    "x": 0.5817,
+    "y": 0.6234,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40143,
+    "x": 0.6406,
+    "y": 0.6818,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40153,
+    "x": -0.25,
+    "y": 0.0,
+    "action": "DOWN",
+    "pointer": 1,
+    "source_note_id": 5,
+    "source_type": "tap"
+  },
+  {
+    "tick": 40153,
+    "x": 0.7095,
+    "y": 0.7468,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40163,
+    "x": 0.7814,
+    "y": 0.8117,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40172,
+    "x": 0.8481,
+    "y": 0.8701,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40173,
+    "x": -0.25,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 1,
+    "source_note_id": 5,
+    "source_type": "tap"
+  },
+  {
+    "tick": 40182,
+    "x": 0.9236,
+    "y": 0.9351,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40192,
+    "x": 0.9999999999999999,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 5001,
+    "source_note_id": 61,
+    "source_type": "arc"
+  },
+  {
+    "tick": 40269,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 1005,
+    "source_note_id": 66,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 40281,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 1005,
+    "source_note_id": 66,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 40384,
+    "x": 0.0,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 1003,
+    "source_note_id": 47,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 40396,
+    "x": 0.0,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 1003,
+    "source_note_id": 47,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 40500,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 1006,
+    "source_note_id": 71,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 40512,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 1006,
+    "source_note_id": 71,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 40615,
+    "x": 0.0,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 1004,
+    "source_note_id": 47,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 40627,
+    "x": 0.0,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 1004,
+    "source_note_id": 47,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 40730,
+    "x": 1.25,
+    "y": 0.0,
+    "action": "DOWN",
+    "pointer": 4,
+    "source_note_id": 6,
+    "source_type": "tap"
+  },
+  {
+    "tick": 40750,
+    "x": 1.25,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 4,
+    "source_note_id": 6,
+    "source_type": "tap"
+  },
+  {
+    "tick": 40788,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "DOWN",
+    "pointer": 2,
+    "source_note_id": 7,
+    "source_type": "tap"
+  },
+  {
+    "tick": 40808,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 2,
+    "source_note_id": 7,
+    "source_type": "tap"
+  },
+  {
+    "tick": 40846,
+    "x": 0.75,
+    "y": 0.0,
+    "action": "DOWN",
+    "pointer": 3,
+    "source_note_id": 8,
+    "source_type": "tap"
+  },
+  {
+    "tick": 40866,
+    "x": 0.75,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 3,
+    "source_note_id": 8,
+    "source_type": "tap"
+  },
+  {
+    "tick": 40903,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "DOWN",
+    "pointer": 2,
+    "source_note_id": 9,
+    "source_type": "tap"
+  },
+  {
+    "tick": 40923,
+    "x": 0.25,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 2,
+    "source_note_id": 9,
+    "source_type": "tap"
+  },
+  {
+    "tick": 40961,
+    "x": 1.25,
+    "y": 0.0,
+    "action": "DOWN",
+    "pointer": 4,
+    "source_note_id": 10,
+    "source_type": "tap"
+  },
+  {
+    "tick": 40981,
+    "x": 1.25,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 4,
+    "source_note_id": 10,
+    "source_type": "tap"
+  },
+  {
+    "tick": 41076,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 5001,
+    "source_note_id": 95,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41085,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 95,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41095,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 95,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41105,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 95,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41114,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 95,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41124,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 95,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41134,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 95,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41143,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 95,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41153,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 95,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41163,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 95,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41172,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 95,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41182,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 95,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41201,
+    "x": 0.9703,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 99,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41211,
+    "x": 0.9372,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 99,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41220,
+    "x": 0.9075,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 99,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41230,
+    "x": 0.8744,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 99,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41239,
+    "x": 0.8447,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 99,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41249,
+    "x": 0.8117,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 99,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41259,
+    "x": 0.7786,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 99,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41268,
+    "x": 0.7489,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 99,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41278,
+    "x": 0.7158,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 99,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41287,
+    "x": 0.6861,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 99,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41297,
+    "x": 0.653,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 99,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41316,
+    "x": 0.62,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 103,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41326,
+    "x": 0.62,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 103,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41336,
+    "x": 0.62,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 103,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41345,
+    "x": 0.62,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 103,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41355,
+    "x": 0.62,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 103,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41365,
+    "x": 0.62,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 103,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41374,
+    "x": 0.62,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 103,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41384,
+    "x": 0.62,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 103,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41394,
+    "x": 0.62,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 103,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41403,
+    "x": 0.62,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 103,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41413,
+    "x": 0.62,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 103,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41432,
+    "x": 0.591,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 107,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41442,
+    "x": 0.5589,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 107,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41451,
+    "x": 0.5299,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 107,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41461,
+    "x": 0.4977,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 107,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41470,
+    "x": 0.4688,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 107,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41480,
+    "x": 0.4366,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 107,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41490,
+    "x": 0.4044,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 107,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41499,
+    "x": 0.3755,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 107,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41509,
+    "x": 0.3433,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 107,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41518,
+    "x": 0.3143,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 107,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41528,
+    "x": 0.2822,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 107,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41547,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41557,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41566,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41576,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41586,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41595,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41605,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41615,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41624,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41634,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41643,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41653,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41663,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41672,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41682,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "MOVE",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41692,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 5001,
+    "source_note_id": 111,
+    "source_type": "arc"
+  },
+  {
+    "tick": 41769,
+    "x": 0.0,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 1007,
+    "source_note_id": 94,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 41781,
+    "x": 0.0,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 1007,
+    "source_note_id": 94,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 41826,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 1009,
+    "source_note_id": 119,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 41838,
+    "x": 0.25,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 1009,
+    "source_note_id": 119,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 41884,
+    "x": 0.0,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 1008,
+    "source_note_id": 119,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 41896,
+    "x": 0.0,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 1008,
+    "source_note_id": 119,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 42000,
+    "x": 0.0,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 1010,
+    "source_note_id": 123,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 42012,
+    "x": 0.0,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 1010,
+    "source_note_id": 123,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 42115,
+    "x": 0.75,
+    "y": 0.0,
+    "action": "DOWN",
+    "pointer": 3,
+    "source_note_id": 11,
+    "source_type": "tap"
+  },
+  {
+    "tick": 42135,
+    "x": 0.75,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 3,
+    "source_note_id": 11,
+    "source_type": "tap"
+  },
+  {
+    "tick": 42230,
+    "x": 0.75,
+    "y": 0.0,
+    "action": "DOWN",
+    "pointer": 3,
+    "source_note_id": 12,
+    "source_type": "tap"
+  },
+  {
+    "tick": 42250,
+    "x": 0.75,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 3,
+    "source_note_id": 12,
+    "source_type": "tap"
+  },
+  {
+    "tick": 42346,
+    "x": -0.25,
+    "y": 0.0,
+    "action": "DOWN",
+    "pointer": 1,
+    "source_note_id": 13,
+    "source_type": "tap"
+  },
+  {
+    "tick": 42366,
+    "x": -0.25,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 1,
+    "source_note_id": 13,
+    "source_type": "tap"
+  },
+  {
+    "tick": 42461,
+    "x": -0.25,
+    "y": 0.0,
+    "action": "DOWN",
+    "pointer": 1,
+    "source_note_id": 14,
+    "source_type": "tap"
+  },
+  {
+    "tick": 42481,
+    "x": -0.25,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 1,
+    "source_note_id": 14,
+    "source_type": "tap"
+  },
+  {
+    "tick": 42576,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 1013,
+    "source_note_id": 146,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 42576,
+    "x": 0.0,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 5000,
+    "source_note_id": 149,
+    "source_type": "arc"
+  },
+  {
+    "tick": 42585,
+    "x": 0.0388,
+    "y": 0.9224,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 149,
+    "source_type": "arc"
+  },
+  {
+    "tick": 42588,
+    "x": 1.0,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 1013,
+    "source_note_id": 146,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 42595,
+    "x": 0.0819,
+    "y": 0.8362,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 149,
+    "source_type": "arc"
+  },
+  {
+    "tick": 42605,
+    "x": 0.125,
+    "y": 0.75,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 149,
+    "source_type": "arc"
+  },
+  {
+    "tick": 42614,
+    "x": 0.1638,
+    "y": 0.6724,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 149,
+    "source_type": "arc"
+  },
+  {
+    "tick": 42624,
+    "x": 0.2069,
+    "y": 0.5862,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 149,
+    "source_type": "arc"
+  },
+  {
+    "tick": 42634,
+    "x": 0.25,
+    "y": 0.5,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 149,
+    "source_type": "arc"
+  },
+  {
+    "tick": 42643,
+    "x": 0.2888,
+    "y": 0.4224,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 149,
+    "source_type": "arc"
+  },
+  {
+    "tick": 42653,
+    "x": 0.3319,
+    "y": 0.3362,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 149,
+    "source_type": "arc"
+  },
+  {
+    "tick": 42663,
+    "x": 0.375,
+    "y": 0.25,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 149,
+    "source_type": "arc"
+  },
+  {
+    "tick": 42672,
+    "x": 0.4138,
+    "y": 0.1724,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 149,
+    "source_type": "arc"
+  },
+  {
+    "tick": 42682,
+    "x": 0.4569,
+    "y": 0.0862,
+    "action": "MOVE",
+    "pointer": 5000,
+    "source_note_id": 149,
+    "source_type": "arc"
+  },
+  {
+    "tick": 42692,
+    "x": 0.7485549132947977,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 1011,
+    "source_note_id": 146,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 42692,
+    "x": 0.5,
+    "y": 0.0,
+    "action": "UP",
+    "pointer": 5000,
+    "source_note_id": 149,
+    "source_type": "arc"
+  },
+  {
+    "tick": 42704,
+    "x": 0.7485549132947977,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 1011,
+    "source_note_id": 146,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 42807,
+    "x": 0.49927745664739887,
+    "y": 1.0,
+    "action": "DOWN",
+    "pointer": 1012,
+    "source_note_id": 146,
+    "source_type": "arctap"
+  },
+  {
+    "tick": 42819,
+    "x": 0.49927745664739887,
+    "y": 1.0,
+    "action": "UP",
+    "pointer": 1012,
+    "source_note_id": 146,
+    "source_type": "arctap"
+  }
+]
+```
+
+## Touch Events
+
+```json
+[
+  {
+    "tick": 38884,
+    "pointer": 1000,
+    "action": "DOWN",
+    "position": [
+      171,
+      300
+    ],
+    "source_note_id": 18,
+    "source_type": "arctap",
+    "logical_tick": 38884,
+    "logical_pos": [
+      0.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 38884,
+    "pointer": 5001,
+    "action": "DOWN",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 24,
+    "source_type": "arc",
+    "logical_tick": 38884,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 38893,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2290,
+      381
+    ],
+    "source_note_id": 24,
+    "source_type": "arc",
+    "logical_tick": 38893,
+    "logical_pos": [
+      0.9612,
+      0.9224
+    ]
+  },
+  {
+    "tick": 38896,
+    "pointer": 1000,
+    "action": "UP",
+    "position": [
+      171,
+      300
+    ],
+    "source_note_id": 18,
+    "source_type": "arctap",
+    "logical_tick": 38896,
+    "logical_pos": [
+      0.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 38903,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2195,
+      472
+    ],
+    "source_note_id": 24,
+    "source_type": "arc",
+    "logical_tick": 38903,
+    "logical_pos": [
+      0.9181,
+      0.8362
+    ]
+  },
+  {
+    "tick": 38913,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2100,
+      562
+    ],
+    "source_note_id": 24,
+    "source_type": "arc",
+    "logical_tick": 38913,
+    "logical_pos": [
+      0.875,
+      0.75
+    ]
+  },
+  {
+    "tick": 38922,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2015,
+      644
+    ],
+    "source_note_id": 24,
+    "source_type": "arc",
+    "logical_tick": 38922,
+    "logical_pos": [
+      0.8362,
+      0.6724
+    ]
+  },
+  {
+    "tick": 38932,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1920,
+      734
+    ],
+    "source_note_id": 24,
+    "source_type": "arc",
+    "logical_tick": 38932,
+    "logical_pos": [
+      0.7931,
+      0.5862
+    ]
+  },
+  {
+    "tick": 38942,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1825,
+      825
+    ],
+    "source_note_id": 24,
+    "source_type": "arc",
+    "logical_tick": 38942,
+    "logical_pos": [
+      0.75,
+      0.5
+    ]
+  },
+  {
+    "tick": 38951,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1739,
+      906
+    ],
+    "source_note_id": 24,
+    "source_type": "arc",
+    "logical_tick": 38951,
+    "logical_pos": [
+      0.7112,
+      0.4224
+    ]
+  },
+  {
+    "tick": 38961,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1644,
+      997
+    ],
+    "source_note_id": 24,
+    "source_type": "arc",
+    "logical_tick": 38961,
+    "logical_pos": [
+      0.6681,
+      0.3362
+    ]
+  },
+  {
+    "tick": 38971,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1549,
+      1088
+    ],
+    "source_note_id": 24,
+    "source_type": "arc",
+    "logical_tick": 38971,
+    "logical_pos": [
+      0.625,
+      0.25
+    ]
+  },
+  {
+    "tick": 38980,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1464,
+      1169
+    ],
+    "source_note_id": 24,
+    "source_type": "arc",
+    "logical_tick": 38980,
+    "logical_pos": [
+      0.5862,
+      0.1724
+    ]
+  },
+  {
+    "tick": 38990,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1369,
+      1259
+    ],
+    "source_note_id": 24,
+    "source_type": "arc",
+    "logical_tick": 38990,
+    "logical_pos": [
+      0.5431,
+      0.0862
+    ]
+  },
+  {
+    "tick": 39000,
+    "pointer": 1001,
+    "action": "DOWN",
+    "position": [
+      725,
+      300
+    ],
+    "source_note_id": 23,
+    "source_type": "arctap",
+    "logical_tick": 39000,
+    "logical_pos": [
+      0.2514450867052023,
+      1.0
+    ]
+  },
+  {
+    "tick": 39009,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39009,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39012,
+    "pointer": 1001,
+    "action": "UP",
+    "position": [
+      725,
+      300
+    ],
+    "source_note_id": 23,
+    "source_type": "arctap",
+    "logical_tick": 39012,
+    "logical_pos": [
+      0.2514450867052023,
+      1.0
+    ]
+  },
+  {
+    "tick": 39019,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39019,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39029,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39029,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39039,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39039,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39049,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39049,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39059,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39059,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39069,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39069,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39079,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39079,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39088,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39088,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39098,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39098,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39108,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39108,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39115,
+    "pointer": 1002,
+    "action": "DOWN",
+    "position": [
+      1275,
+      300
+    ],
+    "source_note_id": 23,
+    "source_type": "arctap",
+    "logical_tick": 39115,
+    "logical_pos": [
+      0.5007225433526011,
+      1.0
+    ]
+  },
+  {
+    "tick": 39118,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39118,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39127,
+    "pointer": 1002,
+    "action": "UP",
+    "position": [
+      1275,
+      300
+    ],
+    "source_note_id": 23,
+    "source_type": "arctap",
+    "logical_tick": 39127,
+    "logical_pos": [
+      0.5007225433526011,
+      1.0
+    ]
+  },
+  {
+    "tick": 39128,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39128,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39138,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39138,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39148,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39148,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39158,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39158,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39168,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39168,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39177,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39177,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39187,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39187,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39197,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39197,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39207,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39207,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39217,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39217,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39227,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39227,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39230,
+    "pointer": 5000,
+    "action": "DOWN",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39230,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39237,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39237,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39239,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39239,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39247,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39247,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39249,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39249,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39257,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39257,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39258,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39258,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39266,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39266,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39268,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39268,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39276,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39276,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39278,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39278,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39286,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39286,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39287,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39287,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39296,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39296,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39297,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39297,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39306,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39306,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39307,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39307,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39316,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39316,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39316,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39316,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39326,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39326,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39326,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39326,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39335,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39335,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39336,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39336,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39345,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39345,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39346,
+    "pointer": 5001,
+    "action": "UP",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 27,
+    "source_type": "arc",
+    "logical_tick": 39346,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 39355,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39355,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39364,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39364,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39374,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39374,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39384,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39384,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39393,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39393,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39403,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39403,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39412,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39412,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39422,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39422,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39432,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39432,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39441,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39441,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39451,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1825,
+      300
+    ],
+    "source_note_id": 34,
+    "source_type": "arc",
+    "logical_tick": 39451,
+    "logical_pos": [
+      0.75,
+      1.0
+    ]
+  },
+  {
+    "tick": 39461,
+    "pointer": 3,
+    "action": "DOWN",
+    "position": [
+      1825,
+      1350
+    ],
+    "source_note_id": 1,
+    "source_type": "tap",
+    "logical_tick": 39461,
+    "logical_pos": [
+      0.75,
+      0.0
+    ]
+  },
+  {
+    "tick": 39470,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1739,
+      382
+    ],
+    "source_note_id": 41,
+    "source_type": "arc",
+    "logical_tick": 39470,
+    "logical_pos": [
+      0.7109,
+      0.9217
+    ]
+  },
+  {
+    "tick": 39480,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1643,
+      473
+    ],
+    "source_note_id": 41,
+    "source_type": "arc",
+    "logical_tick": 39480,
+    "logical_pos": [
+      0.6674,
+      0.8348
+    ]
+  },
+  {
+    "tick": 39481,
+    "pointer": 3,
+    "action": "UP",
+    "position": [
+      1825,
+      1350
+    ],
+    "source_note_id": 1,
+    "source_type": "tap",
+    "logical_tick": 39481,
+    "logical_pos": [
+      0.75,
+      0.0
+    ]
+  },
+  {
+    "tick": 39489,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1556,
+      556
+    ],
+    "source_note_id": 41,
+    "source_type": "arc",
+    "logical_tick": 39489,
+    "logical_pos": [
+      0.6283,
+      0.7565
+    ]
+  },
+  {
+    "tick": 39499,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1460,
+      647
+    ],
+    "source_note_id": 41,
+    "source_type": "arc",
+    "logical_tick": 39499,
+    "logical_pos": [
+      0.5848,
+      0.6696
+    ]
+  },
+  {
+    "tick": 39508,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1374,
+      729
+    ],
+    "source_note_id": 41,
+    "source_type": "arc",
+    "logical_tick": 39508,
+    "logical_pos": [
+      0.5457,
+      0.5913
+    ]
+  },
+  {
+    "tick": 39518,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1278,
+      820
+    ],
+    "source_note_id": 41,
+    "source_type": "arc",
+    "logical_tick": 39518,
+    "logical_pos": [
+      0.5022,
+      0.5043
+    ]
+  },
+  {
+    "tick": 39528,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1182,
+      912
+    ],
+    "source_note_id": 41,
+    "source_type": "arc",
+    "logical_tick": 39528,
+    "logical_pos": [
+      0.4587,
+      0.4174
+    ]
+  },
+  {
+    "tick": 39537,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1096,
+      994
+    ],
+    "source_note_id": 41,
+    "source_type": "arc",
+    "logical_tick": 39537,
+    "logical_pos": [
+      0.4196,
+      0.3391
+    ]
+  },
+  {
+    "tick": 39547,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1000,
+      1085
+    ],
+    "source_note_id": 41,
+    "source_type": "arc",
+    "logical_tick": 39547,
+    "logical_pos": [
+      0.3761,
+      0.2522
+    ]
+  },
+  {
+    "tick": 39556,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      914,
+      1167
+    ],
+    "source_note_id": 41,
+    "source_type": "arc",
+    "logical_tick": 39556,
+    "logical_pos": [
+      0.337,
+      0.1739
+    ]
+  },
+  {
+    "tick": 39566,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      818,
+      1259
+    ],
+    "source_note_id": 41,
+    "source_type": "arc",
+    "logical_tick": 39566,
+    "logical_pos": [
+      0.2935,
+      0.087
+    ]
+  },
+  {
+    "tick": 39576,
+    "pointer": 5001,
+    "action": "DOWN",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39576,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39585,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39585,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39585,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39585,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39595,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39595,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39595,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39595,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39604,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39604,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39604,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39604,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39614,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39614,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39614,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39614,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39624,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39624,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39624,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39624,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39633,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39633,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39633,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39633,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39643,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39643,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39643,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39643,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39653,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39653,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39653,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39653,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39662,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39662,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39662,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39662,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39672,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39672,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39672,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39672,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39681,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39681,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39681,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39681,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39691,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39691,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39691,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39691,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39701,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39701,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39701,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39701,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39710,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39710,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39710,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39710,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39720,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39720,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39720,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39720,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39730,
+    "pointer": 5000,
+    "action": "UP",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 46,
+    "source_type": "arc",
+    "logical_tick": 39730,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39730,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39730,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39739,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39739,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39749,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39749,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39758,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39758,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39768,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39768,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39778,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39778,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39787,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39787,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39797,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 45,
+    "source_type": "arc",
+    "logical_tick": 39797,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 39807,
+    "pointer": 2,
+    "action": "DOWN",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 2,
+    "source_type": "tap",
+    "logical_tick": 39807,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39816,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2275,
+      341
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39816,
+    "logical_pos": [
+      0.9541,
+      0.961
+    ]
+  },
+  {
+    "tick": 39826,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2163,
+      386
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39826,
+    "logical_pos": [
+      0.9034,
+      0.9177
+    ]
+  },
+  {
+    "tick": 39827,
+    "pointer": 2,
+    "action": "UP",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 2,
+    "source_type": "tap",
+    "logical_tick": 39827,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39835,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2063,
+      427
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39835,
+    "logical_pos": [
+      0.8581,
+      0.8788
+    ]
+  },
+  {
+    "tick": 39845,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1953,
+      473
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39845,
+    "logical_pos": [
+      0.8083,
+      0.8355
+    ]
+  },
+  {
+    "tick": 39855,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1846,
+      518
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39855,
+    "logical_pos": [
+      0.7595,
+      0.7922
+    ]
+  },
+  {
+    "tick": 39864,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1751,
+      559
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39864,
+    "logical_pos": [
+      0.7165,
+      0.7532
+    ]
+  },
+  {
+    "tick": 39874,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1648,
+      604
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39874,
+    "logical_pos": [
+      0.67,
+      0.71
+    ]
+  },
+  {
+    "tick": 39884,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1549,
+      650
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39884,
+    "logical_pos": [
+      0.625,
+      0.6667
+    ]
+  },
+  {
+    "tick": 39893,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1463,
+      691
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39893,
+    "logical_pos": [
+      0.586,
+      0.6277
+    ]
+  },
+  {
+    "tick": 39903,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1371,
+      736
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39903,
+    "logical_pos": [
+      0.5444,
+      0.5844
+    ]
+  },
+  {
+    "tick": 39912,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1293,
+      777
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39912,
+    "logical_pos": [
+      0.5089,
+      0.5455
+    ]
+  },
+  {
+    "tick": 39922,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1211,
+      823
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39922,
+    "logical_pos": [
+      0.4715,
+      0.5022
+    ]
+  },
+  {
+    "tick": 39923,
+    "pointer": 1,
+    "action": "DOWN",
+    "position": [
+      -380,
+      1350
+    ],
+    "source_note_id": 3,
+    "source_type": "tap",
+    "logical_tick": 39923,
+    "logical_pos": [
+      -0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39932,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1133,
+      868
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39932,
+    "logical_pos": [
+      0.4365,
+      0.4589
+    ]
+  },
+  {
+    "tick": 39941,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1069,
+      909
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39941,
+    "logical_pos": [
+      0.4073,
+      0.4199
+    ]
+  },
+  {
+    "tick": 39943,
+    "pointer": 1,
+    "action": "UP",
+    "position": [
+      -380,
+      1350
+    ],
+    "source_note_id": 3,
+    "source_type": "tap",
+    "logical_tick": 39943,
+    "logical_pos": [
+      -0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 39951,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1003,
+      955
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39951,
+    "logical_pos": [
+      0.3775,
+      0.3766
+    ]
+  },
+  {
+    "tick": 39961,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      944,
+      1000
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39961,
+    "logical_pos": [
+      0.3505,
+      0.3333
+    ]
+  },
+  {
+    "tick": 39970,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      896,
+      1041
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39970,
+    "logical_pos": [
+      0.3288,
+      0.2944
+    ]
+  },
+  {
+    "tick": 39980,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      849,
+      1086
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39980,
+    "logical_pos": [
+      0.3076,
+      0.2511
+    ]
+  },
+  {
+    "tick": 39989,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      813,
+      1127
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39989,
+    "logical_pos": [
+      0.2912,
+      0.2121
+    ]
+  },
+  {
+    "tick": 39999,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      780,
+      1173
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 39999,
+    "logical_pos": [
+      0.2762,
+      0.1688
+    ]
+  },
+  {
+    "tick": 40009,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      754,
+      1218
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 40009,
+    "logical_pos": [
+      0.2645,
+      0.1255
+    ]
+  },
+  {
+    "tick": 40018,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      737,
+      1259
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 40018,
+    "logical_pos": [
+      0.2569,
+      0.0866
+    ]
+  },
+  {
+    "tick": 40028,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      726,
+      1305
+    ],
+    "source_note_id": 55,
+    "source_type": "arc",
+    "logical_tick": 40028,
+    "logical_pos": [
+      0.2517,
+      0.0433
+    ]
+  },
+  {
+    "tick": 40038,
+    "pointer": 1,
+    "action": "DOWN",
+    "position": [
+      -380,
+      1350
+    ],
+    "source_note_id": 4,
+    "source_type": "tap",
+    "logical_tick": 40038,
+    "logical_pos": [
+      -0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 40047,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      729,
+      1289
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40047,
+    "logical_pos": [
+      0.2532,
+      0.0584
+    ]
+  },
+  {
+    "tick": 40057,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      753,
+      1220
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40057,
+    "logical_pos": [
+      0.264,
+      0.1234
+    ]
+  },
+  {
+    "tick": 40058,
+    "pointer": 1,
+    "action": "UP",
+    "position": [
+      -380,
+      1350
+    ],
+    "source_note_id": 4,
+    "source_type": "tap",
+    "logical_tick": 40058,
+    "logical_pos": [
+      -0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 40066,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      789,
+      1159
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40066,
+    "logical_pos": [
+      0.2804,
+      0.1818
+    ]
+  },
+  {
+    "tick": 40076,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      845,
+      1091
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40076,
+    "logical_pos": [
+      0.3056,
+      0.2468
+    ]
+  },
+  {
+    "tick": 40086,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      917,
+      1023
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40086,
+    "logical_pos": [
+      0.3381,
+      0.3117
+    ]
+  },
+  {
+    "tick": 40095,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      994,
+      961
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40095,
+    "logical_pos": [
+      0.3732,
+      0.3701
+    ]
+  },
+  {
+    "tick": 40105,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1094,
+      893
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40105,
+    "logical_pos": [
+      0.4184,
+      0.4351
+    ]
+  },
+  {
+    "tick": 40115,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1207,
+      825
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40115,
+    "logical_pos": [
+      0.4697,
+      0.5
+    ]
+  },
+  {
+    "tick": 40124,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1319,
+      764
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40124,
+    "logical_pos": [
+      0.5205,
+      0.5584
+    ]
+  },
+  {
+    "tick": 40134,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1454,
+      695
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40134,
+    "logical_pos": [
+      0.5817,
+      0.6234
+    ]
+  },
+  {
+    "tick": 40143,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1584,
+      634
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40143,
+    "logical_pos": [
+      0.6406,
+      0.6818
+    ]
+  },
+  {
+    "tick": 40153,
+    "pointer": 1,
+    "action": "DOWN",
+    "position": [
+      -380,
+      1350
+    ],
+    "source_note_id": 5,
+    "source_type": "tap",
+    "logical_tick": 40153,
+    "logical_pos": [
+      -0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 40153,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1735,
+      566
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40153,
+    "logical_pos": [
+      0.7095,
+      0.7468
+    ]
+  },
+  {
+    "tick": 40163,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1894,
+      498
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40163,
+    "logical_pos": [
+      0.7814,
+      0.8117
+    ]
+  },
+  {
+    "tick": 40172,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2041,
+      436
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40172,
+    "logical_pos": [
+      0.8481,
+      0.8701
+    ]
+  },
+  {
+    "tick": 40173,
+    "pointer": 1,
+    "action": "UP",
+    "position": [
+      -380,
+      1350
+    ],
+    "source_note_id": 5,
+    "source_type": "tap",
+    "logical_tick": 40173,
+    "logical_pos": [
+      -0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 40182,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2208,
+      368
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40182,
+    "logical_pos": [
+      0.9236,
+      0.9351
+    ]
+  },
+  {
+    "tick": 40192,
+    "pointer": 5001,
+    "action": "UP",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 61,
+    "source_type": "arc",
+    "logical_tick": 40192,
+    "logical_pos": [
+      0.9999999999999999,
+      1.0
+    ]
+  },
+  {
+    "tick": 40269,
+    "pointer": 1005,
+    "action": "DOWN",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 66,
+    "source_type": "arctap",
+    "logical_tick": 40269,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 40281,
+    "pointer": 1005,
+    "action": "UP",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 66,
+    "source_type": "arctap",
+    "logical_tick": 40281,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 40384,
+    "pointer": 1003,
+    "action": "DOWN",
+    "position": [
+      171,
+      300
+    ],
+    "source_note_id": 47,
+    "source_type": "arctap",
+    "logical_tick": 40384,
+    "logical_pos": [
+      0.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 40396,
+    "pointer": 1003,
+    "action": "UP",
+    "position": [
+      171,
+      300
+    ],
+    "source_note_id": 47,
+    "source_type": "arctap",
+    "logical_tick": 40396,
+    "logical_pos": [
+      0.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 40500,
+    "pointer": 1006,
+    "action": "DOWN",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 71,
+    "source_type": "arctap",
+    "logical_tick": 40500,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 40512,
+    "pointer": 1006,
+    "action": "UP",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 71,
+    "source_type": "arctap",
+    "logical_tick": 40512,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 40615,
+    "pointer": 1004,
+    "action": "DOWN",
+    "position": [
+      171,
+      300
+    ],
+    "source_note_id": 47,
+    "source_type": "arctap",
+    "logical_tick": 40615,
+    "logical_pos": [
+      0.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 40627,
+    "pointer": 1004,
+    "action": "UP",
+    "position": [
+      171,
+      300
+    ],
+    "source_note_id": 47,
+    "source_type": "arctap",
+    "logical_tick": 40627,
+    "logical_pos": [
+      0.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 40730,
+    "pointer": 4,
+    "action": "DOWN",
+    "position": [
+      2927,
+      1350
+    ],
+    "source_note_id": 6,
+    "source_type": "tap",
+    "logical_tick": 40730,
+    "logical_pos": [
+      1.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 40750,
+    "pointer": 4,
+    "action": "UP",
+    "position": [
+      2927,
+      1350
+    ],
+    "source_note_id": 6,
+    "source_type": "tap",
+    "logical_tick": 40750,
+    "logical_pos": [
+      1.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 40788,
+    "pointer": 2,
+    "action": "DOWN",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 7,
+    "source_type": "tap",
+    "logical_tick": 40788,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 40808,
+    "pointer": 2,
+    "action": "UP",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 7,
+    "source_type": "tap",
+    "logical_tick": 40808,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 40846,
+    "pointer": 3,
+    "action": "DOWN",
+    "position": [
+      1825,
+      1350
+    ],
+    "source_note_id": 8,
+    "source_type": "tap",
+    "logical_tick": 40846,
+    "logical_pos": [
+      0.75,
+      0.0
+    ]
+  },
+  {
+    "tick": 40866,
+    "pointer": 3,
+    "action": "UP",
+    "position": [
+      1825,
+      1350
+    ],
+    "source_note_id": 8,
+    "source_type": "tap",
+    "logical_tick": 40866,
+    "logical_pos": [
+      0.75,
+      0.0
+    ]
+  },
+  {
+    "tick": 40903,
+    "pointer": 2,
+    "action": "DOWN",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 9,
+    "source_type": "tap",
+    "logical_tick": 40903,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 40923,
+    "pointer": 2,
+    "action": "UP",
+    "position": [
+      722,
+      1350
+    ],
+    "source_note_id": 9,
+    "source_type": "tap",
+    "logical_tick": 40923,
+    "logical_pos": [
+      0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 40961,
+    "pointer": 4,
+    "action": "DOWN",
+    "position": [
+      2927,
+      1350
+    ],
+    "source_note_id": 10,
+    "source_type": "tap",
+    "logical_tick": 40961,
+    "logical_pos": [
+      1.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 40981,
+    "pointer": 4,
+    "action": "UP",
+    "position": [
+      2927,
+      1350
+    ],
+    "source_note_id": 10,
+    "source_type": "tap",
+    "logical_tick": 40981,
+    "logical_pos": [
+      1.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 41076,
+    "pointer": 5001,
+    "action": "DOWN",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 95,
+    "source_type": "arc",
+    "logical_tick": 41076,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 41085,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 95,
+    "source_type": "arc",
+    "logical_tick": 41085,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 41095,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 95,
+    "source_type": "arc",
+    "logical_tick": 41095,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 41105,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 95,
+    "source_type": "arc",
+    "logical_tick": 41105,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 41114,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 95,
+    "source_type": "arc",
+    "logical_tick": 41114,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 41124,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 95,
+    "source_type": "arc",
+    "logical_tick": 41124,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 41134,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 95,
+    "source_type": "arc",
+    "logical_tick": 41134,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 41143,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 95,
+    "source_type": "arc",
+    "logical_tick": 41143,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 41153,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 95,
+    "source_type": "arc",
+    "logical_tick": 41153,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 41163,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 95,
+    "source_type": "arc",
+    "logical_tick": 41163,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 41172,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 95,
+    "source_type": "arc",
+    "logical_tick": 41172,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 41182,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 95,
+    "source_type": "arc",
+    "logical_tick": 41182,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 41201,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2311,
+      300
+    ],
+    "source_note_id": 99,
+    "source_type": "arc",
+    "logical_tick": 41201,
+    "logical_pos": [
+      0.9703,
+      1.0
+    ]
+  },
+  {
+    "tick": 41211,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2238,
+      300
+    ],
+    "source_note_id": 99,
+    "source_type": "arc",
+    "logical_tick": 41211,
+    "logical_pos": [
+      0.9372,
+      1.0
+    ]
+  },
+  {
+    "tick": 41220,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2172,
+      300
+    ],
+    "source_note_id": 99,
+    "source_type": "arc",
+    "logical_tick": 41220,
+    "logical_pos": [
+      0.9075,
+      1.0
+    ]
+  },
+  {
+    "tick": 41230,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2099,
+      300
+    ],
+    "source_note_id": 99,
+    "source_type": "arc",
+    "logical_tick": 41230,
+    "logical_pos": [
+      0.8744,
+      1.0
+    ]
+  },
+  {
+    "tick": 41239,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      2034,
+      300
+    ],
+    "source_note_id": 99,
+    "source_type": "arc",
+    "logical_tick": 41239,
+    "logical_pos": [
+      0.8447,
+      1.0
+    ]
+  },
+  {
+    "tick": 41249,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1961,
+      300
+    ],
+    "source_note_id": 99,
+    "source_type": "arc",
+    "logical_tick": 41249,
+    "logical_pos": [
+      0.8117,
+      1.0
+    ]
+  },
+  {
+    "tick": 41259,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1888,
+      300
+    ],
+    "source_note_id": 99,
+    "source_type": "arc",
+    "logical_tick": 41259,
+    "logical_pos": [
+      0.7786,
+      1.0
+    ]
+  },
+  {
+    "tick": 41268,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1822,
+      300
+    ],
+    "source_note_id": 99,
+    "source_type": "arc",
+    "logical_tick": 41268,
+    "logical_pos": [
+      0.7489,
+      1.0
+    ]
+  },
+  {
+    "tick": 41278,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1749,
+      300
+    ],
+    "source_note_id": 99,
+    "source_type": "arc",
+    "logical_tick": 41278,
+    "logical_pos": [
+      0.7158,
+      1.0
+    ]
+  },
+  {
+    "tick": 41287,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1684,
+      300
+    ],
+    "source_note_id": 99,
+    "source_type": "arc",
+    "logical_tick": 41287,
+    "logical_pos": [
+      0.6861,
+      1.0
+    ]
+  },
+  {
+    "tick": 41297,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1611,
+      300
+    ],
+    "source_note_id": 99,
+    "source_type": "arc",
+    "logical_tick": 41297,
+    "logical_pos": [
+      0.653,
+      1.0
+    ]
+  },
+  {
+    "tick": 41316,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1538,
+      300
+    ],
+    "source_note_id": 103,
+    "source_type": "arc",
+    "logical_tick": 41316,
+    "logical_pos": [
+      0.62,
+      1.0
+    ]
+  },
+  {
+    "tick": 41326,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1538,
+      300
+    ],
+    "source_note_id": 103,
+    "source_type": "arc",
+    "logical_tick": 41326,
+    "logical_pos": [
+      0.62,
+      1.0
+    ]
+  },
+  {
+    "tick": 41336,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1538,
+      300
+    ],
+    "source_note_id": 103,
+    "source_type": "arc",
+    "logical_tick": 41336,
+    "logical_pos": [
+      0.62,
+      1.0
+    ]
+  },
+  {
+    "tick": 41345,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1538,
+      300
+    ],
+    "source_note_id": 103,
+    "source_type": "arc",
+    "logical_tick": 41345,
+    "logical_pos": [
+      0.62,
+      1.0
+    ]
+  },
+  {
+    "tick": 41355,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1538,
+      300
+    ],
+    "source_note_id": 103,
+    "source_type": "arc",
+    "logical_tick": 41355,
+    "logical_pos": [
+      0.62,
+      1.0
+    ]
+  },
+  {
+    "tick": 41365,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1538,
+      300
+    ],
+    "source_note_id": 103,
+    "source_type": "arc",
+    "logical_tick": 41365,
+    "logical_pos": [
+      0.62,
+      1.0
+    ]
+  },
+  {
+    "tick": 41374,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1538,
+      300
+    ],
+    "source_note_id": 103,
+    "source_type": "arc",
+    "logical_tick": 41374,
+    "logical_pos": [
+      0.62,
+      1.0
+    ]
+  },
+  {
+    "tick": 41384,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1538,
+      300
+    ],
+    "source_note_id": 103,
+    "source_type": "arc",
+    "logical_tick": 41384,
+    "logical_pos": [
+      0.62,
+      1.0
+    ]
+  },
+  {
+    "tick": 41394,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1538,
+      300
+    ],
+    "source_note_id": 103,
+    "source_type": "arc",
+    "logical_tick": 41394,
+    "logical_pos": [
+      0.62,
+      1.0
+    ]
+  },
+  {
+    "tick": 41403,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1538,
+      300
+    ],
+    "source_note_id": 103,
+    "source_type": "arc",
+    "logical_tick": 41403,
+    "logical_pos": [
+      0.62,
+      1.0
+    ]
+  },
+  {
+    "tick": 41413,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1538,
+      300
+    ],
+    "source_note_id": 103,
+    "source_type": "arc",
+    "logical_tick": 41413,
+    "logical_pos": [
+      0.62,
+      1.0
+    ]
+  },
+  {
+    "tick": 41432,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1474,
+      300
+    ],
+    "source_note_id": 107,
+    "source_type": "arc",
+    "logical_tick": 41432,
+    "logical_pos": [
+      0.591,
+      1.0
+    ]
+  },
+  {
+    "tick": 41442,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1403,
+      300
+    ],
+    "source_note_id": 107,
+    "source_type": "arc",
+    "logical_tick": 41442,
+    "logical_pos": [
+      0.5589,
+      1.0
+    ]
+  },
+  {
+    "tick": 41451,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1339,
+      300
+    ],
+    "source_note_id": 107,
+    "source_type": "arc",
+    "logical_tick": 41451,
+    "logical_pos": [
+      0.5299,
+      1.0
+    ]
+  },
+  {
+    "tick": 41461,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1268,
+      300
+    ],
+    "source_note_id": 107,
+    "source_type": "arc",
+    "logical_tick": 41461,
+    "logical_pos": [
+      0.4977,
+      1.0
+    ]
+  },
+  {
+    "tick": 41470,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1205,
+      300
+    ],
+    "source_note_id": 107,
+    "source_type": "arc",
+    "logical_tick": 41470,
+    "logical_pos": [
+      0.4688,
+      1.0
+    ]
+  },
+  {
+    "tick": 41480,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1134,
+      300
+    ],
+    "source_note_id": 107,
+    "source_type": "arc",
+    "logical_tick": 41480,
+    "logical_pos": [
+      0.4366,
+      1.0
+    ]
+  },
+  {
+    "tick": 41490,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      1063,
+      300
+    ],
+    "source_note_id": 107,
+    "source_type": "arc",
+    "logical_tick": 41490,
+    "logical_pos": [
+      0.4044,
+      1.0
+    ]
+  },
+  {
+    "tick": 41499,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      999,
+      300
+    ],
+    "source_note_id": 107,
+    "source_type": "arc",
+    "logical_tick": 41499,
+    "logical_pos": [
+      0.3755,
+      1.0
+    ]
+  },
+  {
+    "tick": 41509,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      928,
+      300
+    ],
+    "source_note_id": 107,
+    "source_type": "arc",
+    "logical_tick": 41509,
+    "logical_pos": [
+      0.3433,
+      1.0
+    ]
+  },
+  {
+    "tick": 41518,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      864,
+      300
+    ],
+    "source_note_id": 107,
+    "source_type": "arc",
+    "logical_tick": 41518,
+    "logical_pos": [
+      0.3143,
+      1.0
+    ]
+  },
+  {
+    "tick": 41528,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      793,
+      300
+    ],
+    "source_note_id": 107,
+    "source_type": "arc",
+    "logical_tick": 41528,
+    "logical_pos": [
+      0.2822,
+      1.0
+    ]
+  },
+  {
+    "tick": 41547,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41547,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41557,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41557,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41566,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41566,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41576,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41576,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41586,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41586,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41595,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41595,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41605,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41605,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41615,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41615,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41624,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41624,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41634,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41634,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41643,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41643,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41653,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41653,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41663,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41663,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41672,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41672,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41682,
+    "pointer": 5001,
+    "action": "MOVE",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41682,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41692,
+    "pointer": 5001,
+    "action": "UP",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 111,
+    "source_type": "arc",
+    "logical_tick": 41692,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41769,
+    "pointer": 1007,
+    "action": "DOWN",
+    "position": [
+      171,
+      300
+    ],
+    "source_note_id": 94,
+    "source_type": "arctap",
+    "logical_tick": 41769,
+    "logical_pos": [
+      0.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 41781,
+    "pointer": 1007,
+    "action": "UP",
+    "position": [
+      171,
+      300
+    ],
+    "source_note_id": 94,
+    "source_type": "arctap",
+    "logical_tick": 41781,
+    "logical_pos": [
+      0.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 41826,
+    "pointer": 1009,
+    "action": "DOWN",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 119,
+    "source_type": "arctap",
+    "logical_tick": 41826,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41838,
+    "pointer": 1009,
+    "action": "UP",
+    "position": [
+      722,
+      300
+    ],
+    "source_note_id": 119,
+    "source_type": "arctap",
+    "logical_tick": 41838,
+    "logical_pos": [
+      0.25,
+      1.0
+    ]
+  },
+  {
+    "tick": 41884,
+    "pointer": 1008,
+    "action": "DOWN",
+    "position": [
+      171,
+      300
+    ],
+    "source_note_id": 119,
+    "source_type": "arctap",
+    "logical_tick": 41884,
+    "logical_pos": [
+      0.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 41896,
+    "pointer": 1008,
+    "action": "UP",
+    "position": [
+      171,
+      300
+    ],
+    "source_note_id": 119,
+    "source_type": "arctap",
+    "logical_tick": 41896,
+    "logical_pos": [
+      0.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 42000,
+    "pointer": 1010,
+    "action": "DOWN",
+    "position": [
+      171,
+      300
+    ],
+    "source_note_id": 123,
+    "source_type": "arctap",
+    "logical_tick": 42000,
+    "logical_pos": [
+      0.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 42012,
+    "pointer": 1010,
+    "action": "UP",
+    "position": [
+      171,
+      300
+    ],
+    "source_note_id": 123,
+    "source_type": "arctap",
+    "logical_tick": 42012,
+    "logical_pos": [
+      0.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 42115,
+    "pointer": 3,
+    "action": "DOWN",
+    "position": [
+      1825,
+      1350
+    ],
+    "source_note_id": 11,
+    "source_type": "tap",
+    "logical_tick": 42115,
+    "logical_pos": [
+      0.75,
+      0.0
+    ]
+  },
+  {
+    "tick": 42135,
+    "pointer": 3,
+    "action": "UP",
+    "position": [
+      1825,
+      1350
+    ],
+    "source_note_id": 11,
+    "source_type": "tap",
+    "logical_tick": 42135,
+    "logical_pos": [
+      0.75,
+      0.0
+    ]
+  },
+  {
+    "tick": 42230,
+    "pointer": 3,
+    "action": "DOWN",
+    "position": [
+      1825,
+      1350
+    ],
+    "source_note_id": 12,
+    "source_type": "tap",
+    "logical_tick": 42230,
+    "logical_pos": [
+      0.75,
+      0.0
+    ]
+  },
+  {
+    "tick": 42250,
+    "pointer": 3,
+    "action": "UP",
+    "position": [
+      1825,
+      1350
+    ],
+    "source_note_id": 12,
+    "source_type": "tap",
+    "logical_tick": 42250,
+    "logical_pos": [
+      0.75,
+      0.0
+    ]
+  },
+  {
+    "tick": 42346,
+    "pointer": 1,
+    "action": "DOWN",
+    "position": [
+      -380,
+      1350
+    ],
+    "source_note_id": 13,
+    "source_type": "tap",
+    "logical_tick": 42346,
+    "logical_pos": [
+      -0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 42366,
+    "pointer": 1,
+    "action": "UP",
+    "position": [
+      -380,
+      1350
+    ],
+    "source_note_id": 13,
+    "source_type": "tap",
+    "logical_tick": 42366,
+    "logical_pos": [
+      -0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 42461,
+    "pointer": 1,
+    "action": "DOWN",
+    "position": [
+      -380,
+      1350
+    ],
+    "source_note_id": 14,
+    "source_type": "tap",
+    "logical_tick": 42461,
+    "logical_pos": [
+      -0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 42481,
+    "pointer": 1,
+    "action": "UP",
+    "position": [
+      -380,
+      1350
+    ],
+    "source_note_id": 14,
+    "source_type": "tap",
+    "logical_tick": 42481,
+    "logical_pos": [
+      -0.25,
+      0.0
+    ]
+  },
+  {
+    "tick": 42576,
+    "pointer": 1013,
+    "action": "DOWN",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 146,
+    "source_type": "arctap",
+    "logical_tick": 42576,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 42576,
+    "pointer": 5000,
+    "action": "DOWN",
+    "position": [
+      171,
+      300
+    ],
+    "source_note_id": 149,
+    "source_type": "arc",
+    "logical_tick": 42576,
+    "logical_pos": [
+      0.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 42585,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      257,
+      381
+    ],
+    "source_note_id": 149,
+    "source_type": "arc",
+    "logical_tick": 42585,
+    "logical_pos": [
+      0.0388,
+      0.9224
+    ]
+  },
+  {
+    "tick": 42588,
+    "pointer": 1013,
+    "action": "UP",
+    "position": [
+      2376,
+      300
+    ],
+    "source_note_id": 146,
+    "source_type": "arctap",
+    "logical_tick": 42588,
+    "logical_pos": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "tick": 42595,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      352,
+      472
+    ],
+    "source_note_id": 149,
+    "source_type": "arc",
+    "logical_tick": 42595,
+    "logical_pos": [
+      0.0819,
+      0.8362
+    ]
+  },
+  {
+    "tick": 42605,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      447,
+      562
+    ],
+    "source_note_id": 149,
+    "source_type": "arc",
+    "logical_tick": 42605,
+    "logical_pos": [
+      0.125,
+      0.75
+    ]
+  },
+  {
+    "tick": 42614,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      532,
+      644
+    ],
+    "source_note_id": 149,
+    "source_type": "arc",
+    "logical_tick": 42614,
+    "logical_pos": [
+      0.1638,
+      0.6724
+    ]
+  },
+  {
+    "tick": 42624,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      627,
+      734
+    ],
+    "source_note_id": 149,
+    "source_type": "arc",
+    "logical_tick": 42624,
+    "logical_pos": [
+      0.2069,
+      0.5862
+    ]
+  },
+  {
+    "tick": 42634,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      722,
+      825
+    ],
+    "source_note_id": 149,
+    "source_type": "arc",
+    "logical_tick": 42634,
+    "logical_pos": [
+      0.25,
+      0.5
+    ]
+  },
+  {
+    "tick": 42643,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      808,
+      906
+    ],
+    "source_note_id": 149,
+    "source_type": "arc",
+    "logical_tick": 42643,
+    "logical_pos": [
+      0.2888,
+      0.4224
+    ]
+  },
+  {
+    "tick": 42653,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      903,
+      997
+    ],
+    "source_note_id": 149,
+    "source_type": "arc",
+    "logical_tick": 42653,
+    "logical_pos": [
+      0.3319,
+      0.3362
+    ]
+  },
+  {
+    "tick": 42663,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      998,
+      1088
+    ],
+    "source_note_id": 149,
+    "source_type": "arc",
+    "logical_tick": 42663,
+    "logical_pos": [
+      0.375,
+      0.25
+    ]
+  },
+  {
+    "tick": 42672,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1083,
+      1169
+    ],
+    "source_note_id": 149,
+    "source_type": "arc",
+    "logical_tick": 42672,
+    "logical_pos": [
+      0.4138,
+      0.1724
+    ]
+  },
+  {
+    "tick": 42682,
+    "pointer": 5000,
+    "action": "MOVE",
+    "position": [
+      1178,
+      1259
+    ],
+    "source_note_id": 149,
+    "source_type": "arc",
+    "logical_tick": 42682,
+    "logical_pos": [
+      0.4569,
+      0.0862
+    ]
+  },
+  {
+    "tick": 42692,
+    "pointer": 1011,
+    "action": "DOWN",
+    "position": [
+      1822,
+      300
+    ],
+    "source_note_id": 146,
+    "source_type": "arctap",
+    "logical_tick": 42692,
+    "logical_pos": [
+      0.7485549132947977,
+      1.0
+    ]
+  },
+  {
+    "tick": 42692,
+    "pointer": 5000,
+    "action": "UP",
+    "position": [
+      1274,
+      1350
+    ],
+    "source_note_id": 149,
+    "source_type": "arc",
+    "logical_tick": 42692,
+    "logical_pos": [
+      0.5,
+      0.0
+    ]
+  },
+  {
+    "tick": 42704,
+    "pointer": 1011,
+    "action": "UP",
+    "position": [
+      1822,
+      300
+    ],
+    "source_note_id": 146,
+    "source_type": "arctap",
+    "logical_tick": 42704,
+    "logical_pos": [
+      0.7485549132947977,
+      1.0
+    ]
+  },
+  {
+    "tick": 42807,
+    "pointer": 1012,
+    "action": "DOWN",
+    "position": [
+      1272,
+      300
+    ],
+    "source_note_id": 146,
+    "source_type": "arctap",
+    "logical_tick": 42807,
+    "logical_pos": [
+      0.49927745664739887,
+      1.0
+    ]
+  },
+  {
+    "tick": 42819,
+    "pointer": 1012,
+    "action": "UP",
+    "position": [
+      1272,
+      300
+    ],
+    "source_note_id": 146,
+    "source_type": "arctap",
+    "logical_tick": 42819,
+    "logical_pos": [
+      0.49927745664739887,
+      1.0
+    ]
+  }
+]
+```

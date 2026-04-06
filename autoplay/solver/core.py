@@ -4,43 +4,61 @@ import math
 from dataclasses import dataclass
 
 from algo.algo_base import TouchAction
-from autoplay.domain.chart import Arc, Chart, Hold, Tap, TimingGroup
+from autoplay.analyzer.mode_analyzer import ArcaeaTimelineAnalyzer
+from autoplay.domain.arcaea_ir import (
+    ArcIR,
+    ArcaeaChartIR,
+    HoldIR,
+    SceneControlIR,
+    TapIR,
+)
+from autoplay.domain.chart import Chart
 from autoplay.solver.events import TouchEvent
 
 
 @dataclass(slots=True)
-class SolverProfile:
-    lane_start: float
-    lane_scale: float
-    lane_offset: float
-    sky_y_scale: float
-    arc_x_scale: float
-    arc_x_offset: float
-
-    def map_ground_x(self, track: int) -> float:
-        return self.lane_start + track * self.lane_scale
-
-    def map_arc_x(self, x: float) -> float:
-        return x * self.arc_x_scale + self.arc_x_offset
+class LogicalTouchEvent:
+    tick: int
+    x: float
+    y: float
+    action: TouchAction
+    pointer: int
+    source_note_id: int
+    source_type: str
 
 
-PROFILE_4K = SolverProfile(
-    lane_start=-0.75,
-    lane_scale=0.5,
-    lane_offset=0.1,
-    sky_y_scale=1.0,
-    arc_x_scale=1.0,
-    arc_x_offset=0.0,
-)
+ACTION_PRIORITY = {
+    TouchAction.DOWN: 0,
+    TouchAction.MOVE: 1,
+    TouchAction.UP: 2,
+}
 
-PROFILE_6K = SolverProfile(
-    lane_start=-0.5 / 1.5,
-    lane_scale=0.5 / 1.5,
-    lane_offset=0.0,
-    sky_y_scale=1.6,
-    arc_x_scale=1.0 / 1.36,
-    arc_x_offset=(0.5 - 0.5 * (1.0 / 1.36)),
-)
+
+@dataclass(slots=True)
+class LaneProfile:
+    name: str
+
+    def map_lane_to_x(self, lane: float) -> float:
+        # AFF float lane coordinate maps to arc x by: x = -0.5 + lane * 2
+        if not float(lane).is_integer():
+            return -0.5 + lane * 2.0
+
+        lane_i = int(lane)
+        if self.name == "6k":
+            return -0.5 + lane_i * 0.4
+
+        # 4k default: lane 1..4 are the standard playable lanes.
+        if lane_i <= 0:
+            return -0.75
+        if lane_i >= 5:
+            return 1.75
+        return -0.25 + (lane_i - 1) * 0.5
+
+
+PROFILE_4K = LaneProfile(name="4k")
+PROFILE_6K = LaneProfile(name="6k")
+ARC_POINTER_BASE = 5000
+SKY_WIDEN_Y_SCALE = 1.61
 
 
 def _rotate_point(x: float, y: float, anglex: int, angley: int) -> tuple[float, float]:
@@ -53,186 +71,483 @@ def _rotate_point(x: float, y: float, anglex: int, angley: int) -> tuple[float, 
     return x_rot, y_rot
 
 
-def _generate_events(chart: Chart, converter, profile: SolverProfile) -> dict[int, list[TouchEvent]]:
+def _sample_arc_ticks(start: int, end: int, smoothness: float | None) -> list[int]:
+    delta = end - start
+    if delta <= 0:
+        return [start]
+
+    base_step = 10
+    if smoothness is not None and smoothness > 1:
+        base_step = max(3, int(base_step / smoothness))
+
+    steps = max(2, math.ceil(delta / base_step))
+    return [start + int(idx * delta / steps) for idx in range(steps + 1)]
+
+
+def _merge_and_sort_ticks(base_ticks: list[int], extra_ticks: set[int]) -> list[int]:
+    merged = set(base_ticks)
+    merged.update(extra_ticks)
+    return sorted(merged)
+
+
+def _arc_pointer_from_color(color: int) -> int:
+    if color < 0:
+        color = 0
+    return ARC_POINTER_BASE + color
+
+
+def _project_arc_logical_coord_for_mode(
+    x: float, y: float, sky_widen_ratio: float
+) -> tuple[float, float]:
+    ratio = max(0.0, min(1.0, sky_widen_ratio))
+    y_max = 1.0 + (SKY_WIDEN_Y_SCALE - 1.0) * ratio
+    if y_max <= 0:
+        return x, y
+
+    v = y / y_max
+
+    left_bottom = -0.5 - 0.5 * ratio
+    right_bottom = 1.5 + 0.5 * ratio
+    left_top = 0.0 - 0.25 * ratio
+    right_top = 1.0 + 0.25 * ratio
+
+    left = left_bottom + (left_top - left_bottom) * v
+    right = right_bottom + (right_top - right_bottom) * v
+    width = right - left
+    if abs(width) < 1e-9:
+        u = 0.5
+    else:
+        u = (x - left) / width
+
+    projected_y = v
+    target_left = -0.5 + 0.5 * projected_y
+    target_right = 1.5 - 0.5 * projected_y
+    projected_x = target_left + (target_right - target_left) * u
+    return projected_x, projected_y
+
+
+def _is_same_logical_point(
+    left: LogicalTouchEvent, right: LogicalTouchEvent, eps: float = 1e-4
+) -> bool:
+    return abs(left.x - right.x) <= eps and abs(left.y - right.y) <= eps
+
+
+def _resolve_same_tick_arc_head_arctap_conflicts(
+    events: list[LogicalTouchEvent],
+) -> list[LogicalTouchEvent]:
+    by_tick: dict[int, list[int]] = {}
+    for idx, event in enumerate(events):
+        if event.action is not TouchAction.DOWN:
+            continue
+        if event.source_type not in {"arc", "arctap"}:
+            continue
+        by_tick.setdefault(event.tick, []).append(idx)
+
+    remove_indices: set[int] = set()
+
+    for tick, down_indices in by_tick.items():
+        arc_down_indices = [
+            idx for idx in down_indices if events[idx].source_type == "arc"
+        ]
+        arctap_down_indices = [
+            idx for idx in down_indices if events[idx].source_type == "arctap"
+        ]
+        if not arc_down_indices or not arctap_down_indices:
+            continue
+
+        for arctap_idx in arctap_down_indices:
+            arctap_down = events[arctap_idx]
+            has_overlap_arc_head = any(
+                _is_same_logical_point(arctap_down, events[arc_idx])
+                for arc_idx in arc_down_indices
+            )
+            if not has_overlap_arc_head:
+                continue
+
+            remove_indices.add(arctap_idx)
+            for idx, event in enumerate(events):
+                if idx in remove_indices:
+                    continue
+                if event.tick != tick + 12:
+                    continue
+                if event.action is not TouchAction.UP:
+                    continue
+                if event.source_type != "arctap":
+                    continue
+                if event.pointer != arctap_down.pointer:
+                    continue
+                if event.source_note_id != arctap_down.source_note_id:
+                    continue
+                remove_indices.add(idx)
+                break
+
+    if not remove_indices:
+        return events
+    return [event for idx, event in enumerate(events) if idx not in remove_indices]
+
+
+def _resolve_connected_same_color_arc_boundaries(
+    events: list[LogicalTouchEvent],
+) -> list[LogicalTouchEvent]:
+    by_tick_pointer: dict[tuple[int, int], list[int]] = {}
+    for idx, event in enumerate(events):
+        if event.source_type != "arc":
+            continue
+        if event.action not in {TouchAction.DOWN, TouchAction.UP}:
+            continue
+        by_tick_pointer.setdefault((event.tick, event.pointer), []).append(idx)
+
+    remove_indices: set[int] = set()
+
+    for _, indices in by_tick_pointer.items():
+        down_indices = [
+            idx for idx in indices if events[idx].action is TouchAction.DOWN
+        ]
+        up_indices = [idx for idx in indices if events[idx].action is TouchAction.UP]
+        if not down_indices or not up_indices:
+            continue
+
+        used_down: set[int] = set()
+        for up_idx in up_indices:
+            up_event = events[up_idx]
+            for down_idx in down_indices:
+                if down_idx in used_down:
+                    continue
+                down_event = events[down_idx]
+                if up_event.source_note_id == down_event.source_note_id:
+                    continue
+                if not _is_same_logical_point(up_event, down_event):
+                    continue
+                remove_indices.add(up_idx)
+                remove_indices.add(down_idx)
+                used_down.add(down_idx)
+                break
+
+    if not remove_indices:
+        return events
+    return [event for idx, event in enumerate(events) if idx not in remove_indices]
+
+
+def _build_logical_events(
+    chart_ir: ArcaeaChartIR, timeline: ArcaeaTimelineAnalyzer
+) -> list[LogicalTouchEvent]:
+    events: list[LogicalTouchEvent] = []
+    arctap_pointer = 1000
+
+    def append_event(
+        tick: int,
+        x: float,
+        y: float,
+        action: TouchAction,
+        pointer: int,
+        source_note_id: int,
+        source_type: str,
+    ) -> None:
+        events.append(
+            LogicalTouchEvent(
+                tick=tick,
+                x=x,
+                y=y,
+                action=action,
+                pointer=pointer,
+                source_note_id=source_note_id,
+                source_type=source_type,
+            )
+        )
+
+    for note in chart_ir.notes:
+        if note.noinput:
+            continue
+
+        anglex = int(note.group_properties.get("anglex", 0))
+        angley = int(note.group_properties.get("angley", 0))
+
+        if isinstance(note, TapIR):
+            lane_mode = timeline.lane_mode_at(note.tick)
+            lane_profile = PROFILE_6K if lane_mode == "6k" else PROFILE_4K
+            x = lane_profile.map_lane_to_x(note.lane)
+            y = 0.0
+            append_event(
+                note.tick,
+                x,
+                y,
+                TouchAction.DOWN,
+                int(round(note.lane)),
+                note.note_id,
+                "tap",
+            )
+            append_event(
+                note.tick + 20,
+                x,
+                y,
+                TouchAction.UP,
+                int(round(note.lane)),
+                note.note_id,
+                "tap",
+            )
+            continue
+
+        if isinstance(note, HoldIR):
+            lane_mode_start = timeline.lane_mode_at(note.start)
+            lane_mode_end = timeline.lane_mode_at(note.end)
+            start_profile = PROFILE_6K if lane_mode_start == "6k" else PROFILE_4K
+            end_profile = PROFILE_6K if lane_mode_end == "6k" else PROFILE_4K
+            x_start = start_profile.map_lane_to_x(note.lane)
+            x_end = end_profile.map_lane_to_x(note.lane)
+            pointer = int(round(note.lane)) + 100
+            append_event(
+                note.start,
+                x_start,
+                0.0,
+                TouchAction.DOWN,
+                pointer,
+                note.note_id,
+                "hold",
+            )
+            if x_start != x_end and note.end > note.start:
+                append_event(
+                    note.start + (note.end - note.start) // 2,
+                    (x_start + x_end) / 2,
+                    0.0,
+                    TouchAction.MOVE,
+                    pointer,
+                    note.note_id,
+                    "hold",
+                )
+            append_event(
+                note.end, x_end, 0.0, TouchAction.UP, pointer, note.note_id, "hold"
+            )
+            continue
+
+        if not isinstance(note, ArcIR):
+            continue
+
+        if note.trace_arc:
+            delta = note.end - note.start if note.end != note.start else 1
+            start = (note.start_x, note.start_y, 1)
+            end = (note.end_x, note.end_y, 1)
+            for tap_tick in note.taps:
+                t = max(0.0, min(1.0, (tap_tick - note.start) / delta))
+                px, py, _ = note.easing.value(start, end, t)
+                px, py = _rotate_point(px, py, anglex, angley)
+                sky_ratio = timeline.sky_widen_ratio_at(tap_tick)
+                px, py = _project_arc_logical_coord_for_mode(px, py, sky_ratio)
+                append_event(
+                    tap_tick,
+                    px,
+                    py,
+                    TouchAction.DOWN,
+                    arctap_pointer,
+                    note.note_id,
+                    "arctap",
+                )
+                append_event(
+                    tap_tick + 12,
+                    px,
+                    py,
+                    TouchAction.UP,
+                    arctap_pointer,
+                    note.note_id,
+                    "arctap",
+                )
+                arctap_pointer += 1
+                if arctap_pointer > 2000:
+                    arctap_pointer = 1000
+            continue
+
+        pointer = _arc_pointer_from_color(note.color)
+        if note.start == note.end:
+            pointer = ARC_POINTER_BASE + note.note_id
+            px, py = _rotate_point(note.start_x, note.start_y, anglex, angley)
+            sky_ratio = timeline.sky_widen_ratio_at(note.start)
+            px, py = _project_arc_logical_coord_for_mode(px, py, sky_ratio)
+            append_event(
+                note.start, px, py, TouchAction.DOWN, pointer, note.note_id, "zero_arc"
+            )
+            append_event(
+                note.start + 12,
+                px,
+                py,
+                TouchAction.UP,
+                pointer,
+                note.note_id,
+                "zero_arc",
+            )
+            continue
+
+        sample_ticks = _sample_arc_ticks(note.start, note.end, note.smoothness)
+        transition_ticks = {
+            tick
+            for tick in timeline.sky_transition_ticks()
+            if note.start <= tick <= note.end
+        }
+        sample_ticks = _merge_and_sort_ticks(sample_ticks, transition_ticks)
+        start = (note.start_x, note.start_y, 1)
+        end = (note.end_x, note.end_y, 1)
+        delta = note.end - note.start
+
+        for idx, tick in enumerate(sample_ticks):
+            t = max(0.0, min(1.0, (tick - note.start) / delta))
+            px, py, _ = note.easing.value(start, end, t)
+            px, py = _rotate_point(px, py, anglex, angley)
+            sky_ratio = timeline.sky_widen_ratio_at(tick)
+            px, py = _project_arc_logical_coord_for_mode(px, py, sky_ratio)
+            if idx == 0:
+                action = TouchAction.DOWN
+            elif idx == len(sample_ticks) - 1:
+                action = TouchAction.UP
+            else:
+                action = TouchAction.MOVE
+                px = round(px, 4)
+                py = round(py, 4)
+            append_event(tick, px, py, action, pointer, note.note_id, "arc")
+
+        for tap_tick in note.taps:
+            t = max(0.0, min(1.0, (tap_tick - note.start) / delta))
+            px, py, _ = note.easing.value(start, end, t)
+            px, py = _rotate_point(px, py, anglex, angley)
+            sky_ratio = timeline.sky_widen_ratio_at(tap_tick)
+            px, py = _project_arc_logical_coord_for_mode(px, py, sky_ratio)
+            append_event(
+                tap_tick,
+                px,
+                py,
+                TouchAction.DOWN,
+                arctap_pointer,
+                note.note_id,
+                "arctap",
+            )
+            append_event(
+                tap_tick + 12,
+                px,
+                py,
+                TouchAction.UP,
+                arctap_pointer,
+                note.note_id,
+                "arctap",
+            )
+            arctap_pointer += 1
+            if arctap_pointer > 2000:
+                arctap_pointer = 1000
+
+    events = _resolve_same_tick_arc_head_arctap_conflicts(events)
+
+    events.sort(
+        key=lambda item: (item.tick, item.pointer, ACTION_PRIORITY.get(item.action, 99))
+    )
+    events = _resolve_connected_same_color_arc_boundaries(events)
+
+    compacted: list[LogicalTouchEvent] = []
+    for event in events:
+        if compacted:
+            prev = compacted[-1]
+            same_point = prev.x == event.x and prev.y == event.y
+            if (
+                prev.tick == event.tick
+                and prev.pointer == event.pointer
+                and prev.action == event.action
+                and same_point
+            ):
+                continue
+        compacted.append(event)
+    return compacted
+
+
+def _project_to_touch_events(
+    logical_events: list[LogicalTouchEvent], converter
+) -> dict[int, list[TouchEvent]]:
     result: dict[int, list[TouchEvent]] = {}
-    current_arctap_id = 1000
-    arc_search_range = 5
-    zero_length_arcs: dict[int, dict] = {}
-
-    def ins(ms: int, ev: TouchEvent) -> None:
-        result.setdefault(ms, []).append(ev)
-
-    def process_note(note, group_properties: dict | None = None) -> None:
-        nonlocal current_arctap_id
-
-        properties = group_properties or {}
-        if properties.get("noinput", False):
-            return
-
-        anglex = int(properties.get("anglex", 0))
-        angley = int(properties.get("angley", 0))
-
-        if isinstance(note, Arc):
-            if note.start == note.end:
-                if note.trace_arc:
-                    return
-                pointer_id = note.color + 5
-                zero_length_arcs[note.end] = {
-                    "pointer_id": pointer_id,
-                    "start_x": profile.map_arc_x(note.start_x),
-                    "end_x": profile.map_arc_x(note.end_x),
-                    "start_y": note.start_y,
-                    "end_y": note.end_y,
-                }
-                return
-
-            corrected_start_x = profile.map_arc_x(note.start_x)
-            corrected_end_x = profile.map_arc_x(note.end_x)
-
-            start_x, start_y = _rotate_point(corrected_start_x, note.start_y, anglex, angley)
-            end_x, end_y = _rotate_point(corrected_end_x, note.end_y, anglex, angley)
-
-            start = (start_x, start_y / profile.sky_y_scale, 1)
-            end = (end_x, end_y / profile.sky_y_scale, 1)
-            delta = note.end - note.start
-
-            if note.trace_arc:
-                for tap in note.taps:
-                    t = (tap.tick - note.start) / delta
-                    px, py, _ = note.easing.value(start, end, t)
-                    px, py = converter(px, py)
-                    ins(tap.tick, TouchEvent((round(px), round(py)), TouchAction.DOWN, current_arctap_id))
-                    ins(tap.tick + 2, TouchEvent((round(px), round(py)), TouchAction.UP, current_arctap_id))
-                    current_arctap_id += 1
-                    if current_arctap_id > 2000:
-                        current_arctap_id = 1000
-                return
-
-            pointer_id = note.color + 5
-            compensation_needed = False
-            compensation_x = 0.0
-            compensation_y = 0.0
-
-            if note.start in zero_length_arcs:
-                zero_arc_info = zero_length_arcs[note.start]
-                if zero_arc_info["pointer_id"] == pointer_id:
-                    move_dx = zero_arc_info["end_x"] - zero_arc_info["start_x"]
-                    move_dy = zero_arc_info["end_y"] - zero_arc_info["start_y"]
-                    compensation_x = -move_dx * 0.1
-                    compensation_y = -move_dy * 0.1
-                    compensation_needed = True
-                    del zero_length_arcs[note.start]
-
-            px, py, _ = note.easing.value(start, end, 0)
-            px, py = converter(px, py)
-            ins(note.start, TouchEvent((round(px), round(py)), TouchAction.DOWN, pointer_id))
-
-            for tck in range(note.start - arc_search_range, note.start + arc_search_range + 1):
-                if tck not in result:
-                    continue
-                for index, event in enumerate(result[tck]):
-                    if event.pointer == pointer_id and event.action == TouchAction.UP:
-                        result[tck].pop(index)
-                        result[note.start].pop(-1)
-                        ins(note.start, TouchEvent((round(px), round(py)), TouchAction.MOVE, pointer_id))
-                        break
-                else:
-                    continue
-                break
-
-            if compensation_needed:
-                comp_px, comp_py = converter(corrected_start_x + compensation_x, note.start_y + compensation_y)
-                ins(note.start + 5, TouchEvent((round(comp_px), round(comp_py)), TouchAction.MOVE, pointer_id))
-                ins(note.start + 10, TouchEvent((round(px), round(py)), TouchAction.MOVE, pointer_id))
-
-            for tap in note.taps:
-                t = (tap.tick - note.start) / delta
-                px, py, _ = note.easing.value(start, end, t)
-                px, py = converter(px, py)
-                tap_pointer = current_arctap_id
-                ins(tap.tick, TouchEvent((round(px), round(py)), TouchAction.DOWN, tap_pointer))
-                ins(tap.tick + 10, TouchEvent((round(px), round(py)), TouchAction.UP, tap_pointer))
-                current_arctap_id += 1
-                if current_arctap_id > 2000:
-                    current_arctap_id = 1000
-
-            sample_points: list[int] = []
-            min_step = 10
-            if delta > 100:
-                steps = max(5, delta // 20)
-                for idx in range(steps + 1):
-                    sample_points.append(note.start + int(idx * delta / steps))
-            else:
-                steps = max(2, math.ceil(delta / min_step))
-                for idx in range(steps + 1):
-                    sample_points.append(note.start + int(idx * delta / steps))
-
-            for tick in sample_points:
-                t = max(0.0, min(1.0, (tick - note.start) / delta))
-                px, py, _ = note.easing.value(start, end, t)
-                if anglex != 0 or angley != 0:
-                    px, py = _rotate_point(px, py, anglex, angley)
-                px, py = converter(px, py)
-                if tick != note.start:
-                    ins(tick, TouchEvent((round(px), round(py)), TouchAction.MOVE, pointer_id))
-
-            px, py, _ = note.easing.value(start, end, 1)
-            px, py = converter(px, py)
-            ins(note.end, TouchEvent((round(px), round(py)), TouchAction.UP, pointer_id))
-
-            for tck in range(note.end - arc_search_range, note.end + arc_search_range + 1):
-                if tck not in result:
-                    continue
-                for index, event in enumerate(result[tck]):
-                    if event.pointer == pointer_id and event.action == TouchAction.DOWN:
-                        result[tck].pop(index)
-                        result[note.end].pop(-1)
-                        ins(tck, TouchEvent((round(px), round(py)), TouchAction.MOVE, pointer_id))
-                        break
-                else:
-                    continue
-                break
-            return
-
-        if isinstance(note, Tap):
-            note_x = profile.map_ground_x(note.track)
-            if profile.lane_offset != 0:
-                offset_direction = (note_x - 0.5) / abs(note_x - 0.5)
-                note_x -= profile.lane_offset * offset_direction
-            px, py = converter(note_x, 0)
-            ins(note.tick, TouchEvent((round(px), round(py)), TouchAction.DOWN, note.track))
-            ins(note.tick + 20, TouchEvent((round(px), round(py)), TouchAction.UP, note.track))
-            return
-
-        if isinstance(note, Hold):
-            note_x = profile.map_ground_x(note.track)
-            if profile.lane_offset != 0:
-                offset_direction = (note_x - 0.5) / abs(note_x - 0.5)
-                note_x -= profile.lane_offset * offset_direction
-            px, py = converter(note_x, 0)
-            hold_pointer = note.track + 100
-            ins(note.start, TouchEvent((round(px), round(py)), TouchAction.DOWN, hold_pointer))
-            ins(note.end, TouchEvent((round(px), round(py)), TouchAction.UP, hold_pointer))
-
-    def process_timing_group(group: TimingGroup) -> None:
-        for item in group.notes:
-            if isinstance(item, TimingGroup):
-                process_timing_group(item)
-            else:
-                process_note(item, group.properties)
-
-    for note in chart.notes:
-        if isinstance(note, TimingGroup):
-            process_timing_group(note)
-        else:
-            process_note(note)
-
+    for logical_event in logical_events:
+        px, py = converter(logical_event.x, logical_event.y)
+        touch_event = TouchEvent(
+            (round(px), round(py)),
+            logical_event.action,
+            logical_event.pointer,
+            source_note_id=logical_event.source_note_id,
+            source_type=logical_event.source_type,
+            logical_tick=logical_event.tick,
+            logical_pos=(logical_event.x, logical_event.y),
+        )
+        result.setdefault(logical_event.tick, []).append(touch_event)
     return result
 
 
+def solve_chart_auto(chart: Chart, converter) -> dict[int, list[TouchEvent]]:
+    chart_ir = chart.ir
+    if chart_ir is None:
+        return {}
+    timeline = ArcaeaTimelineAnalyzer()
+    timeline.build(chart_ir)
+    logical_events = _build_logical_events(chart_ir, timeline)
+    return _project_to_touch_events(logical_events, converter)
+
+
+def build_logical_events_for_chart(
+    chart: Chart,
+    lane_mode: str | None = None,
+    sky_mode: str | None = None,
+) -> list[LogicalTouchEvent]:
+    chart_ir = chart.ir
+    if chart_ir is None:
+        return []
+
+    timeline = ArcaeaTimelineAnalyzer()
+    if lane_mode is None and sky_mode is None:
+        timeline.build(chart_ir)
+    else:
+        lane = lane_mode or "4k"
+        sky = sky_mode or lane
+        timeline.build(_filter_chart_to_mode(chart_ir, lane, sky))
+
+    return _build_logical_events(chart_ir, timeline)
+
+
+def _filter_chart_to_mode(
+    chart_ir: ArcaeaChartIR, lane_mode: str, sky_mode: str
+) -> ArcaeaChartIR:
+    # Compatibility shim: keep full IR and force timeline via synthetic scenecontrol,
+    # preserving previous solve_4k/solve_6k function signatures.
+    filtered = ArcaeaChartIR(
+        options=dict(chart_ir.options),
+        notes=list(chart_ir.notes),
+        timings=list(chart_ir.timings),
+        scene_controls=[],
+    )
+    if lane_mode == "6k":
+        filtered.scene_controls.append(
+            SceneControlIR(tick=0, control_type="enwidenlanes", param1=0.0, param2=1)
+        )
+    if sky_mode == "6k":
+        filtered.scene_controls.append(
+            SceneControlIR(tick=0, control_type="enwidencamera", param1=0.0, param2=1)
+        )
+    return filtered
+
+
 def solve_4k(chart: Chart, converter) -> dict[int, list[TouchEvent]]:
-    return _generate_events(chart, converter, PROFILE_4K)
+    chart_ir = chart.ir
+    if chart_ir is None:
+        return {}
+    timeline = ArcaeaTimelineAnalyzer()
+    timeline.build(_filter_chart_to_mode(chart_ir, "4k", "4k"))
+    logical_events = _build_logical_events(chart_ir, timeline)
+    return _project_to_touch_events(logical_events, converter)
 
 
 def solve_6k(chart: Chart, converter) -> dict[int, list[TouchEvent]]:
-    return _generate_events(chart, converter, PROFILE_6K)
+    chart_ir = chart.ir
+    if chart_ir is None:
+        return {}
+    timeline = ArcaeaTimelineAnalyzer()
+    timeline.build(_filter_chart_to_mode(chart_ir, "6k", "6k"))
+    logical_events = _build_logical_events(chart_ir, timeline)
+    return _project_to_touch_events(logical_events, converter)
+
+
+__all__ = [
+    "solve_4k",
+    "solve_6k",
+    "solve_chart_auto",
+    "build_logical_events_for_chart",
+    "LogicalTouchEvent",
+]

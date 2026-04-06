@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import ctypes
 import threading
 import time
+
+import keyboard
 
 from control import DeviceController
 
@@ -34,16 +37,49 @@ class FineTuneState:
             return self.time_offset
 
 
+def _is_console_focused() -> bool:
+    user32 = ctypes.windll.user32
+    kernel32 = ctypes.windll.kernel32
+    return user32.GetForegroundWindow() == kernel32.GetConsoleWindow()
+
+
 def start_input_listener(state: FineTuneState, on_command) -> threading.Thread:
+    keymap = {
+        "+": "+",
+        "plus": "+",
+        "add": "+",
+        "-": "-",
+        "minus": "-",
+        "subtract": "-",
+        "0": "0",
+        "num 0": "0",
+    }
+
     def input_listener() -> None:
+        # Do not globally hook all keyboard events here.
+        # Poll focused keys to avoid echoing characters into the terminal input line.
         while state.input_listener_active:
             try:
                 if not state.automation_started:
                     time.sleep(0.1)
                     continue
 
-                user_input = input().strip().lower()
-                on_command(user_input)
+                if not _is_console_focused():
+                    time.sleep(0.02)
+                    continue
+
+                triggered = False
+                for name, command in keymap.items():
+                    if keyboard.is_pressed(name):
+                        on_command(command)
+                        triggered = True
+                        time.sleep(0.08)
+                        while keyboard.is_pressed(name):
+                            time.sleep(0.01)
+                        break
+
+                if not triggered:
+                    time.sleep(0.01)
             except (EOFError, KeyboardInterrupt, SystemExit):
                 break
             except Exception as exc:
@@ -55,13 +91,23 @@ def start_input_listener(state: FineTuneState, on_command) -> threading.Thread:
     return listener_thread
 
 
-def run_touch_events(events_by_time: dict[int, list], base_delay: float, state: FineTuneState) -> None:
+def prepare_device_controller() -> DeviceController:
+    return DeviceController(server_dir=".")
+
+
+def run_touch_events(
+    events_by_time: dict[int, list],
+    base_delay: float,
+    state: FineTuneState,
+    controller: DeviceController | None = None,
+) -> None:
     sorted_events = sorted(events_by_time.items())
     if not sorted_events:
         print("[Error] No touch events generated")
         return
 
-    controller = DeviceController(server_dir=".")
+    if controller is None:
+        controller = prepare_device_controller()
     event_iter = iter(sorted_events)
 
     try:
@@ -79,7 +125,8 @@ def run_touch_events(events_by_time: dict[int, list], base_delay: float, state: 
             now = (time.time() - start_time + state.current_offset()) * 1000
             if now >= ms:
                 for event in events:
-                    controller.touch(*event.pos, event.action, event.pointer)
+                    x, y = event.pos
+                    controller.touch(x, y, event.action, event.pointer)
                 try:
                     ms, events = next(event_iter)
                 except StopIteration:

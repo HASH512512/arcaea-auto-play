@@ -1,0 +1,32 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run main_EN.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/main_EN.py",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Debug Pipeline Report (MD)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "autoplay.debug_pipeline",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "--chart",
+        "tests/samples/basic_6k_scenecontrol.aff",
+        "--designant",
+        "true",
+        "--out-json",
+        "debug/vscode_debug_pipeline_snapshot.json",
+        "--out-md",
+        "debug/vscode_debug_pipeline_report.md"
+      ]
+    }
+  ]
+}

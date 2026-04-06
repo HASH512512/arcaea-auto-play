@@ -96,6 +96,7 @@ class TimingGroup:
 class Chart:
     notes: list[Timing | Tap | Hold | Arc | TimingGroup]
     options: dict[str, Any] | None = None
+    ir: Any | None = None
 
     @classmethod
     def loads(cls, content: str, designant_choice: bool | None = None) -> "Chart":

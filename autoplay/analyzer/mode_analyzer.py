@@ -1,143 +1,193 @@
 from __future__ import annotations
 
-import re
+from dataclasses import dataclass
 
-from autoplay.domain.chart import Arc, Chart, Hold, Tap, TimingGroup
+from autoplay.domain.arcaea_ir import ArcaeaChartIR
+
+
+@dataclass(slots=True)
+class ModeSegment:
+    start: int
+    end: int
+    mode: str
+
+
+@dataclass(slots=True)
+class ProjectionState:
+    lane_mode: str
+    sky_mode: str
+    lane_widen_ratio: float = 0.0
+    sky_widen_ratio: float = 0.0
+
+
+class ArcaeaTimelineAnalyzer:
+    def __init__(self) -> None:
+        self._lane_events: list[tuple[int, float, int]] = []
+        self._sky_events: list[tuple[int, float, int]] = []
+
+    def build(self, chart_ir: ArcaeaChartIR) -> None:
+        self._lane_events = []
+        self._sky_events = []
+
+        for control in chart_ir.scene_controls:
+            duration = float(control.param1) if control.param1 is not None else 0.0
+            switch = int(control.param2) if control.param2 is not None else 0
+            if control.control_type == "enwidenlanes":
+                self._lane_events.append((control.tick, duration, switch))
+            elif control.control_type == "enwidencamera":
+                self._sky_events.append((control.tick, duration, switch))
+
+        self._lane_events.sort(key=lambda item: item[0])
+        self._sky_events.sort(key=lambda item: item[0])
+
+    def _build_segments(
+        self, events: list[tuple[int, float, int]], max_tick: int
+    ) -> list[ModeSegment]:
+        if max_tick <= 0:
+            return []
+
+        if not events:
+            return [ModeSegment(0, max_tick, "4k")]
+
+        segments: list[ModeSegment] = []
+        current_mode = "4k"
+        cursor = 0
+
+        for tick, duration, switch in events:
+            if tick > cursor:
+                segments.append(ModeSegment(cursor, tick, current_mode))
+                cursor = tick
+
+            half = tick + int(duration / 2)
+            if half > cursor:
+                segments.append(ModeSegment(cursor, half, current_mode))
+                cursor = half
+
+            current_mode = "6k" if switch == 1 else "4k"
+
+        if cursor < max_tick:
+            segments.append(ModeSegment(cursor, max_tick, current_mode))
+        return segments
+
+    def lane_segments(self, max_tick: int) -> list[ModeSegment]:
+        return self._build_segments(self._lane_events, max_tick)
+
+    def sky_segments(self, max_tick: int) -> list[ModeSegment]:
+        return self._build_segments(self._sky_events, max_tick)
+
+    def lane_mode_at(self, tick: int) -> str:
+        return "6k" if self.lane_widen_ratio_at(tick) >= 0.5 else "4k"
+
+    def sky_mode_at(self, tick: int) -> str:
+        return "6k" if self.sky_widen_ratio_at(tick) >= 0.5 else "4k"
+
+    @staticmethod
+    def _widen_ratio_at(events: list[tuple[int, float, int]], tick: int) -> float:
+        ratio = 0.0
+        for event_tick, duration, switch in events:
+            target = 1.0 if switch == 1 else 0.0
+            if tick < event_tick:
+                break
+
+            if duration <= 0:
+                ratio = target
+                continue
+
+            end_tick = event_tick + int(duration)
+            if tick >= end_tick:
+                ratio = target
+                continue
+
+            progress = (tick - event_tick) / duration
+            return ratio + (target - ratio) * progress
+        return ratio
+
+    def lane_widen_ratio_at(self, tick: int) -> float:
+        return self._widen_ratio_at(self._lane_events, tick)
+
+    def sky_widen_ratio_at(self, tick: int) -> float:
+        return self._widen_ratio_at(self._sky_events, tick)
+
+    def lane_transition_ticks(self) -> set[int]:
+        ticks: set[int] = set()
+        for event_tick, duration, _ in self._lane_events:
+            ticks.add(event_tick)
+            if duration > 0:
+                ticks.add(event_tick + int(duration))
+        return ticks
+
+    def sky_transition_ticks(self) -> set[int]:
+        ticks: set[int] = set()
+        for event_tick, duration, _ in self._sky_events:
+            ticks.add(event_tick)
+            if duration > 0:
+                ticks.add(event_tick + int(duration))
+        return ticks
+
+    def projection_state_at(self, tick: int) -> ProjectionState:
+        return ProjectionState(
+            lane_mode=self.lane_mode_at(tick),
+            sky_mode=self.sky_mode_at(tick),
+            lane_widen_ratio=self.lane_widen_ratio_at(tick),
+            sky_widen_ratio=self.sky_widen_ratio_at(tick),
+        )
 
 
 class ModeAnalyzer:
-    """Analyze scenecontrol events and build 4K/6K segments."""
+    """Compatibility wrapper exposing the previous API surface."""
 
     def __init__(self) -> None:
-        self.camera_events: list[tuple[int, float, int]] = []
-        self.lanes_events: list[tuple[int, float, int]] = []
-        self.max_time = 0
+        self.timeline = ArcaeaTimelineAnalyzer()
+        self._max_tick = 0
 
-    def analyze_chart_for_6k(self, chart_content: str, chart: Chart | None = None) -> tuple[list[tuple[int, int]], list[tuple[int, int]], int]:
-        camera_matches = re.finditer(r"scenecontrol\((\d+),enwidencamera,([\d\.]+),(\d)\);", chart_content)
-        lanes_matches = re.finditer(r"scenecontrol\((\d+),enwidenlanes,([\d\.]+),(\d)\);", chart_content)
+    def analyze_chart_for_6k(
+        self,
+        chart_content: str,
+        chart=None,
+        chart_ir: ArcaeaChartIR | None = None,
+    ) -> tuple[list[tuple[int, int]], list[tuple[int, int]], int]:
+        if chart_ir is None and chart is not None:
+            chart_ir = getattr(chart, "ir", None)
+        if chart_ir is None:
+            return [], [], 0
 
-        self.camera_events = self._extract_events(camera_matches)
-        self.lanes_events = self._extract_events(lanes_matches)
+        self.timeline.build(chart_ir)
+        self._max_tick = chart_ir.max_tick()
 
-        camera_intervals = self._process_events(self.camera_events)
-        lanes_intervals = self._process_events(self.lanes_events)
-
-        if chart is not None:
-            self.max_time = self._get_max_time(chart)
-
-        return camera_intervals, lanes_intervals, self.max_time
-
-    def _extract_events(self, matches) -> list[tuple[int, float, int]]:
-        events = []
-        for match in matches:
-            events.append((int(match.group(1)), float(match.group(2)), int(match.group(3))))
-        return sorted(events, key=lambda item: item[0])
-
-    def _process_events(self, events: list[tuple[int, float, int]]) -> list[tuple[int, int]]:
-        intervals: list[tuple[int, int]] = []
-        starts = [event for event in events if event[2] == 1]
-        ends = [event for event in events if event[2] == 0]
-
-        for index, start in enumerate(starts):
-            if index >= len(ends):
-                break
-            end = ends[index]
-            start_time = start[0] + int(start[1] / 2)
-            end_time = end[0] + int(end[1] / 2)
-            intervals.append((start_time, end_time))
-
-        return intervals
-
-    def create_segments(self, events: list[tuple[int, float, int]]) -> list[tuple[int, int, str]]:
-        segments: list[tuple[int, int, str]] = []
-        current_mode = "4k"
-        current_time = 0
-
-        if not events:
-            return [(0, self.max_time, "4k")]
-
-        for time_ms, duration_ms, event_type in events:
-            if current_time < time_ms:
-                segments.append((current_time, time_ms, current_mode))
-                current_time = time_ms
-
-            half_time = time_ms + int(duration_ms / 2)
-            if current_time < half_time:
-                segments.append((current_time, half_time, current_mode))
-                current_time = half_time
-
-            current_mode = "6k" if event_type == 1 else "4k"
-
-        if current_time < self.max_time:
-            segments.append((current_time, self.max_time, current_mode))
-
-        return segments
+        sky = [
+            (segment.start, segment.end)
+            for segment in self.timeline.sky_segments(self._max_tick)
+        ]
+        lane = [
+            (segment.start, segment.end)
+            for segment in self.timeline.lane_segments(self._max_tick)
+        ]
+        return sky, lane, self._max_tick
 
     def get_sky_segments(self) -> list[tuple[int, int, str]]:
-        return self.create_segments(self.camera_events)
+        return [
+            (segment.start, segment.end, segment.mode)
+            for segment in self.timeline.sky_segments(self._max_tick)
+        ]
 
     def get_ground_segments(self) -> list[tuple[int, int, str]]:
-        return self.create_segments(self.lanes_events)
+        return [
+            (segment.start, segment.end, segment.mode)
+            for segment in self.timeline.lane_segments(self._max_tick)
+        ]
 
-    def collect_notes_by_segments(self, chart: Chart, segments: list[tuple[int, int, str]], note_type: str) -> dict[tuple[int, int, str], list]:
-        grouped: dict[tuple[int, int, str], list] = {}
+    def projection_state_at(self, tick: int) -> ProjectionState:
+        return self.timeline.projection_state_at(tick)
 
-        for segment in segments:
-            start, end, _ = segment
-            notes_in_segment = []
-            for note in chart.notes:
-                if isinstance(note, TimingGroup):
-                    continue
+    def split_and_solve_chart(
+        self, chart, converter, solve_4k, solve_6k
+    ) -> dict[int, list]:
+        chart_ir = getattr(chart, "ir", None)
+        if chart_ir is None:
+            return {}
 
-                if isinstance(note, Arc):
-                    note_time = note.start
-                    is_allowed = note_type in {"arc", "all"}
-                elif isinstance(note, Tap):
-                    note_time = note.tick
-                    is_allowed = note_type in {"tap", "ground", "all"}
-                elif isinstance(note, Hold):
-                    note_time = note.start
-                    is_allowed = note_type in {"hold", "ground", "all"}
-                else:
-                    continue
+        self.timeline.build(chart_ir)
 
-                if is_allowed and start <= note_time <= end:
-                    notes_in_segment.append(note)
+        from autoplay.solver.core import solve_chart_auto
 
-            grouped[segment] = notes_in_segment
-
-        return grouped
-
-    def split_and_solve_chart(self, chart: Chart, converter, solve_4k, solve_6k) -> dict[int, list]:
-        all_events: dict[int, list] = {}
-
-        sky_notes = self.collect_notes_by_segments(chart, self.get_sky_segments(), "arc")
-        ground_notes = self.collect_notes_by_segments(chart, self.get_ground_segments(), "ground")
-
-        for segment_map in (sky_notes, ground_notes):
-            for (_, _, mode), notes in segment_map.items():
-                if not notes:
-                    continue
-                segment_chart = Chart(notes, chart.options)
-                segment_events = solve_6k(segment_chart, converter) if mode == "6k" else solve_4k(segment_chart, converter)
-                for time_ms, events in segment_events.items():
-                    all_events.setdefault(time_ms, []).extend(events)
-
-        return all_events
-
-    def _get_max_time(self, chart: Chart) -> int:
-        max_time = 0
-
-        def walk(notes) -> None:
-            nonlocal max_time
-            for note in notes:
-                if isinstance(note, TimingGroup):
-                    walk(note.notes)
-                elif isinstance(note, Arc) or isinstance(note, Hold):
-                    max_time = max(max_time, note.end)
-                elif isinstance(note, Tap):
-                    max_time = max(max_time, note.tick)
-
-        walk(chart.notes)
-        return max_time
+        return solve_chart_auto(chart, converter)

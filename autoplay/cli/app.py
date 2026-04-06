@@ -1,16 +1,26 @@
 from __future__ import annotations
 
-import msvcrt
+import ctypes
 import time
 from pathlib import Path
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
+
 from autoplay.analyzer import ModeAnalyzer
-from autoplay.parser import extract_delay_from_aff_content, has_designant_notes, parse_aff_chart
-from autoplay.runtime import load_app_config, run_touch_events, save_app_config
+from autoplay.parser import (
+    extract_delay_from_aff_content,
+    has_designant_notes,
+    parse_aff_chart,
+)
+from autoplay.runtime import (
+    prepare_device_controller,
+    load_app_config,
+    run_touch_events,
+    save_app_config,
+)
 from autoplay.runtime.player import FineTuneState, start_input_listener
-from autoplay.solver import CoordConv, solve_4k, solve_6k
+from autoplay.solver import CoordConv, solve_chart_auto
 
 
 TEXT = {
@@ -46,9 +56,9 @@ TEXT = {
         "designant_choice_true": "Designant mode enabled",
         "designant_choice_false": "Designant mode disabled, designant notes will be ignored",
         "automation_head": "Fine-tuning control:",
-        "automation_plus": "  Enter + then Enter: Advance {step} milliseconds",
-        "automation_minus": "  Enter - then Enter: Delay {step} milliseconds",
-        "automation_zero": "  Enter 0 then Enter: Reset fine-tuning offset",
+        "automation_plus": "  Press +: Advance {step} milliseconds",
+        "automation_minus": "  Press -: Delay {step} milliseconds",
+        "automation_zero": "  Press 0: Reset fine-tuning offset",
         "ready": "Ready, press Enter to start...",
         "done": "Execution completed, exiting in 3 seconds...",
         "event_empty": "No touch events generated",
@@ -89,9 +99,9 @@ TEXT = {
         "designant_choice_true": "已启用蚂蚁异象模式",
         "designant_choice_false": "已禁用蚂蚁异象模式，将忽略蚂蚁异象note",
         "automation_head": "微调控制:",
-        "automation_plus": "  输入 + 然后回车: 提前{step}毫秒",
-        "automation_minus": "  输入 - 然后回车: 延后{step}毫秒",
-        "automation_zero": "  输入 0 然后回车: 重置微调偏移",
+        "automation_plus": "  按 + : 提前{step}毫秒",
+        "automation_minus": "  按 - : 延后{step}毫秒",
+        "automation_zero": "  按 0 : 重置微调偏移",
         "ready": "准备就绪，按回车开始...",
         "done": "执行完毕，3秒后自动退出...",
         "event_empty": "未生成任何触控事件",
@@ -107,19 +117,98 @@ def _text(locale: str, key: str, **kwargs) -> str:
     return TEXT[locale][key].format(**kwargs)
 
 
-def _flush_input() -> None:
-    while msvcrt.kbhit():
-        msvcrt.getch()
+def _is_console_focused() -> bool:
+    user32 = ctypes.windll.user32
+    kernel32 = ctypes.windll.kernel32
+    return user32.GetForegroundWindow() == kernel32.GetConsoleWindow()
 
 
-def _wait_key(timeout: float) -> str | None:
+def _focus_console_window() -> None:
+    user32 = ctypes.windll.user32
+    kernel32 = ctypes.windll.kernel32
+    hwnd = kernel32.GetConsoleWindow()
+    if hwnd:
+        user32.SetForegroundWindow(hwnd)
+
+
+def _clear_console_input_buffer() -> None:
+    kernel32 = ctypes.windll.kernel32
+    std_input_handle = kernel32.GetStdHandle(-10)  # STD_INPUT_HANDLE
+    if std_input_handle:
+        kernel32.FlushConsoleInputBuffer(std_input_handle)
+
+
+def _prompt_quick_edit_choice() -> str:
+    # Use a non-echo timed key reader so no stray characters are left
+    # in the console input line.
+    user32 = ctypes.windll.user32
+    key_to_option = {
+        0x31: "1",  # top-row 1
+        0x32: "2",
+        0x33: "3",
+        0x34: "4",
+        0x61: "1",  # numpad 1
+        0x62: "2",
+        0x63: "3",
+        0x64: "4",
+    }
+    watched = list(key_to_option.keys()) + [0x0D]  # Enter
+
+    # Debounce held keys from previous stages.
+    previous_state = {vk: bool(user32.GetAsyncKeyState(vk) & 0x8000) for vk in watched}
+
+    print("[Input] Press 1/2/3/4 within 5 seconds, or Enter to skip...", flush=True)
+    _clear_console_input_buffer()
+
     start = time.time()
-    while time.time() - start < timeout:
-        if msvcrt.kbhit():
-            key = msvcrt.getch().decode(errors="ignore")
-            _flush_input()
-            return key
-    return None
+    while time.time() - start < 5.0:
+        if not _is_console_focused():
+            time.sleep(0.02)
+            continue
+
+        for vk in watched:
+            is_down = bool(user32.GetAsyncKeyState(vk) & 0x8000)
+            was_down = previous_state[vk]
+            previous_state[vk] = is_down
+
+            if is_down and not was_down:
+                _clear_console_input_buffer()
+                if vk == 0x0D:
+                    return ""
+                return key_to_option[vk]
+
+        time.sleep(0.01)
+
+    _clear_console_input_buffer()
+    return ""
+
+
+def _wait_for_enter_key() -> None:
+    # Keep start confirmation scoped to focused console and avoid
+    # background global hook behavior.
+    user32 = ctypes.windll.user32
+    enter_keys = (0x0D,)  # Enter
+
+    previous_state = {
+        vk: bool(user32.GetAsyncKeyState(vk) & 0x8000) for vk in enter_keys
+    }
+
+    _clear_console_input_buffer()
+    while True:
+        if not _is_console_focused():
+            time.sleep(0.02)
+            continue
+
+        vk = 0x0D
+        is_down = bool(user32.GetAsyncKeyState(vk) & 0x8000)
+        was_down = previous_state[vk]
+        previous_state[vk] = is_down
+
+        if is_down and not was_down:
+            _clear_console_input_buffer()
+            return
+
+        time.sleep(0.01)
 
 
 def _choose_aff_file(locale: str) -> str:
@@ -136,7 +225,7 @@ def _choose_aff_file(locale: str) -> str:
 def _input_coord(prompt: str, default: tuple[int, int]) -> tuple[int, int]:
     while True:
         try:
-            _flush_input()
+            _clear_console_input_buffer()
             print(f"{prompt} ({default}): ", end="", flush=True)
             raw = input().strip()
             if not raw:
@@ -152,12 +241,15 @@ def _read_chart_file(chart_path: str) -> str:
         return handle.read()
 
 
-def _ensure_designant_choice(locale: str, chart_content: str, app_config) -> bool | None:
+def _ensure_designant_choice(
+    locale: str, chart_content: str, app_config
+) -> bool | None:
     has_designant = has_designant_notes(chart_content)
     if not has_designant:
         return app_config.global_config.designant_choice
 
     if app_config.global_config.designant_choice is None:
+        _clear_console_input_buffer()
         answer = input(_text(locale, "designant_question")).strip().lower()
         app_config.global_config.designant_choice = answer == "y"
         if app_config.global_config.designant_choice:
@@ -203,7 +295,8 @@ def _quick_edit(locale: str, app_config) -> None:
         print(_text(locale, "quick_4"))
     print(_text(locale, "quick_hint"))
 
-    key = _wait_key(5)
+    _focus_console_window()
+    key = _prompt_quick_edit_choice()
 
     if key == "1":
         print(_text(locale, "coord_intro"))
@@ -220,6 +313,7 @@ def _quick_edit(locale: str, app_config) -> None:
             save_app_config(app_config)
             print(_text(locale, "chart_set", path=chart_path))
     elif key == "3":
+        _clear_console_input_buffer()
         raw = input(_text(locale, "step_prompt")).strip()
         try:
             step = int(raw)
@@ -232,12 +326,17 @@ def _quick_edit(locale: str, app_config) -> None:
             print(_text(locale, "step_invalid"))
     elif key == "4" and has_designant:
         if cfg.designant_choice is None:
+            _clear_console_input_buffer()
             answer = input(_text(locale, "designant_question")).strip().lower()
             cfg.designant_choice = answer == "y"
         else:
             cfg.designant_choice = not cfg.designant_choice
         save_app_config(app_config)
-        print(_text(locale, "designant_choice_true") if cfg.designant_choice else _text(locale, "designant_choice_false"))
+        print(
+            _text(locale, "designant_choice_true")
+            if cfg.designant_choice
+            else _text(locale, "designant_choice_false")
+        )
 
 
 def _run(locale: str, app_config) -> None:
@@ -281,8 +380,10 @@ def _run(locale: str, app_config) -> None:
     save_app_config(app_config)
     print(_text(locale, "delay_ok", delay=delay))
 
-    converter = CoordConv(cfg.bottom_left, cfg.top_left, cfg.top_right, cfg.bottom_right)
-    all_events = analyzer.split_and_solve_chart(chart, converter, solve_4k, solve_6k)
+    converter = CoordConv(
+        cfg.bottom_left, cfg.top_left, cfg.top_right, cfg.bottom_right
+    )
+    all_events = solve_chart_auto(chart, converter)
     if not all_events:
         print(_text(locale, "event_empty"))
         return
@@ -313,11 +414,18 @@ def _run(locale: str, app_config) -> None:
     state.input_listener_active = True
     start_input_listener(state, on_command)
 
-    print("\n" + _text(locale, "ready"))
-    _flush_input()
-    input()
+    print("\n[INFO] Initializing device control channel...")
+    try:
+        controller = prepare_device_controller()
+    except Exception as exc:
+        print(f"[ERROR] Failed to initialize device controller: {exc}")
+        state.input_listener_active = False
+        return
 
-    run_touch_events(all_events, app_config.delay, state)
+    print("\n" + _text(locale, "ready"))
+    _focus_console_window()
+    _wait_for_enter_key()
+    run_touch_events(all_events, app_config.delay, state, controller=controller)
 
 
 def run_cli(locale: str) -> None:
