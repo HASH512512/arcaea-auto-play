@@ -21,6 +21,18 @@ python -m pip install -r requirements.txt
 
 - English CLI: `python main_EN.py`
 - Chinese CLI: `python main_CN.py`
+- GUI entry (PySide6): `python main_GUI.py`
+
+## GUI Features (PySide6)
+
+`main_GUI.py` provides GUI workflow aligned with CLI capabilities:
+
+- Config editor: `chart_path`, 4 corner coordinates, `fine_tune_step`, `designant_choice`
+- Playback controls: `Start`, `Stop`, `+step`, `-step`, `Reset`
+- Runtime status: run state, fine-tune offset, auto-detected `delay`
+- Log panel: playback logs and error details
+
+Note: GUI and CLI share the same parser/analyzer/solver/runtime core and `auto_arcaea_config.json` keys.
 
 ## Refactor Status (v4)
 

@@ -7,6 +7,7 @@ import random
 import os
 
 import av
+import numpy as np
 
 from algo.algo_base import TouchAction
 
@@ -23,59 +24,104 @@ class DeviceController:
     device_height: int
     collector_running: bool
     immediate_send_lock: threading.Lock
+    latest_frame_lock: threading.Lock
+    latest_frame: np.ndarray | None
+    decode_fps_lock: threading.Lock
+    decode_fps: float
 
-    def __init__(self, serial: str | None = None, port: int = 27188, push_server: bool = True, server_dir: str = '.') -> None:
+    def __init__(
+        self,
+        serial: str | None = None,
+        port: int = 27188,
+        push_server: bool = True,
+        server_dir: str = ".",
+        max_fps: int = 60,
+        max_size: int = 1280,
+    ) -> None:
         self.serial = serial
-        adb = ('adb',) if serial is None else ('adb', '-s', serial)
-        self.session_id = format(random.randint(0, 0x7FFFFFFF), '08x')
-        server_file = next(filter(lambda p: p.startswith('scrcpy-server-v'), os.listdir(server_dir)))
+        adb = ("adb",) if serial is None else ("adb", "-s", serial)
+        self.session_id = format(random.randint(0, 0x7FFFFFFF), "08x")
+        server_file = next(
+            filter(lambda p: p.startswith("scrcpy-server-v"), os.listdir(server_dir))
+        )
         server_file = os.path.join(server_dir, server_file)
-        server_version = server_file.split('v')[-1]
+        server_version = server_file.split("v")[-1]
         if push_server:
-            subprocess.run([*adb, 'push', server_file, '/data/local/tmp/scrcpy-server.jar'])
-        subprocess.run([*adb, 'reverse', f'localabstract:scrcpy_{self.session_id}', f'tcp:{port}'])
+            subprocess.run(
+                [*adb, "push", server_file, "/data/local/tmp/scrcpy-server.jar"]
+            )
+        subprocess.run(
+            [*adb, "reverse", f"localabstract:scrcpy_{self.session_id}", f"tcp:{port}"]
+        )
         skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
         skt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        skt.bind(('localhost', port))
+        skt.bind(("localhost", port))
         skt.listen(1)
         command_line = [
             *adb,
-            'shell',
-            'CLASSPATH=/data/local/tmp/scrcpy-server.jar',
-            'app_process',
-            '/',
-            'com.genymobile.scrcpy.Server',
+            "shell",
+            "CLASSPATH=/data/local/tmp/scrcpy-server.jar",
+            "app_process",
+            "/",
+            "com.genymobile.scrcpy.Server",
             server_version,
-            f'scid={self.session_id}',
-            'log_level=info',
-            'audio=false',
-            'clipboard_autosync=false',
-            'max_size=2768',
+            f"scid={self.session_id}",
+            "log_level=info",
+            "audio=false",
+            "clipboard_autosync=false",
+            f"max_size={max_size}",
+            f"max_fps={max_fps}",
         ]
         self.server_process = subprocess.Popen(command_line)
         self.video_socket, _ = skt.accept()
         self.control_socket, _ = skt.accept()
         subprocess.run(
-            [*adb, 'reverse', '--remove', f'localabstract:scrcpy_{self.session_id}']
+            [*adb, "reverse", "--remove", f"localabstract:scrcpy_{self.session_id}"]
         )
 
         self.collector_running = True
-        self.immediate_send_lock = threading.Lock() 
+        self.immediate_send_lock = threading.Lock()
+        self.latest_frame_lock = threading.Lock()
+        self.latest_frame = None
+        self.decode_fps_lock = threading.Lock()
+        self.decode_fps = 0.0
 
         def streaming_decoder():
-            codec = av.CodecContext.create('h264', 'r')
+            codec = av.CodecContext.create("h264", "r")
+            frame_counter = 0
+            window_start = time.perf_counter()
             try:
                 while self.collector_running:
                     _pts = self.video_socket.recv(8)
-                    size = int.from_bytes(self.video_socket.recv(4), 'big')
+                    size = int.from_bytes(self.video_socket.recv(4), "big")
                     packets = codec.parse(self.video_socket.recv(size))
                     for packet in packets:
                         frames = codec.decode(packet)
                         for frame in frames:
-                            if self.device_width != frame.width or self.device_height != frame.height:
-                                print('[client]', f'device_size: {self.device_width}x{self.device_height} -> {frame.width}x{frame.height}')
+                            if (
+                                self.device_width != frame.width
+                                or self.device_height != frame.height
+                            ):
+                                print(
+                                    "[client]",
+                                    f"device_size: {self.device_width}x{self.device_height} -> {frame.width}x{frame.height}",
+                                )
                                 self.device_width = frame.width
                                 self.device_height = frame.height
+                            try:
+                                frame_data = frame.to_ndarray(format="bgr24")
+                                with self.latest_frame_lock:
+                                    self.latest_frame = frame_data
+                                frame_counter += 1
+                                now = time.perf_counter()
+                                elapsed = now - window_start
+                                if elapsed >= 1.0:
+                                    with self.decode_fps_lock:
+                                        self.decode_fps = frame_counter / elapsed
+                                    frame_counter = 0
+                                    window_start = now
+                            except Exception:
+                                pass
                             break
                         break
             except Exception as e:
@@ -86,7 +132,7 @@ class DeviceController:
             try:
                 while self.collector_running:
                     _msg_type = self.control_socket.recv(1)
-                    size = int.from_bytes(self.control_socket.recv(4), 'big')
+                    size = int.from_bytes(self.control_socket.recv(4), "big")
                     self.control_socket.recv(size)
             except Exception as e:
                 print(e.with_traceback(None))
@@ -94,12 +140,17 @@ class DeviceController:
 
         _device_name = self.video_socket.recv(64)
         codec_id = self.video_socket.recv(4).decode()
-        self.device_width = int.from_bytes(self.video_socket.recv(4), 'big')
-        self.device_height = int.from_bytes(self.video_socket.recv(4), 'big')
+        self.device_width = int.from_bytes(self.video_socket.recv(4), "big")
+        self.device_height = int.from_bytes(self.video_socket.recv(4), "big")
 
-        print('[client]', f'device_size = {self.device_width}x{self.device_height}, codec_id = {codec_id}')
+        print(
+            "[client]",
+            f"device_size = {self.device_width}x{self.device_height}, codec_id = {codec_id}",
+        )
 
-        self.streaming_collector = threading.Thread(target=streaming_decoder, daemon=True)
+        self.streaming_collector = threading.Thread(
+            target=streaming_decoder, daemon=True
+        )
         self.streaming_collector.start()
 
         self.control_collector = threading.Thread(target=ctrlmsg_receiver, daemon=True)
@@ -108,7 +159,7 @@ class DeviceController:
     def touch(self, x: int, y: int, action: TouchAction, pointer_id: int) -> None:
         self.control_socket.send(
             struct.pack(
-                '!bbQiiHHHII',
+                "!bbQiiHHHII",
                 2,  # SC_CONTROL_MSG_TYPE_INJECT_TOUCH_EVENT
                 action.value,
                 pointer_id,
@@ -127,23 +178,50 @@ class DeviceController:
         time.sleep(delay)
         self.touch(x, y, TouchAction.UP, pointer_id)
 
+    def get_latest_frame(self, copy_frame: bool = True) -> np.ndarray | None:
+        with self.latest_frame_lock:
+            if self.latest_frame is None:
+                return None
+            if copy_frame:
+                return self.latest_frame.copy()
+            return self.latest_frame
+
+    def get_decode_fps(self) -> float:
+        with self.decode_fps_lock:
+            return self.decode_fps
+
+    def close(self) -> None:
+        self.collector_running = False
+        try:
+            self.control_socket.close()
+        except Exception:
+            pass
+        try:
+            self.video_socket.close()
+        except Exception:
+            pass
+        try:
+            self.server_process.terminate()
+        except Exception:
+            pass
+
     @staticmethod
     def get_devices() -> list[str]:
-        ret, output = subprocess.getstatusoutput('adb devices')
+        ret, output = subprocess.getstatusoutput("adb devices")
         if ret != 0:
             return []
         return [
             serial
             for serial, status in (
-                line.split('\t')
+                line.split("\t")
                 for line in output.splitlines()
-                if not line.startswith('*') and line != 'List of devices attached'
+                if not line.startswith("*") and line != "List of devices attached"
             )
-            if status == 'device'
+            if status == "device"
         ]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(DeviceController.get_devices())
     controller = DeviceController()
     device_width = controller.device_width

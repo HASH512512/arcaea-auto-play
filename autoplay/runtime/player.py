@@ -3,7 +3,10 @@ from __future__ import annotations
 import threading
 import time
 import queue
+import ctypes
+from collections.abc import Callable
 
+from algo.algo_base import TouchAction
 from control import DeviceController
 
 
@@ -88,8 +91,10 @@ def start_input_listener(state: FineTuneState, on_command) -> threading.Thread:
     return listener_thread
 
 
-def prepare_device_controller() -> DeviceController:
-    return DeviceController(server_dir=".")
+def prepare_device_controller(
+    max_fps: int = 60, max_size: int = 960
+) -> DeviceController:
+    return DeviceController(server_dir=".", max_fps=max_fps, max_size=max_size)
 
 
 def run_touch_events(
@@ -97,43 +102,125 @@ def run_touch_events(
     base_delay: float,
     state: FineTuneState,
     controller: DeviceController | None = None,
+    log: Callable[[str], None] | None = None,
+    on_progress: Callable[[int, list, int | None, list | None], None] | None = None,
+    debug: bool = False,
+    optimize_high_priority: bool = False,
+    optimize_timer_resolution: bool = False,
 ) -> None:
+    def _log(message: str) -> None:
+        if log is not None:
+            log(message)
+        else:
+            print(message)
+
     sorted_events = sorted(events_by_time.items())
     if not sorted_events:
-        print("[Error] No touch events generated")
+        _log("[Error] No touch events generated")
         return
 
     if controller is None:
         controller = prepare_device_controller()
     event_iter = iter(sorted_events)
+    active_pointers: dict[int, tuple[int, int]] = {}
 
     try:
         ms, events = next(event_iter)
     except StopIteration:
-        print("[Warning] Event sequence terminated unexpectedly")
+        _log("[Warning] Event sequence terminated unexpectedly")
         return
 
     state.automation_started = True
-    start_time = time.time() + base_delay
-    print("[INFO] Auto play started")
+
+    timer_boost_active = False
+    if optimize_timer_resolution:
+        try:
+            if ctypes.windll.winmm.timeBeginPeriod(1) == 0:
+                timer_boost_active = True
+                if debug:
+                    _log("[DEBUG] High-resolution timer enabled (1ms)")
+        except Exception as exc:
+            if debug:
+                _log(f"[DEBUG] Failed to enable high-resolution timer: {exc}")
+
+    if optimize_high_priority:
+        try:
+            THREAD_PRIORITY_HIGHEST = 2
+            ctypes.windll.kernel32.SetThreadPriority(
+                ctypes.windll.kernel32.GetCurrentThread(), THREAD_PRIORITY_HIGHEST
+            )
+            if debug:
+                _log("[DEBUG] Playback thread priority set to HIGHEST")
+        except Exception as exc:
+            if debug:
+                _log(f"[DEBUG] Failed to set playback thread priority: {exc}")
+
+    start_time = time.perf_counter() + base_delay
+    if debug:
+        _log(
+            f"[DEBUG] Scheduler armed: base_delay={base_delay:.6f}s, first_tick={ms}, queue_ticks={len(sorted_events)}"
+        )
+    _log("[INFO] Auto play started")
 
     try:
         while state.input_listener_active:
-            now = (time.time() - start_time + state.current_offset()) * 1000
+            now = (time.perf_counter() - start_time + state.current_offset()) * 1000
             if now >= ms:
+                if debug:
+                    _log(
+                        f"[DEBUG] Dispatch tick={ms}, lateness={now - ms:.3f}ms, events={len(events)}"
+                    )
+
                 for event in events:
                     x, y = event.pos
                     controller.touch(x, y, event.action, event.pointer)
+                    if event.action in {
+                        TouchAction.DOWN,
+                        TouchAction.MOVE,
+                        TouchAction.POINTER_DOWN,
+                    }:
+                        active_pointers[event.pointer] = (x, y)
+                    elif event.action in {
+                        TouchAction.UP,
+                        TouchAction.POINTER_UP,
+                        TouchAction.CANCEL,
+                    }:
+                        active_pointers.pop(event.pointer, None)
+
                 try:
-                    ms, events = next(event_iter)
+                    peek_ms, peek_events = next(event_iter)
+                    if on_progress is not None:
+                        on_progress(ms, events, peek_ms, peek_events)
+                    ms, events = peek_ms, peek_events
                 except StopIteration:
+                    if on_progress is not None:
+                        on_progress(ms, events, None, None)
                     break
             else:
-                time.sleep(0.001)
+                time.sleep(0.0005)
     except (KeyboardInterrupt, SystemExit):
-        print("[INFO] User interrupted execution")
+        _log("[INFO] User interrupted execution")
     except Exception as exc:
-        print(f"[ERROR] Execution error: {exc}")
+        _log(f"[ERROR] Execution error: {exc}")
     finally:
+        if active_pointers:
+            if debug:
+                _log(
+                    f"[DEBUG] Releasing active pointers: {sorted(active_pointers.keys())}"
+                )
+            for pointer, (x, y) in list(active_pointers.items()):
+                try:
+                    controller.touch(x, y, TouchAction.UP, pointer)
+                except Exception as exc:
+                    if debug:
+                        _log(f"[DEBUG] Failed to release pointer {pointer}: {exc}")
+
+        if timer_boost_active:
+            try:
+                ctypes.windll.winmm.timeEndPeriod(1)
+                if debug:
+                    _log("[DEBUG] High-resolution timer released")
+            except Exception:
+                pass
         state.input_listener_active = False
         state.automation_started = False

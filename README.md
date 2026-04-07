@@ -21,6 +21,18 @@ python -m pip install -r requirements.txt
 
 - 中文入口：`python main_CN.py`
 - 英文入口：`python main_EN.py`
+- GUI 入口（PySide6）：`python main_GUI.py`
+
+## GUI 功能（PySide6）
+
+`main_GUI.py` 提供与 CLI 对齐的核心能力：
+
+- 配置编辑：`chart_path`、四角坐标、`fine_tune_step`、`designant_choice`
+- 执行控制：`Start`、`Stop`、`+step`、`-step`、`Reset`
+- 状态展示：运行状态、当前微调偏移、自动识别 `delay`
+- 日志面板：展示播放过程和异常信息
+
+说明：GUI 与 CLI 共用同一套 parser/analyzer/solver/runtime 逻辑与 `auto_arcaea_config.json` 配置键。
 
 ## 重构状态（v4）
 

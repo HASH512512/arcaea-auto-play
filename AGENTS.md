@@ -295,3 +295,53 @@
 - Phase 8: 收口运行时全局状态，建立明确的 runner/runtime abstraction。
 - Phase 9: 在基线测试保护下，逐步替换 `eval` 解析实现。
 - Phase 10: 同步更新 `README.md`、`README_EN.md` 和本文件中的新架构说明与验证命令。
+
+## GUI 迁移约束（新增，长期生效）
+
+- 当前项目的 parser/analyzer/solver/runtime 算法链路已可用；后续优先迁移入口交互层，减少 CLI 在 Win10/Win11/不同终端下的输入兼容问题。
+- 新会话默认目标：以 GUI 作为主入口，CLI 仅保留为调试/回退入口。
+
+### 迁移目标
+
+- 用 GUI 替代 `run_cli` 的关键交互流程：谱面选择、坐标配置、designant 选项、延迟微调、开始/停止执行。
+- 不改变核心业务行为：AFF 解析语义、4K/6K 求解、pointer 规则、事件时序、配置键兼容。
+
+### 推荐技术栈（默认）
+
+- 首选 `PySide6 (Qt)`：用于桌面 GUI 主入口。
+- 备选 `tkinter`：仅用于快速原型，不作为长期主方案。
+
+### 实现边界
+
+- 禁止在 GUI 层重写 parser/analyzer/solver 逻辑；GUI 只调用现有模块。
+- 禁止在 GUI 事件回调中执行长耗时阻塞逻辑；播放执行放入后台线程。
+- GUI 主线程仅做 UI 更新；微调命令通过线程安全队列或信号槽传入 runtime。
+- 禁止继续依赖终端热键钩子作为主控制路径；微调以 GUI 按钮/窗口快捷键为主。
+
+### 最小可用 GUI 功能（MVP）
+
+- 配置区：`chart_path`、四角坐标、`fine_tune_step`、`designant_choice`。
+- 控制区：`Start`、`Stop`、`+step`、`-step`、`Reset`。
+- 状态区：当前偏移、运行状态、关键错误提示。
+- 日志区：展示运行日志与异常信息。
+
+### 配置兼容要求
+
+- 继续兼容 `auto_arcaea_config.json` 既有键名，不得破坏读取：
+  - `global.bottom_left`
+  - `global.top_left`
+  - `global.top_right`
+  - `global.bottom_right`
+  - `global.chart_path`
+  - `global.fine_tune_step`
+  - `global.designant_choice`
+  - `delay`
+
+### 迁移验证要求
+
+- GUI 改动后至少验证：
+  - 配置读写正确
+  - 开始/停止流程可用
+  - 微调命令实时生效
+  - 不连接 ADB 的调试导出链路可用（`autoplay/debug_pipeline.py`）
+- 每次关键改动后运行：`python -m pytest tests`
