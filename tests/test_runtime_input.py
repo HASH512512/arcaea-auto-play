@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from autoplay.runtime.player import _read_hotkey_edges
+import time
+
+from autoplay.runtime.player import FineTuneState, _read_hotkey_edges, start_input_listener
 
 
 def test_read_hotkey_edges_triggers_on_key_down_edge() -> None:
@@ -38,3 +40,30 @@ def test_read_hotkey_edges_triggers_on_key_down_edge() -> None:
     assert commands_1 == ["z"]
     assert commands_2 == ["r"]
     assert commands_3 == []
+
+
+def test_start_input_listener_consumes_commands_without_automation_gate(
+    monkeypatch,
+) -> None:
+    state = FineTuneState(step_ms=10)
+    state.input_listener_active = True
+    state.automation_started = False
+
+    commands: list[str] = []
+
+    answers = iter(["z"])
+
+    def fake_input() -> str:
+        try:
+            return next(answers)
+        except StopIteration:
+            time.sleep(0.02)
+            raise EOFError
+
+    monkeypatch.setattr("builtins.input", fake_input)
+
+    start_input_listener(state, commands.append)
+    time.sleep(0.08)
+    state.input_listener_active = False
+
+    assert commands == ["z"]

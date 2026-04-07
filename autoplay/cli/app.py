@@ -116,13 +116,17 @@ def _text(locale: str, key: str, **kwargs) -> str:
     return TEXT[locale][key].format(**kwargs)
 
 
+def _normalize_quick_edit_choice(raw: str) -> str:
+    text = raw.strip()
+    return text[:1] if text and text[:1] in {"1", "2", "3", "4"} else ""
+
+
 def _prompt_quick_edit_choice() -> str:
-    raw = input().strip()
-    return raw[:1] if raw and raw[:1] in {"1", "2", "3", "4"} else ""
+    return _normalize_quick_edit_choice(input())
 
 
 def _wait_for_enter_key(prompt: str) -> None:
-    input(prompt)
+    input(prompt).strip("\r\n")
 
 
 def _choose_aff_file(locale: str) -> str:
@@ -328,7 +332,7 @@ def _run(locale: str, app_config) -> None:
         state.input_listener_active = False
         return
 
-    _wait_for_enter_key("\n" + _text(locale, "ready") + "\n")
+    _wait_for_enter_key(_text(locale, "ready") + "")
 
     state.input_listener_active = True
     start_input_listener(state, on_command)

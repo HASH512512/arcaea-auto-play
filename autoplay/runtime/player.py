@@ -67,10 +67,6 @@ def start_input_listener(state: FineTuneState, on_command) -> threading.Thread:
     def input_listener() -> None:
         while state.input_listener_active:
             try:
-                if not state.automation_started:
-                    time.sleep(0.1)
-                    continue
-
                 try:
                     command = command_queue.get_nowait()
                 except queue.Empty:
