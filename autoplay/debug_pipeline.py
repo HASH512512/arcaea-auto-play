@@ -26,7 +26,16 @@ def _to_serializable(value: Any) -> Any:
     return value
 
 
-def _build_debug_snapshot(chart_content: str, designant_choice: bool) -> dict[str, Any]:
+def _build_debug_snapshot(
+    chart_content: str,
+    designant_choice: bool,
+    converter_points: tuple[
+        tuple[int, int],
+        tuple[int, int],
+        tuple[int, int],
+        tuple[int, int],
+    ] | None = None,
+) -> dict[str, Any]:
     chart = parse_aff_chart(chart_content, designant_choice=designant_choice)
     chart_ir = chart.ir
     if chart_ir is None:
@@ -39,7 +48,9 @@ def _build_debug_snapshot(chart_content: str, designant_choice: bool) -> dict[st
     lane_segments = [asdict(segment) for segment in timeline.lane_segments(max_tick)]
     sky_segments = [asdict(segment) for segment in timeline.sky_segments(max_tick)]
 
-    converter = CoordConv((171, 1350), (171, 300), (2376, 300), (2376, 1350))
+    if converter_points is None:
+        converter_points = ((171, 1350), (171, 300), (2376, 300), (2376, 1350))
+    converter = CoordConv(*converter_points)
     logical_events = build_logical_events_for_chart(chart)
     touch_events = solve_chart_auto(chart, converter)
 
@@ -142,12 +153,22 @@ def generate_debug_artifacts(
     designant_choice: bool,
     out_json: Path,
     out_md: Path,
+    converter_points: tuple[
+        tuple[int, int],
+        tuple[int, int],
+        tuple[int, int],
+        tuple[int, int],
+    ] | None = None,
 ) -> dict[str, Any]:
     if not chart_path.exists():
         raise FileNotFoundError(f"Chart file not found: {chart_path}")
 
     content = chart_path.read_text(encoding="utf-8")
-    snapshot = _build_debug_snapshot(content, designant_choice=designant_choice)
+    snapshot = _build_debug_snapshot(
+        content,
+        designant_choice=designant_choice,
+        converter_points=converter_points,
+    )
 
     out_json.parent.mkdir(parents=True, exist_ok=True)
     out_json.write_text(

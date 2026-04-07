@@ -282,4 +282,71 @@ def test_enwidenlanes_transition_projects_tap_x_linearly() -> None:
     )
 
     assert tap_down.tick == 1500
-    assert tap_down.x == -0.625
+    assert tap_down.x == -0.75
+
+
+def test_enwidencamera_applies_to_ground_tap_and_hold_positions() -> None:
+    content = "\n".join(
+        [
+            "AudioOffset:0",
+            "Title:enwidencamera_ground_projection",
+            "",
+            "scenecontrol(0,enwidencamera,0.00,1);",
+            "(1000,1);",
+            "hold(1000,1400,1);",
+        ]
+    )
+    chart = parse_aff_chart(content, designant_choice=True)
+    logical_events = build_logical_events_for_chart(chart)
+
+    tap_down = next(
+        event
+        for event in logical_events
+        if event.source_type == "tap" and event.action.name == "DOWN"
+    )
+    # 4k lane 1 is x=-0.25 at y=0.
+    # With enwidencamera ratio=1, ground is projected by the same camera mapping,
+    # giving x = 2/3 * (-0.25) + 1/6 = 0.0 and y remains 0.0.
+    assert tap_down.x == 0.0
+    assert tap_down.y == 0.0
+
+    hold_events = [
+        event
+        for event in logical_events
+        if event.source_type == "hold" and event.action.name in {"DOWN", "UP"}
+    ]
+    assert len(hold_events) == 2
+    assert hold_events[0].x == 0.0
+    assert hold_events[0].y == 0.0
+    assert hold_events[1].x == 0.0
+    assert hold_events[1].y == 0.0
+
+
+def test_6k_tap_lane_centers_match_expected_arcaea_logical_x() -> None:
+    content = "\n".join(
+        [
+            "AudioOffset:0",
+            "Title:lane6k_centers",
+            "",
+            "scenecontrol(0,enwidenlanes,0.00,1);",
+            "(1000,0);",
+            "(1000,1);",
+            "(1000,2);",
+            "(1000,3);",
+            "(1000,4);",
+            "(1000,5);",
+        ]
+    )
+    chart = parse_aff_chart(content, designant_choice=True)
+    logical_events = build_logical_events_for_chart(chart)
+
+    tap_down_events = sorted(
+        [
+            event
+            for event in logical_events
+            if event.source_type == "tap" and event.action.name == "DOWN"
+        ],
+        key=lambda event: event.pointer,
+    )
+    assert len(tap_down_events) == 6
+    assert [event.x for event in tap_down_events] == [-0.75, -0.25, 0.25, 0.75, 1.25, 1.75]

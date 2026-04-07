@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import ctypes
 import threading
 import time
+import queue
 
 from control import DeviceController
 
@@ -35,12 +35,6 @@ class FineTuneState:
             return self.time_offset
 
 
-def _is_console_focused() -> bool:
-    user32 = ctypes.windll.user32
-    kernel32 = ctypes.windll.kernel32
-    return user32.GetForegroundWindow() == kernel32.GetConsoleWindow()
-
-
 def _read_hotkey_edges(
     get_async_key_state,
     previous_state: dict[int, bool],
@@ -57,44 +51,41 @@ def _read_hotkey_edges(
 
 
 def start_input_listener(state: FineTuneState, on_command) -> threading.Thread:
-    user32 = ctypes.windll.user32
-    keymap = {
-        0x5A: "z",  # Z
-        0x58: "x",  # X
-        0x52: "r",  # R
-    }
+    command_queue: queue.Queue[str] = queue.Queue()
+
+    def stdin_reader() -> None:
+        while state.input_listener_active:
+            try:
+                text = input()
+            except (EOFError, KeyboardInterrupt):
+                break
+
+            command = text.strip().lower()[:1]
+            if command in {"z", "x", "r"}:
+                command_queue.put(command)
 
     def input_listener() -> None:
-        # Do not globally hook all keyboard events here.
-        # Poll focused keys to avoid echoing characters into the terminal input line.
-        previous_state = {vk: False for vk in keymap}
         while state.input_listener_active:
             try:
                 if not state.automation_started:
                     time.sleep(0.1)
                     continue
 
-                if not _is_console_focused():
-                    time.sleep(0.02)
+                try:
+                    command = command_queue.get_nowait()
+                except queue.Empty:
+                    time.sleep(0.01)
                     continue
 
-                triggered = False
-                commands = _read_hotkey_edges(
-                    user32.GetAsyncKeyState,
-                    previous_state,
-                    keymap,
-                )
-                for command in commands:
-                    on_command(command)
-                    triggered = True
-
-                if not triggered:
-                    time.sleep(0.01)
+                on_command(command)
             except (EOFError, KeyboardInterrupt, SystemExit):
                 break
             except Exception as exc:
                 print(f"[Input listener error] {exc}")
                 break
+
+    stdin_thread = threading.Thread(target=stdin_reader, daemon=True)
+    stdin_thread.start()
 
     listener_thread = threading.Thread(target=input_listener, daemon=True)
     listener_thread.start()

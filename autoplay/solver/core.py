@@ -45,7 +45,9 @@ class LaneProfile:
 
         lane_i = int(lane)
         if self.name == "6k":
-            return -0.5 + lane_i * 0.4
+            # Raw 6k lane centers in Arcaea note space are:
+            # lane 0..5 -> -0.75, -0.25, 0.25, 0.75, 1.25, 1.75
+            return -0.75 + lane_i * 0.5
 
         # 4k default: lane 1..4 are the standard playable lanes.
         if lane_i <= 0:
@@ -95,6 +97,17 @@ def _project_ground_lane_x_for_mode(lane: float, lane_widen_ratio: float) -> flo
     x_4k = PROFILE_4K.map_lane_to_x(lane)
     x_6k = PROFILE_6K.map_lane_to_x(lane)
     return x_4k + (x_6k - x_4k) * ratio
+
+
+def _project_ground_logical_coord_for_mode(
+    lane: float,
+    tick: int,
+    timeline: ArcaeaTimelineAnalyzer,
+) -> tuple[float, float]:
+    lane_ratio = timeline.lane_widen_ratio_at(tick)
+    raw_x = _project_ground_lane_x_for_mode(lane, lane_ratio)
+    sky_ratio = timeline.sky_widen_ratio_at(tick)
+    return _project_arc_logical_coord_for_mode(raw_x, 0.0, sky_ratio)
 
 
 def _arc_pointer_from_color(color: int) -> int:
@@ -196,24 +209,27 @@ def _resolve_same_tick_arc_head_arctap_conflicts(
 def _resolve_connected_same_color_arc_boundaries(
     events: list[LogicalTouchEvent],
 ) -> list[LogicalTouchEvent]:
-    by_tick_pointer: dict[tuple[int, int], list[int]] = {}
+    by_pointer: dict[int, list[int]] = {}
     for idx, event in enumerate(events):
         if event.source_type != "arc":
             continue
         if event.action not in {TouchAction.DOWN, TouchAction.UP}:
             continue
-        by_tick_pointer.setdefault((event.tick, event.pointer), []).append(idx)
+        by_pointer.setdefault(event.pointer, []).append(idx)
 
     remove_indices: set[int] = set()
     inserted_moves: list[LogicalTouchEvent] = []
 
-    for _, indices in by_tick_pointer.items():
+    for _, indices in by_pointer.items():
         down_indices = [
             idx for idx in indices if events[idx].action is TouchAction.DOWN
         ]
         up_indices = [idx for idx in indices if events[idx].action is TouchAction.UP]
         if not down_indices or not up_indices:
             continue
+
+        down_indices.sort(key=lambda idx: events[idx].tick)
+        up_indices.sort(key=lambda idx: events[idx].tick)
 
         used_down: set[int] = set()
         for up_idx in up_indices:
@@ -223,6 +239,8 @@ def _resolve_connected_same_color_arc_boundaries(
                     continue
                 down_event = events[down_idx]
                 if up_event.source_note_id == down_event.source_note_id:
+                    continue
+                if abs(up_event.tick - down_event.tick) > 3:
                     continue
 
                 has_boundary_move = any(
@@ -295,9 +313,7 @@ def _build_logical_events(
         angley = int(note.group_properties.get("angley", 0))
 
         if isinstance(note, TapIR):
-            lane_ratio = timeline.lane_widen_ratio_at(note.tick)
-            x = _project_ground_lane_x_for_mode(note.lane, lane_ratio)
-            y = 0.0
+            x, y = _project_ground_logical_coord_for_mode(note.lane, note.tick, timeline)
             append_event(
                 note.tick,
                 x,
@@ -319,32 +335,38 @@ def _build_logical_events(
             continue
 
         if isinstance(note, HoldIR):
-            lane_ratio_start = timeline.lane_widen_ratio_at(note.start)
-            lane_ratio_end = timeline.lane_widen_ratio_at(note.end)
-            x_start = _project_ground_lane_x_for_mode(note.lane, lane_ratio_start)
-            x_end = _project_ground_lane_x_for_mode(note.lane, lane_ratio_end)
+            x_start, y_start = _project_ground_logical_coord_for_mode(
+                note.lane, note.start, timeline
+            )
+            x_end, y_end = _project_ground_logical_coord_for_mode(
+                note.lane, note.end, timeline
+            )
             pointer = int(round(note.lane)) + 100
             append_event(
                 note.start,
                 x_start,
-                0.0,
+                y_start,
                 TouchAction.DOWN,
                 pointer,
                 note.note_id,
                 "hold",
             )
             if x_start != x_end and note.end > note.start:
+                mid_tick = note.start + (note.end - note.start) // 2
+                x_mid, y_mid = _project_ground_logical_coord_for_mode(
+                    note.lane, mid_tick, timeline
+                )
                 append_event(
-                    note.start + (note.end - note.start) // 2,
-                    (x_start + x_end) / 2,
-                    0.0,
+                    mid_tick,
+                    x_mid,
+                    y_mid,
                     TouchAction.MOVE,
                     pointer,
                     note.note_id,
                     "hold",
                 )
             append_event(
-                note.end, x_end, 0.0, TouchAction.UP, pointer, note.note_id, "hold"
+                note.end, x_end, y_end, TouchAction.UP, pointer, note.note_id, "hold"
             )
             continue
 

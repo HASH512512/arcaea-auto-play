@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import ctypes
 import time
 from pathlib import Path
 from tkinter import Tk
@@ -46,7 +45,7 @@ TEXT = {
         "quick_2": "[2] Chart Path",
         "quick_3": "[3] Fine-tune Settings",
         "quick_4": "[4] Configure designant touch",
-        "quick_hint": "Press corresponding number key to edit, other keys to skip...",
+        "quick_hint": "Type a number (1-4) then press Enter to edit, or press Enter to skip...",
         "coord_intro": "Please set four coordinates in order (press Enter to keep current value)",
         "coord_updated": "Coordinates updated",
         "step_prompt": "Enter new fine-tune step (milliseconds, integer): ",
@@ -56,10 +55,10 @@ TEXT = {
         "designant_choice_true": "Designant mode enabled",
         "designant_choice_false": "Designant mode disabled, designant notes will be ignored",
         "automation_head": "Fine-tuning control:",
-        "automation_plus": "  Press Z: Advance {step} milliseconds",
-        "automation_minus": "  Press X: Delay {step} milliseconds",
-        "automation_zero": "  Press R: Reset fine-tuning offset",
-        "ready": "Ready, press Enter to start...",
+        "automation_plus": "  Type Z then Enter: Advance {step} milliseconds",
+        "automation_minus": "  Type X then Enter: Delay {step} milliseconds",
+        "automation_zero": "  Type R then Enter: Reset fine-tuning offset",
+        "ready": "Ready, press Enter to start (during playback type z/x/r and press Enter)...",
         "done": "Execution completed, exiting in 3 seconds...",
         "event_empty": "No touch events generated",
         "unknown_cmd": "[Hint] Unknown command: {cmd}, available commands: z, x, r",
@@ -89,7 +88,7 @@ TEXT = {
         "quick_2": "[2] 谱面路径",
         "quick_3": "[3] 微调设置",
         "quick_4": "[4] 配置是否触控蚂蚁异象",
-        "quick_hint": "按对应数字键编辑，其他键跳过...",
+        "quick_hint": "输入数字(1-4)并回车进行编辑，直接回车跳过...",
         "coord_intro": "请按顺序设置四个坐标（按回车保持当前值）",
         "coord_updated": "坐标已更新",
         "step_prompt": "请输入新的微调延迟（毫秒，整数）：",
@@ -99,10 +98,10 @@ TEXT = {
         "designant_choice_true": "已启用蚂蚁异象模式",
         "designant_choice_false": "已禁用蚂蚁异象模式，将忽略蚂蚁异象note",
         "automation_head": "微调控制:",
-        "automation_plus": "  按 Z : 提前{step}毫秒",
-        "automation_minus": "  按 X : 延后{step}毫秒",
-        "automation_zero": "  按 R : 重置微调偏移",
-        "ready": "准备就绪，按回车开始...",
+        "automation_plus": "  输入 Z 并回车：提前{step}毫秒",
+        "automation_minus": "  输入 X 并回车：延后{step}毫秒",
+        "automation_zero": "  输入 R 并回车：重置微调偏移",
+        "ready": "准备就绪，按回车开始（运行中输入 z/x/r 后回车可微调）...",
         "done": "执行完毕，3秒后自动退出...",
         "event_empty": "未生成任何触控事件",
         "unknown_cmd": "[提示] 未知命令: {cmd}，可用命令: z, x, r",
@@ -117,97 +116,13 @@ def _text(locale: str, key: str, **kwargs) -> str:
     return TEXT[locale][key].format(**kwargs)
 
 
-def _is_console_focused() -> bool:
-    user32 = ctypes.windll.user32
-    kernel32 = ctypes.windll.kernel32
-    return user32.GetForegroundWindow() == kernel32.GetConsoleWindow()
-
-
-def _focus_console_window() -> None:
-    user32 = ctypes.windll.user32
-    kernel32 = ctypes.windll.kernel32
-    hwnd = kernel32.GetConsoleWindow()
-    if hwnd:
-        user32.SetForegroundWindow(hwnd)
-
-
-def _clear_console_input_buffer() -> None:
-    kernel32 = ctypes.windll.kernel32
-    std_input_handle = kernel32.GetStdHandle(-10)  # STD_INPUT_HANDLE
-    if std_input_handle:
-        kernel32.FlushConsoleInputBuffer(std_input_handle)
-
-
 def _prompt_quick_edit_choice() -> str:
-    # Use a non-echo timed key reader so no stray characters are left
-    # in the console input line.
-    user32 = ctypes.windll.user32
-    key_to_option = {
-        0x31: "1",  # top-row 1
-        0x32: "2",
-        0x33: "3",
-        0x34: "4",
-        0x61: "1",  # numpad 1
-        0x62: "2",
-        0x63: "3",
-        0x64: "4",
-    }
-    watched = list(key_to_option.keys()) + [0x0D]  # Enter
-
-    # Debounce held keys from previous stages.
-    previous_state = {vk: bool(user32.GetAsyncKeyState(vk) & 0x8000) for vk in watched}
-
-    _clear_console_input_buffer()
-
-    start = time.time()
-    while time.time() - start < 5.0:
-        if not _is_console_focused():
-            time.sleep(0.02)
-            continue
-
-        for vk in watched:
-            is_down = bool(user32.GetAsyncKeyState(vk) & 0x8000)
-            was_down = previous_state[vk]
-            previous_state[vk] = is_down
-
-            if is_down and not was_down:
-                _clear_console_input_buffer()
-                if vk == 0x0D:
-                    return ""
-                return key_to_option[vk]
-
-        time.sleep(0.01)
-
-    _clear_console_input_buffer()
-    return ""
+    raw = input().strip()
+    return raw[:1] if raw and raw[:1] in {"1", "2", "3", "4"} else ""
 
 
-def _wait_for_enter_key() -> None:
-    # Keep start confirmation scoped to focused console and avoid
-    # background global hook behavior.
-    user32 = ctypes.windll.user32
-    enter_keys = (0x0D,)  # Enter
-
-    previous_state = {
-        vk: bool(user32.GetAsyncKeyState(vk) & 0x8000) for vk in enter_keys
-    }
-
-    _clear_console_input_buffer()
-    while True:
-        if not _is_console_focused():
-            time.sleep(0.02)
-            continue
-
-        vk = 0x0D
-        is_down = bool(user32.GetAsyncKeyState(vk) & 0x8000)
-        was_down = previous_state[vk]
-        previous_state[vk] = is_down
-
-        if is_down and not was_down:
-            _clear_console_input_buffer()
-            return
-
-        time.sleep(0.01)
+def _wait_for_enter_key(prompt: str) -> None:
+    input(prompt)
 
 
 def _choose_aff_file(locale: str) -> str:
@@ -224,7 +139,6 @@ def _choose_aff_file(locale: str) -> str:
 def _input_coord(prompt: str, default: tuple[int, int]) -> tuple[int, int]:
     while True:
         try:
-            _clear_console_input_buffer()
             print(f"{prompt} ({default}): ", end="", flush=True)
             raw = input().strip()
             if not raw:
@@ -248,7 +162,6 @@ def _ensure_designant_choice(
         return app_config.global_config.designant_choice
 
     if app_config.global_config.designant_choice is None:
-        _clear_console_input_buffer()
         answer = input(_text(locale, "designant_question")).strip().lower()
         app_config.global_config.designant_choice = answer == "y"
         if app_config.global_config.designant_choice:
@@ -294,7 +207,6 @@ def _quick_edit(locale: str, app_config) -> None:
         print(_text(locale, "quick_4"))
     print(_text(locale, "quick_hint"))
 
-    _focus_console_window()
     key = _prompt_quick_edit_choice()
 
     if key == "1":
@@ -312,7 +224,6 @@ def _quick_edit(locale: str, app_config) -> None:
             save_app_config(app_config)
             print(_text(locale, "chart_set", path=chart_path))
     elif key == "3":
-        _clear_console_input_buffer()
         raw = input(_text(locale, "step_prompt")).strip()
         try:
             step = int(raw)
@@ -325,7 +236,6 @@ def _quick_edit(locale: str, app_config) -> None:
             print(_text(locale, "step_invalid"))
     elif key == "4" and has_designant:
         if cfg.designant_choice is None:
-            _clear_console_input_buffer()
             answer = input(_text(locale, "designant_question")).strip().lower()
             cfg.designant_choice = answer == "y"
         else:
@@ -410,9 +320,6 @@ def _run(locale: str, app_config) -> None:
         elif command:
             print(_text(locale, "unknown_cmd", cmd=command))
 
-    state.input_listener_active = True
-    start_input_listener(state, on_command)
-
     print("\n[INFO] Initializing device control channel...")
     try:
         controller = prepare_device_controller()
@@ -421,9 +328,11 @@ def _run(locale: str, app_config) -> None:
         state.input_listener_active = False
         return
 
-    print("\n" + _text(locale, "ready"))
-    _focus_console_window()
-    _wait_for_enter_key()
+    _wait_for_enter_key("\n" + _text(locale, "ready") + "\n")
+
+    state.input_listener_active = True
+    start_input_listener(state, on_command)
+
     run_touch_events(all_events, app_config.delay, state, controller=controller)
 
 
