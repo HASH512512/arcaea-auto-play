@@ -46,6 +46,8 @@ class GlobalConfig:
 @dataclass(slots=True)
 class VisionConfig:
     ui_roi: tuple[float, float, float, float] = (0.66, 0.02, 0.995, 0.20)
+    ui_left_roi: tuple[float, float, float, float] = (0.005, 0.02, 0.34, 0.20)
+    ui_gate_mode: str = "weighted"
     ground_roi: tuple[float, float, float, float] = (
         0.12,
         1310 / 1440,
@@ -68,6 +70,8 @@ class VisionConfig:
     def from_dict(cls, data: dict) -> "VisionConfig":
         return cls(
             ui_roi=tuple(data.get("ui_roi", (0.66, 0.02, 0.995, 0.20))),
+            ui_left_roi=tuple(data.get("ui_left_roi", (0.005, 0.02, 0.34, 0.20))),
+            ui_gate_mode=str(data.get("ui_gate_mode", "weighted")),
             ground_roi=tuple(
                 data.get("ground_roi", (0.12, 1310 / 1440, 0.88, 1345 / 1440))
             ),
@@ -87,6 +91,8 @@ class VisionConfig:
     def to_dict(self) -> dict:
         return {
             "ui_roi": list(self.ui_roi),
+            "ui_left_roi": list(self.ui_left_roi),
+            "ui_gate_mode": self.ui_gate_mode,
             "ground_roi": list(self.ground_roi),
             "arc_roi": list(self.arc_roi),
             "ui_template_threshold": self.ui_template_threshold,

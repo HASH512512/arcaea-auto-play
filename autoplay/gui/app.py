@@ -49,6 +49,7 @@ from autoplay.runtime import (
 )
 from autoplay.runtime.player import FineTuneState
 from autoplay.solver import CoordConv, solve_chart_auto
+from autoplay.vision import VisionDetector, VisionRuntimeConfig
 
 
 LEFT_MIN_WIDTH = 460
@@ -56,16 +57,6 @@ RIGHT_MIN_WIDTH = 440
 WINDOW_MIN_WIDTH = LEFT_MIN_WIDTH + RIGHT_MIN_WIDTH
 WINDOW_MIN_HEIGHT = 600
 REF_OPENCV_DIR = Path("ref") / "opencv"
-
-
-def _imread_unicode(path: Path, flags: int = cv2.IMREAD_COLOR):
-    try:
-        data = np.fromfile(str(path), dtype=np.uint8)
-    except OSError:
-        return None
-    if data.size == 0:
-        return None
-    return cv2.imdecode(data, flags)
 
 
 TEXT = {
@@ -147,6 +138,10 @@ TEXT = {
         "stream_bitrate_enable": "启用码率限制",
         "stream_bitrate": "码率上限 (Mbps)",
         "vision_overlay": "Vision Overlay",
+        "ui_gate_mode": "UI判定模式",
+        "ui_gate_right": "仅右侧",
+        "ui_gate_left": "仅左侧",
+        "ui_gate_weighted": "左右加权(3:1)",
     },
     "en": {
         "window_title": "Arcaea Auto Play GUI",
@@ -226,6 +221,10 @@ TEXT = {
         "stream_bitrate_enable": "Enable bitrate limit",
         "stream_bitrate": "Bitrate limit (Mbps)",
         "vision_overlay": "Vision Overlay",
+        "ui_gate_mode": "UI gate mode",
+        "ui_gate_right": "Right only",
+        "ui_gate_left": "Left only",
+        "ui_gate_weighted": "Weighted (3:1)",
     },
 }
 
@@ -250,19 +249,6 @@ class PreparedRunData:
     note_meta: dict[int, dict[str, object]]
     first_ground_tick: int | None
     first_note_types: tuple[str, ...]
-
-
-@dataclass(slots=True)
-class VisionMetrics:
-    panel_struct_score: float = 0.0
-    panel_digit_count: int = 0
-    panel_template_score: float = 0.0
-    panel_pass: bool = False
-    line_present: bool = False
-    note_ratio: float = 0.0
-    ground_pass: bool = False
-    arc_cap_score: float = 0.0
-    arc_pass: bool = False
 
 
 def _coord_to_text(coord: tuple[int, int]) -> str:
@@ -559,9 +545,7 @@ class AutoPlayWindow(QMainWindow):
         self.log_limit = 500
         self._start_click_time: float | None = None
         self._first_dispatch_logged = False
-        self._ui_right_templates = self._load_score_panel_templates()
-        self._arc_cap_template = self._load_arc_cap_template()
-        self._vision_metrics = VisionMetrics()
+        self.vision_detector = VisionDetector(REF_OPENCV_DIR, use_cuda=True)
         self.stream_max_fps = 60
         self.stream_max_size = 960
         self.stream_bitrate_enabled = False
@@ -579,6 +563,10 @@ class AutoPlayWindow(QMainWindow):
         self.auto_start_timer.setInterval(16)
         self.auto_start_timer.timeout.connect(self._poll_auto_start)
         self._auto_start_stage = "idle"
+
+        self.overlay_timer = QTimer(self)
+        self.overlay_timer.setInterval(90)
+        self.overlay_timer.timeout.connect(self._poll_overlay)
 
         self._start_warmup()
         self._request_prepare(auto=True)
@@ -859,6 +847,12 @@ class AutoPlayWindow(QMainWindow):
         self.ui_template_threshold_spin.setSingleStep(0.01)
         self.ui_template_threshold_spin.setValue(0.42)
 
+        self.ui_gate_mode_label = QLabel()
+        self.ui_gate_mode_combo = QComboBox()
+        self.ui_gate_mode_combo.addItem("", "right")
+        self.ui_gate_mode_combo.addItem("", "left")
+        self.ui_gate_mode_combo.addItem("", "weighted")
+
         self.ui_digit_count_label = QLabel("UI digit min count")
         self.ui_digit_count_spin = QSpinBox()
         self.ui_digit_count_spin.setRange(1, 20)
@@ -896,6 +890,10 @@ class AutoPlayWindow(QMainWindow):
         self.ui_y0_spin = QDoubleSpinBox()
         self.ui_x1_spin = QDoubleSpinBox()
         self.ui_y1_spin = QDoubleSpinBox()
+        self.ui_left_x0_spin = QDoubleSpinBox()
+        self.ui_left_y0_spin = QDoubleSpinBox()
+        self.ui_left_x1_spin = QDoubleSpinBox()
+        self.ui_left_y1_spin = QDoubleSpinBox()
         self.ground_x0_spin = QDoubleSpinBox()
         self.ground_y0_spin = QDoubleSpinBox()
         self.ground_x1_spin = QDoubleSpinBox()
@@ -910,6 +908,10 @@ class AutoPlayWindow(QMainWindow):
             self.ui_y0_spin,
             self.ui_x1_spin,
             self.ui_y1_spin,
+            self.ui_left_x0_spin,
+            self.ui_left_y0_spin,
+            self.ui_left_x1_spin,
+            self.ui_left_y1_spin,
             self.ground_x0_spin,
             self.ground_y0_spin,
             self.ground_x1_spin,
@@ -927,6 +929,10 @@ class AutoPlayWindow(QMainWindow):
         self.ui_y0_spin.setValue(0.02)
         self.ui_x1_spin.setValue(0.995)
         self.ui_y1_spin.setValue(0.20)
+        self.ui_left_x0_spin.setValue(0.005)
+        self.ui_left_y0_spin.setValue(0.02)
+        self.ui_left_x1_spin.setValue(0.34)
+        self.ui_left_y1_spin.setValue(0.20)
         self.ground_x0_spin.setValue(0.12)
         self.ground_y0_spin.setValue(1310 / 1440)
         self.ground_x1_spin.setValue(0.88)
@@ -943,16 +949,21 @@ class AutoPlayWindow(QMainWindow):
         roi_grid.addWidget(self.ui_y0_spin, 0, 2)
         roi_grid.addWidget(self.ui_x1_spin, 0, 3)
         roi_grid.addWidget(self.ui_y1_spin, 0, 4)
-        roi_grid.addWidget(QLabel("Ground x0,y0,x1,y1"), 1, 0)
-        roi_grid.addWidget(self.ground_x0_spin, 1, 1)
-        roi_grid.addWidget(self.ground_y0_spin, 1, 2)
-        roi_grid.addWidget(self.ground_x1_spin, 1, 3)
-        roi_grid.addWidget(self.ground_y1_spin, 1, 4)
-        roi_grid.addWidget(QLabel("Arc x0,y0,x1,y1"), 2, 0)
-        roi_grid.addWidget(self.arc_x0_spin, 2, 1)
-        roi_grid.addWidget(self.arc_y0_spin, 2, 2)
-        roi_grid.addWidget(self.arc_x1_spin, 2, 3)
-        roi_grid.addWidget(self.arc_y1_spin, 2, 4)
+        roi_grid.addWidget(QLabel("UI-L x0,y0,x1,y1"), 1, 0)
+        roi_grid.addWidget(self.ui_left_x0_spin, 1, 1)
+        roi_grid.addWidget(self.ui_left_y0_spin, 1, 2)
+        roi_grid.addWidget(self.ui_left_x1_spin, 1, 3)
+        roi_grid.addWidget(self.ui_left_y1_spin, 1, 4)
+        roi_grid.addWidget(QLabel("Ground x0,y0,x1,y1"), 2, 0)
+        roi_grid.addWidget(self.ground_x0_spin, 2, 1)
+        roi_grid.addWidget(self.ground_y0_spin, 2, 2)
+        roi_grid.addWidget(self.ground_x1_spin, 2, 3)
+        roi_grid.addWidget(self.ground_y1_spin, 2, 4)
+        roi_grid.addWidget(QLabel("Arc x0,y0,x1,y1"), 3, 0)
+        roi_grid.addWidget(self.arc_x0_spin, 3, 1)
+        roi_grid.addWidget(self.arc_y0_spin, 3, 2)
+        roi_grid.addWidget(self.arc_x1_spin, 3, 3)
+        roi_grid.addWidget(self.arc_y1_spin, 3, 4)
 
         self.roi_values_label = QLabel("roi_values")
         self.roi_values_label.setWordWrap(True)
@@ -960,6 +971,7 @@ class AutoPlayWindow(QMainWindow):
         vision_form.addRow(
             self.ui_template_threshold_label, self.ui_template_threshold_spin
         )
+        vision_form.addRow(self.ui_gate_mode_label, self.ui_gate_mode_combo)
         vision_form.addRow(self.ui_digit_count_label, self.ui_digit_count_spin)
         vision_form.addRow(self.ground_note_ratio_label, self.ground_note_ratio_spin)
         vision_form.addRow(self.arc_cap_threshold_label, self.arc_cap_threshold_spin)
@@ -1033,6 +1045,10 @@ class AutoPlayWindow(QMainWindow):
         self.auto_start_cv_check.setText(self._t("auto_start_cv"))
         self.auto_start_hint.setText(self._t("auto_start_hint"))
         self.ui_template_threshold_label.setText("UI template threshold")
+        self.ui_gate_mode_label.setText(self._t("ui_gate_mode"))
+        self.ui_gate_mode_combo.setItemText(0, self._t("ui_gate_right"))
+        self.ui_gate_mode_combo.setItemText(1, self._t("ui_gate_left"))
+        self.ui_gate_mode_combo.setItemText(2, self._t("ui_gate_weighted"))
         self.ui_digit_count_label.setText("UI digit min count")
         self.ground_note_ratio_label.setText("Ground note ratio")
         self.arc_cap_threshold_label.setText("Arc cap threshold")
@@ -1152,356 +1168,78 @@ class AutoPlayWindow(QMainWindow):
         self.next_note_detail.set_text(next_note_detail + "\n" + next_note_l2)
         self.next_event_detail.set_text(next_evt_detail)
 
-    def _load_score_panel_templates(self) -> list[np.ndarray]:
-        templates: list[np.ndarray] = []
-        for name in ("uiright.png", "uiright_2.png"):
-            path = REF_OPENCV_DIR / name
-            img = _imread_unicode(path, cv2.IMREAD_COLOR)
-            if img is not None:
-                templates.append(img)
-        return templates
-
-    def _load_arc_cap_template(self) -> np.ndarray | None:
-        path = REF_OPENCV_DIR / "Playfield" / "Note" / "arc_cap.png"
-        return _imread_unicode(path, cv2.IMREAD_UNCHANGED)
-
-    def _template_match_max(
-        self,
-        image: np.ndarray,
-        template: np.ndarray,
-        scales: tuple[float, ...],
-        method: int = cv2.TM_CCOEFF_NORMED,
-    ) -> float:
-        best = -1.0
-        ih, iw = image.shape[:2]
-        for scale in scales:
-            resized = cv2.resize(
-                template, None, fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR
-            )
-            th, tw = resized.shape[:2]
-            if th < 8 or tw < 8 or th >= ih or tw >= iw:
-                continue
-            result = cv2.matchTemplate(image, resized, method)
-            _, max_val, _, _ = cv2.minMaxLoc(result)
-            if max_val > best:
-                best = max_val
-        return best
-
-    def _shape_match_score(self, image: np.ndarray, template: np.ndarray) -> float:
-        img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        tpl_gray = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
-
-        img_edge = cv2.Canny(img_gray, 60, 160)
-        tpl_edge = cv2.Canny(tpl_gray, 60, 160)
-
-        img_cnts, _ = cv2.findContours(
-            img_edge, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+    def _build_vision_runtime(self) -> VisionRuntimeConfig:
+        return VisionRuntimeConfig(
+            ui_roi=(
+                float(self.ui_x0_spin.value()),
+                float(self.ui_y0_spin.value()),
+                float(self.ui_x1_spin.value()),
+                float(self.ui_y1_spin.value()),
+            ),
+            ui_left_roi=(
+                float(self.ui_left_x0_spin.value()),
+                float(self.ui_left_y0_spin.value()),
+                float(self.ui_left_x1_spin.value()),
+                float(self.ui_left_y1_spin.value()),
+            ),
+            ui_gate_mode=str(self.ui_gate_mode_combo.currentData()),
+            ground_roi=(
+                float(self.ground_x0_spin.value()),
+                float(self.ground_y0_spin.value()),
+                float(self.ground_x1_spin.value()),
+                float(self.ground_y1_spin.value()),
+            ),
+            arc_roi=(
+                float(self.arc_x0_spin.value()),
+                float(self.arc_y0_spin.value()),
+                float(self.arc_x1_spin.value()),
+                float(self.arc_y1_spin.value()),
+            ),
+            ui_feature_threshold=float(self.ui_template_threshold_spin.value()),
+            ground_overlap_threshold=float(self.ground_note_ratio_spin.value()),
+            arc_overlap_threshold=float(self.arc_cap_threshold_spin.value()),
         )
-        tpl_cnts, _ = cv2.findContours(
-            tpl_edge, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
-        if not img_cnts or not tpl_cnts:
-            return 0.0
-
-        img_big = max(img_cnts, key=cv2.contourArea)
-        tpl_big = max(tpl_cnts, key=cv2.contourArea)
-        dist = cv2.matchShapes(img_big, tpl_big, cv2.CONTOURS_MATCH_I1, 0.0)
-        return max(0.0, 1.0 - min(1.0, float(dist)))
-
-    def _color_hist_score(self, image: np.ndarray, template: np.ndarray) -> float:
-        img_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        tpl_hsv = cv2.cvtColor(template, cv2.COLOR_BGR2HSV)
-        h_bins = 30
-        s_bins = 32
-        img_hist = cv2.calcHist(
-            [img_hsv], [0, 1], None, [h_bins, s_bins], [0, 180, 0, 256]
-        )
-        tpl_hist = cv2.calcHist(
-            [tpl_hsv], [0, 1], None, [h_bins, s_bins], [0, 180, 0, 256]
-        )
-        cv2.normalize(img_hist, img_hist)
-        cv2.normalize(tpl_hist, tpl_hist)
-        score = cv2.compareHist(img_hist, tpl_hist, cv2.HISTCMP_CORREL)
-        return max(0.0, min(1.0, float((score + 1.0) * 0.5)))
-
-    def _roi_from_spin(
-        self, frame: np.ndarray, x0_spin, y0_spin, x1_spin, y1_spin
-    ) -> tuple[int, int, int, int]:
-        h, w = frame.shape[:2]
-        x0 = int(w * float(x0_spin.value()))
-        y0 = int(h * float(y0_spin.value()))
-        x1 = int(w * float(x1_spin.value()))
-        y1 = int(h * float(y1_spin.value()))
-        x0, x1 = sorted((max(0, x0), min(w, x1)))
-        y0, y1 = sorted((max(0, y0), min(h, y1)))
-        return x0, y0, x1, y1
 
     def _is_gameplay_screen(self, frame: np.ndarray) -> bool:
-        x0, y0, x1, y1 = self._roi_from_spin(
-            frame,
-            self.ui_x0_spin,
-            self.ui_y0_spin,
-            self.ui_x1_spin,
-            self.ui_y1_spin,
-        )
-        roi = frame[y0:y1, x0:x1]
-        if roi.size == 0:
-            return False
-
-        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-        edges = cv2.Canny(gray, 60, 140)
-        contours, _ = cv2.findContours(
-            edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
-
-        pentagon_like = False
-        pentagon_score = 0.0
-        for contour in contours:
-            peri = cv2.arcLength(contour, True)
-            if peri < 80:
-                continue
-            approx = cv2.approxPolyDP(contour, 0.03 * peri, True)
-            if len(approx) in {5, 6}:
-                area = cv2.contourArea(contour)
-                if area > (roi.shape[0] * roi.shape[1] * 0.015):
-                    pentagon_like = True
-                    pentagon_score = max(
-                        pentagon_score, float(area) / float(roi.shape[0] * roi.shape[1])
-                    )
-                    break
-
-        _, bin_digits = cv2.threshold(gray, 180, 255, cv2.THRESH_BINARY)
-        digit_contours, _ = cv2.findContours(
-            bin_digits, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
-        digit_like_count = 0
-        for contour in digit_contours:
-            x, y, cw, ch = cv2.boundingRect(contour)
-            if ch < roi.shape[0] * 0.20 or ch > roi.shape[0] * 0.92:
-                continue
-            if cw < 3 or cw > roi.shape[1] * 0.20:
-                continue
-            ratio = cw / float(ch)
-            if 0.15 <= ratio <= 0.85:
-                digit_like_count += 1
-
-        min_digits = int(self.ui_digit_count_spin.value())
-        if not (pentagon_like and digit_like_count >= min_digits):
-            self._vision_metrics.panel_struct_score = pentagon_score
-            self._vision_metrics.panel_digit_count = digit_like_count
-            self._vision_metrics.panel_template_score = 0.0
-            self._vision_metrics.panel_pass = False
-            return False
-
-        if not self._ui_right_templates:
-            self._vision_metrics.panel_struct_score = pentagon_score
-            self._vision_metrics.panel_digit_count = digit_like_count
-            self._vision_metrics.panel_template_score = 0.0
-            self._vision_metrics.panel_pass = True
-            return True
-        roi_bgr = roi
-        scales = (0.7, 0.8, 0.9, 1.0, 1.1, 1.2)
-        template_scores: list[float] = []
-        shape_scores: list[float] = []
-        color_scores: list[float] = []
-        for tpl in self._ui_right_templates:
-            template_scores.append(self._template_match_max(roi_bgr, tpl, scales))
-            shape_scores.append(self._shape_match_score(roi_bgr, tpl))
-            resized_tpl = cv2.resize(
-                tpl,
-                (roi_bgr.shape[1], roi_bgr.shape[0]),
-                interpolation=cv2.INTER_LINEAR,
-            )
-            color_scores.append(self._color_hist_score(roi_bgr, resized_tpl))
-
-        best_tpl = max(template_scores) if template_scores else 0.0
-        best_shape = max(shape_scores) if shape_scores else 0.0
-        best_color = max(color_scores) if color_scores else 0.0
-        fused = 0.60 * best_tpl + 0.25 * best_shape + 0.15 * best_color
-
-        passed = fused >= float(self.ui_template_threshold_spin.value())
-        self._vision_metrics.panel_struct_score = pentagon_score
-        self._vision_metrics.panel_digit_count = digit_like_count
-        self._vision_metrics.panel_template_score = fused
-        self._vision_metrics.panel_pass = passed
-        return passed
+        self.vision_detector.set_runtime(self._build_vision_runtime())
+        return self.vision_detector.detect_ui_panel(frame)
 
     def _is_first_ground_note_on_judgment(self, frame: np.ndarray) -> bool:
         if self.prepared is None or self.prepared.first_ground_tick is None:
             return False
-        x0, y0, x1, y1 = self._roi_from_spin(
-            frame,
-            self.ground_x0_spin,
-            self.ground_y0_spin,
-            self.ground_x1_spin,
-            self.ground_y1_spin,
-        )
-        roi = frame[y0:y1, x0:x1]
-        if roi.size == 0:
-            return False
-
-        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-        blur = cv2.GaussianBlur(gray, (3, 3), 0)
-        edge = cv2.Canny(blur, 50, 150)
-        lines = cv2.HoughLinesP(
-            edge,
-            1,
-            np.pi / 180,
-            threshold=45,
-            minLineLength=int(roi.shape[1] * 0.55),
-            maxLineGap=12,
-        )
-        has_judgment_line = lines is not None and len(lines) >= 1
-
-        hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-        sat = hsv[:, :, 1]
-        val = hsv[:, :, 2]
-        note_mask = (sat > 85) & (val > 105)
-        note_ratio = float(note_mask.sum()) / float(note_mask.size)
-
-        passed = has_judgment_line and note_ratio > float(
-            self.ground_note_ratio_spin.value()
-        )
-        self._vision_metrics.line_present = bool(has_judgment_line)
-        self._vision_metrics.note_ratio = note_ratio
-        self._vision_metrics.ground_pass = passed
-        return passed
+        self.vision_detector.set_runtime(self._build_vision_runtime())
+        return self.vision_detector.detect_ground_overlap(frame)
 
     def _is_arc_cap_triggered(self, frame: np.ndarray) -> bool:
-        if self._arc_cap_template is None:
-            return False
-
-        x0, y0, x1, y1 = self._roi_from_spin(
-            frame,
-            self.arc_x0_spin,
-            self.arc_y0_spin,
-            self.arc_x1_spin,
-            self.arc_y1_spin,
-        )
-        roi = frame[y0:y1, x0:x1]
-        if roi.size == 0:
-            return False
-
-        if self._arc_cap_template.ndim == 3 and self._arc_cap_template.shape[2] == 4:
-            bgr = self._arc_cap_template[:, :, :3]
-            alpha = self._arc_cap_template[:, :, 3]
-            mask = (alpha > 20).astype(np.uint8) * 255
-            cap_template = cv2.bitwise_and(bgr, bgr, mask=mask)
-        else:
-            cap_template = self._arc_cap_template
-
-        score = self._template_match_max(
-            roi,
-            cap_template,
-            scales=(0.45, 0.55, 0.65, 0.75, 0.9, 1.0, 1.15),
-        )
-        shape_score = self._shape_match_score(
-            roi,
-            cv2.resize(
-                cap_template,
-                (roi.shape[1], roi.shape[0]),
-                interpolation=cv2.INTER_LINEAR,
-            ),
-        )
-        color_score = self._color_hist_score(
-            roi,
-            cv2.resize(
-                cap_template,
-                (roi.shape[1], roi.shape[0]),
-                interpolation=cv2.INTER_LINEAR,
-            ),
-        )
-        fused = 0.65 * score + 0.20 * shape_score + 0.15 * color_score
-        passed = fused >= float(self.arc_cap_threshold_spin.value())
-        self._vision_metrics.arc_cap_score = fused
-        self._vision_metrics.arc_pass = passed
-        return passed
+        self.vision_detector.set_runtime(self._build_vision_runtime())
+        return self.vision_detector.detect_arc_overlap(frame)
 
     def _update_overlay_preview(self, frame: np.ndarray) -> None:
         if not self.overlay_debug_check.isChecked():
             self.overlay_window.hide()
             return
 
-        overlay = frame.copy()
-        h, w = overlay.shape[:2]
-        ui_rect = self._roi_from_spin(
+        self.vision_detector.set_runtime(self._build_vision_runtime())
+        overlay = self.vision_detector.render_overlay(
             frame,
-            self.ui_x0_spin,
-            self.ui_y0_spin,
-            self.ui_x1_spin,
-            self.ui_y1_spin,
+            self._auto_start_stage,
+            self.controller.get_decode_fps() if self.controller is not None else None,
         )
-        gd_rect = self._roi_from_spin(
-            frame,
-            self.ground_x0_spin,
-            self.ground_y0_spin,
-            self.ground_x1_spin,
-            self.ground_y1_spin,
-        )
-        arc_rect = self._roi_from_spin(
-            frame,
-            self.arc_x0_spin,
-            self.arc_y0_spin,
-            self.arc_x1_spin,
-            self.arc_y1_spin,
-        )
-
-        cv2.rectangle(
-            overlay,
-            (ui_rect[0], ui_rect[1]),
-            (ui_rect[2], ui_rect[3]),
-            (0, 220, 255),
-            2,
-        )
-        cv2.rectangle(
-            overlay,
-            (gd_rect[0], gd_rect[1]),
-            (gd_rect[2], gd_rect[3]),
-            (80, 255, 80),
-            2,
-        )
-        cv2.rectangle(
-            overlay,
-            (arc_rect[0], arc_rect[1]),
-            (arc_rect[2], arc_rect[3]),
-            (255, 120, 80),
-            2,
-        )
-
-        lines = [
-            f"stage={self._auto_start_stage}",
-            f"decode_fps={self.controller.get_decode_fps():.1f}"
-            if self.controller is not None
-            else "decode_fps=n/a",
-            f"ui pass={self._vision_metrics.panel_pass} struct={self._vision_metrics.panel_struct_score:.3f} digits={self._vision_metrics.panel_digit_count} tpl={self._vision_metrics.panel_template_score:.3f}",
-            f"ground pass={self._vision_metrics.ground_pass} line={self._vision_metrics.line_present} ratio={self._vision_metrics.note_ratio:.3f}",
-            f"arc pass={self._vision_metrics.arc_pass} cap={self._vision_metrics.arc_cap_score:.3f}",
-        ]
-        y = 28
-        for line in lines:
-            cv2.putText(
-                overlay,
-                line,
-                (18, y),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.6,
-                (30, 250, 255),
-                2,
-                cv2.LINE_AA,
-            )
-            y += 24
-
         rgb = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
         qimg = QImage(
             rgb.data, rgb.shape[1], rgb.shape[0], rgb.strides[0], QImage.Format_RGB888
         )
 
         self.roi_values_label.setText(
-            "UI=({:.3f},{:.3f},{:.3f},{:.3f}) Ground=({:.3f},{:.3f},{:.3f},{:.3f}) Arc=({:.3f},{:.3f},{:.3f},{:.3f})".format(
+            "UI-R=({:.3f},{:.3f},{:.3f},{:.3f}) UI-L=({:.3f},{:.3f},{:.3f},{:.3f}) Ground=({:.3f},{:.3f},{:.3f},{:.3f}) Arc=({:.3f},{:.3f},{:.3f},{:.3f})".format(
                 float(self.ui_x0_spin.value()),
                 float(self.ui_y0_spin.value()),
                 float(self.ui_x1_spin.value()),
                 float(self.ui_y1_spin.value()),
+                float(self.ui_left_x0_spin.value()),
+                float(self.ui_left_y0_spin.value()),
+                float(self.ui_left_x1_spin.value()),
+                float(self.ui_left_y1_spin.value()),
                 float(self.ground_x0_spin.value()),
                 float(self.ground_y0_spin.value()),
                 float(self.ground_x1_spin.value()),
@@ -1512,21 +1250,35 @@ class AutoPlayWindow(QMainWindow):
                 float(self.arc_y1_spin.value()),
             )
         )
+        metrics = self.vision_detector.metrics
+        self.roi_values_label.setText(
+            self.roi_values_label.text()
+            + " | ui_score={:.3f} good={} inliers={} ground_overlap={:.3f} arc_overlap={:.3f}".format(
+                metrics.ui_feature_score,
+                metrics.ui_good_matches,
+                metrics.ui_inliers,
+                metrics.ground_overlap_ratio,
+                metrics.arc_overlap_ratio,
+            )
+        )
 
         self.overlay_window.show()
         pix = QPixmap.fromImage(qimg).scaled(
             self.overlay_window_label.width(),
             self.overlay_window_label.height(),
             Qt.KeepAspectRatio,
-            Qt.SmoothTransformation,
+            Qt.FastTransformation,
         )
         self.overlay_window_label.setPixmap(pix)
 
     def _on_overlay_toggled(self, checked: bool) -> None:
         if not checked:
             self.overlay_window.hide()
+            self.overlay_timer.stop()
             return
         self.overlay_window.show()
+        if not self.overlay_timer.isActive():
+            self.overlay_timer.start()
 
     def _reflow_coord_grid(self, compact: bool) -> None:
         while self.coord_grid.count():
@@ -1602,8 +1354,6 @@ class AutoPlayWindow(QMainWindow):
         if frame is None:
             return
 
-        self._update_overlay_preview(frame)
-
         if self._auto_start_stage == "idle":
             self._append_log(self._t("auto_start_wait"))
             self._auto_start_stage = "wait_ui"
@@ -1652,6 +1402,16 @@ class AutoPlayWindow(QMainWindow):
         ):
             self.auto_start_timer.start()
 
+    def _poll_overlay(self) -> None:
+        if not self.overlay_debug_check.isChecked():
+            return
+        if self.controller is None:
+            return
+        frame = self.controller.get_latest_frame(copy_frame=True)
+        if frame is None:
+            return
+        self._update_overlay_preview(frame)
+
     def _on_language_changed(self) -> None:
         self.locale = self.language_combo.currentData()
         self._apply_texts()
@@ -1692,6 +1452,10 @@ class AutoPlayWindow(QMainWindow):
         self.stream_bitrate_spin.setValue(self.stream_bitrate_mbps)
         self.overlay_debug_check.setChecked(bool(vision.overlay_enabled))
         self.ui_template_threshold_spin.setValue(float(vision.ui_template_threshold))
+        gate_mode = str(getattr(vision, "ui_gate_mode", "weighted"))
+        self.ui_gate_mode_combo.setCurrentIndex(
+            0 if gate_mode == "right" else 1 if gate_mode == "left" else 2
+        )
         self.ui_digit_count_spin.setValue(int(vision.ui_digit_min_count))
         self.ground_note_ratio_spin.setValue(float(vision.ground_note_ratio))
         self.arc_cap_threshold_spin.setValue(float(vision.arc_cap_threshold))
@@ -1700,6 +1464,10 @@ class AutoPlayWindow(QMainWindow):
         self.ui_y0_spin.setValue(float(vision.ui_roi[1]))
         self.ui_x1_spin.setValue(float(vision.ui_roi[2]))
         self.ui_y1_spin.setValue(float(vision.ui_roi[3]))
+        self.ui_left_x0_spin.setValue(float(vision.ui_left_roi[0]))
+        self.ui_left_y0_spin.setValue(float(vision.ui_left_roi[1]))
+        self.ui_left_x1_spin.setValue(float(vision.ui_left_roi[2]))
+        self.ui_left_y1_spin.setValue(float(vision.ui_left_roi[3]))
         self.ground_x0_spin.setValue(float(vision.ground_roi[0]))
         self.ground_y0_spin.setValue(float(vision.ground_roi[1]))
         self.ground_x1_spin.setValue(float(vision.ground_roi[2]))
@@ -1732,6 +1500,7 @@ class AutoPlayWindow(QMainWindow):
             vision.ui_template_threshold = float(
                 self.ui_template_threshold_spin.value()
             )
+            vision.ui_gate_mode = str(self.ui_gate_mode_combo.currentData())
             vision.ui_digit_min_count = int(self.ui_digit_count_spin.value())
             vision.ground_note_ratio = float(self.ground_note_ratio_spin.value())
             vision.arc_cap_threshold = float(self.arc_cap_threshold_spin.value())
@@ -1741,6 +1510,12 @@ class AutoPlayWindow(QMainWindow):
                 float(self.ui_y0_spin.value()),
                 float(self.ui_x1_spin.value()),
                 float(self.ui_y1_spin.value()),
+            )
+            vision.ui_left_roi = (
+                float(self.ui_left_x0_spin.value()),
+                float(self.ui_left_y0_spin.value()),
+                float(self.ui_left_x1_spin.value()),
+                float(self.ui_left_y1_spin.value()),
             )
             vision.ground_roi = (
                 float(self.ground_x0_spin.value()),
