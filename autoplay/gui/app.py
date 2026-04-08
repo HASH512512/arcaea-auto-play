@@ -142,6 +142,11 @@ TEXT = {
         "auto_start_ready": "[信息] 已检测到游戏界面，等待首个地面 note 进入判定。",
         "auto_start_fire": "[信息] 自动开始条件满足，已触发播放",
         "auto_start_arc_todo": "[信息] 首 note 为 arc/arctap，仅完成第一层识别，第二层触发规则待下一轮实现。",
+        "stream_fps": "流 FPS 上限",
+        "stream_size": "流 max_size",
+        "stream_bitrate_enable": "启用码率限制",
+        "stream_bitrate": "码率上限 (Mbps)",
+        "vision_overlay": "Vision Overlay",
     },
     "en": {
         "window_title": "Arcaea Auto Play GUI",
@@ -216,6 +221,11 @@ TEXT = {
         "auto_start_ready": "[INFO] Gameplay screen detected, waiting first ground note timing...",
         "auto_start_fire": "[INFO] Auto-start condition met, playback triggered",
         "auto_start_arc_todo": "[INFO] First note is arc/arctap; only stage-1 is active now. Stage-2 trigger will be finalized next round.",
+        "stream_fps": "Stream FPS Limit",
+        "stream_size": "Stream max_size",
+        "stream_bitrate_enable": "Enable bitrate limit",
+        "stream_bitrate": "Bitrate limit (Mbps)",
+        "vision_overlay": "Vision Overlay",
     },
 }
 
@@ -348,10 +358,16 @@ class ControllerWarmupWorker(QThread):
     warmup_ok = Signal(object)
     warmup_fail = Signal(str)
 
-    def __init__(self, max_fps: int, max_size: int) -> None:
+    def __init__(
+        self,
+        max_fps: int,
+        max_size: int,
+        video_bit_rate: int | None,
+    ) -> None:
         super().__init__()
         self.max_fps = max_fps
         self.max_size = max_size
+        self.video_bit_rate = video_bit_rate
 
     def run(self) -> None:
         self.started_warmup.emit()
@@ -359,6 +375,7 @@ class ControllerWarmupWorker(QThread):
             controller = prepare_device_controller(
                 max_fps=self.max_fps,
                 max_size=self.max_size,
+                video_bit_rate=self.video_bit_rate,
             )
         except Exception as exc:
             self.warmup_fail.emit(str(exc))
@@ -547,6 +564,8 @@ class AutoPlayWindow(QMainWindow):
         self._vision_metrics = VisionMetrics()
         self.stream_max_fps = 60
         self.stream_max_size = 960
+        self.stream_bitrate_enabled = False
+        self.stream_bitrate_mbps = 8
 
         self._build_ui()
         self._load_config_to_form()
@@ -706,9 +725,11 @@ class AutoPlayWindow(QMainWindow):
         scroll.setWidgetResizable(True)
         scroll_content = QWidget()
         scroll_layout = QVBoxLayout(scroll_content)
+        self.settings_grid = QGridLayout()
 
-        group = QGroupBox()
-        form = QFormLayout(group)
+        self.settings_basic_group = QGroupBox()
+        basic_form = QFormLayout(self.settings_basic_group)
+        basic_form.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
 
         chart_row = QHBoxLayout()
         self.chart_path_edit = QLineEdit()
@@ -720,10 +741,10 @@ class AutoPlayWindow(QMainWindow):
         chart_widget.setLayout(chart_row)
 
         self.chart_path_label = QLabel()
-        form.addRow(self.chart_path_label, chart_widget)
+        basic_form.addRow(self.chart_path_label, chart_widget)
 
         coord_group = QGroupBox()
-        coord_grid = QGridLayout(coord_group)
+        self.coord_grid = QGridLayout(coord_group)
         self.top_left_label = QLabel()
         self.top_right_label = QLabel()
         self.bottom_left_label = QLabel()
@@ -732,16 +753,7 @@ class AutoPlayWindow(QMainWindow):
         self.top_right_edit = QLineEdit()
         self.bottom_left_edit = QLineEdit()
         self.bottom_right_edit = QLineEdit()
-
-        coord_grid.addWidget(self.top_left_label, 0, 0)
-        coord_grid.addWidget(self.top_left_edit, 0, 1)
-        coord_grid.addWidget(self.top_right_label, 0, 2)
-        coord_grid.addWidget(self.top_right_edit, 0, 3)
-        coord_grid.addWidget(self.bottom_left_label, 1, 0)
-        coord_grid.addWidget(self.bottom_left_edit, 1, 1)
-        coord_grid.addWidget(self.bottom_right_label, 1, 2)
-        coord_grid.addWidget(self.bottom_right_edit, 1, 3)
-        form.addRow(coord_group)
+        basic_form.addRow(coord_group)
 
         mixed_row = QHBoxLayout()
         self.fine_tune_label = QLabel()
@@ -758,42 +770,54 @@ class AutoPlayWindow(QMainWindow):
         mixed_row.addWidget(self.designant_combo)
         mixed_widget = QWidget()
         mixed_widget.setLayout(mixed_row)
-        form.addRow(mixed_widget)
+        basic_form.addRow(mixed_widget)
 
-        action_row = QHBoxLayout()
         self.save_btn = QPushButton()
         self.reload_btn = QPushButton()
         self.prepare_btn = QPushButton()
+        self.save_btn.clicked.connect(self._on_save_clicked)
+        self.reload_btn.clicked.connect(self._on_reload_clicked)
+        self.prepare_btn.clicked.connect(lambda: self._request_prepare(auto=False))
+        button_row = QHBoxLayout()
+        button_row.addWidget(self.save_btn)
+        button_row.addWidget(self.reload_btn)
+        button_row.addWidget(self.prepare_btn)
+        button_widget = QWidget()
+        button_widget.setLayout(button_row)
+        basic_form.addRow(button_widget)
+
+        stream_group = QGroupBox("scrcpy")
+        stream_form = QFormLayout(stream_group)
+        stream_form.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
         self.stream_fps_label = QLabel("Stream FPS")
         self.stream_fps_spin = QSpinBox()
-        self.stream_fps_spin.setRange(30, 120)
+        self.stream_fps_spin.setRange(30, 200)
         self.stream_fps_spin.setValue(self.stream_max_fps)
         self.stream_size_label = QLabel("Stream max_size")
         self.stream_size_spin = QSpinBox()
         self.stream_size_spin.setRange(640, 1440)
         self.stream_size_spin.setSingleStep(80)
         self.stream_size_spin.setValue(self.stream_max_size)
+        self.stream_bitrate_enable_check = QCheckBox()
+        self.stream_bitrate_enable_check.setChecked(False)
+        self.stream_bitrate_spin = QSpinBox()
+        self.stream_bitrate_spin.setRange(1, 40)
+        self.stream_bitrate_spin.setSuffix(" Mbps")
+        self.stream_bitrate_spin.setValue(self.stream_bitrate_mbps)
+        self.stream_bitrate_spin.setEnabled(False)
+        self.stream_bitrate_enable_check.toggled.connect(
+            self.stream_bitrate_spin.setEnabled
+        )
+        stream_form.addRow(self.stream_fps_label, self.stream_fps_spin)
+        stream_form.addRow(self.stream_size_label, self.stream_size_spin)
+        stream_form.addRow(self.stream_bitrate_enable_check, self.stream_bitrate_spin)
+        basic_form.addRow(stream_group)
+
         self.log_limit_label = QLabel()
         self.log_limit_spin = QSpinBox()
         self.log_limit_spin.setRange(50, 5000)
         self.log_limit_spin.setValue(self.log_limit)
-
-        self.save_btn.clicked.connect(self._on_save_clicked)
-        self.reload_btn.clicked.connect(self._on_reload_clicked)
-        self.prepare_btn.clicked.connect(lambda: self._request_prepare(auto=False))
-
-        action_row.addWidget(self.save_btn)
-        action_row.addWidget(self.reload_btn)
-        action_row.addWidget(self.prepare_btn)
-        action_row.addWidget(self.stream_fps_label)
-        action_row.addWidget(self.stream_fps_spin)
-        action_row.addWidget(self.stream_size_label)
-        action_row.addWidget(self.stream_size_spin)
-        action_row.addWidget(self.log_limit_label)
-        action_row.addWidget(self.log_limit_spin)
-        action_widget = QWidget()
-        action_widget.setLayout(action_row)
-        form.addRow(action_widget)
+        basic_form.addRow(self.log_limit_label, self.log_limit_spin)
 
         self.debug_verbose_label = QLabel()
         self.debug_verbose_combo = QComboBox()
@@ -806,8 +830,8 @@ class AutoPlayWindow(QMainWindow):
         debug_row.addWidget(self.debug_verbose_combo)
         debug_widget = QWidget()
         debug_widget.setLayout(debug_row)
-        form.addRow(debug_widget)
-        form.addRow(self.debug_verbose_hint)
+        basic_form.addRow(debug_widget)
+        basic_form.addRow(self.debug_verbose_hint)
 
         self.opt_high_prio_check = QCheckBox()
         self.opt_high_prio_check.setChecked(False)
@@ -819,11 +843,15 @@ class AutoPlayWindow(QMainWindow):
         opt_row.addWidget(self.auto_start_cv_check)
         opt_widget = QWidget()
         opt_widget.setLayout(opt_row)
-        form.addRow(opt_widget)
+        basic_form.addRow(opt_widget)
 
         self.auto_start_hint = QLabel()
         self.auto_start_hint.setWordWrap(True)
-        form.addRow(self.auto_start_hint)
+        basic_form.addRow(self.auto_start_hint)
+
+        self.settings_vision_group = QGroupBox("Vision")
+        vision_form = QFormLayout(self.settings_vision_group)
+        vision_form.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
 
         self.ui_template_threshold_label = QLabel("UI template threshold")
         self.ui_template_threshold_spin = QDoubleSpinBox()
@@ -850,13 +878,7 @@ class AutoPlayWindow(QMainWindow):
 
         self.overlay_debug_check = QCheckBox("Vision overlay")
         self.overlay_debug_check.setChecked(False)
-        self.overlay_detach_check = QCheckBox("Detach overlay window")
-        self.overlay_detach_check.setChecked(True)
-        self.overlay_detach_check.toggled.connect(self._on_overlay_detach_toggled)
-        self.overlay_preview_label = QLabel("preview")
-        self.overlay_preview_label.setMinimumSize(300, 170)
-        self.overlay_preview_label.setStyleSheet("background:#111; color:#bbb;")
-        self.overlay_preview_label.setAlignment(Qt.AlignCenter)
+        self.overlay_debug_check.toggled.connect(self._on_overlay_toggled)
 
         self.overlay_window = QWidget(None)
         self.overlay_window.setWindowFlag(Qt.Window, True)
@@ -905,12 +927,10 @@ class AutoPlayWindow(QMainWindow):
         self.ui_y0_spin.setValue(0.02)
         self.ui_x1_spin.setValue(0.995)
         self.ui_y1_spin.setValue(0.20)
-
         self.ground_x0_spin.setValue(0.12)
         self.ground_y0_spin.setValue(1310 / 1440)
         self.ground_x1_spin.setValue(0.88)
         self.ground_y1_spin.setValue(1345 / 1440)
-
         self.arc_x0_spin.setValue(0.18)
         self.arc_y0_spin.setValue(0.22)
         self.arc_x1_spin.setValue(0.82)
@@ -923,13 +943,11 @@ class AutoPlayWindow(QMainWindow):
         roi_grid.addWidget(self.ui_y0_spin, 0, 2)
         roi_grid.addWidget(self.ui_x1_spin, 0, 3)
         roi_grid.addWidget(self.ui_y1_spin, 0, 4)
-
         roi_grid.addWidget(QLabel("Ground x0,y0,x1,y1"), 1, 0)
         roi_grid.addWidget(self.ground_x0_spin, 1, 1)
         roi_grid.addWidget(self.ground_y0_spin, 1, 2)
         roi_grid.addWidget(self.ground_x1_spin, 1, 3)
         roi_grid.addWidget(self.ground_y1_spin, 1, 4)
-
         roi_grid.addWidget(QLabel("Arc x0,y0,x1,y1"), 2, 0)
         roi_grid.addWidget(self.arc_x0_spin, 2, 1)
         roi_grid.addWidget(self.arc_y0_spin, 2, 2)
@@ -939,20 +957,25 @@ class AutoPlayWindow(QMainWindow):
         self.roi_values_label = QLabel("roi_values")
         self.roi_values_label.setWordWrap(True)
 
-        form.addRow(self.ui_template_threshold_label, self.ui_template_threshold_spin)
-        form.addRow(self.ui_digit_count_label, self.ui_digit_count_spin)
-        form.addRow(self.ground_note_ratio_label, self.ground_note_ratio_spin)
-        form.addRow(self.arc_cap_threshold_label, self.arc_cap_threshold_spin)
-        form.addRow(self.overlay_debug_check)
-        form.addRow(self.overlay_detach_check)
-        form.addRow(self.overlay_preview_label)
-        form.addRow(roi_group)
-        form.addRow(self.roi_values_label)
+        vision_form.addRow(
+            self.ui_template_threshold_label, self.ui_template_threshold_spin
+        )
+        vision_form.addRow(self.ui_digit_count_label, self.ui_digit_count_spin)
+        vision_form.addRow(self.ground_note_ratio_label, self.ground_note_ratio_spin)
+        vision_form.addRow(self.arc_cap_threshold_label, self.arc_cap_threshold_spin)
+        vision_form.addRow(self.overlay_debug_check)
+        vision_form.addRow(roi_group)
+        vision_form.addRow(self.roi_values_label)
 
-        scroll_layout.addWidget(group)
+        self.settings_grid.addWidget(self.settings_basic_group, 0, 0)
+        self.settings_grid.addWidget(self.settings_vision_group, 0, 1)
+        scroll_layout.addLayout(self.settings_grid)
         scroll_layout.addStretch()
         scroll.setWidget(scroll_content)
         layout.addWidget(scroll)
+
+        self._reflow_coord_grid(False)
+        self._reflow_settings_layout()
 
     def _apply_texts(self) -> None:
         self.setWindowTitle(self._t("window_title"))
@@ -997,8 +1020,12 @@ class AutoPlayWindow(QMainWindow):
         self.prepare_btn.setText(self._t("prepare"))
 
         self.clear_log_btn.setText(self._t("log_clear"))
-        self.stream_fps_label.setText("Stream FPS")
-        self.stream_size_label.setText("Stream max_size")
+        self.stream_fps_label.setText(self._t("stream_fps"))
+        self.stream_size_label.setText(self._t("stream_size"))
+        self.stream_bitrate_enable_check.setText(self._t("stream_bitrate_enable"))
+        self.stream_bitrate_spin.setSuffix(
+            f" {self._t('stream_bitrate').split('(')[-1].rstrip(')')}"
+        )
         self.log_limit_label.setText(self._t("log_limit"))
         self.debug_verbose_label.setText(self._t("debug_verbose"))
         self.debug_verbose_hint.setText(self._t("debug_verbose_hint"))
@@ -1009,7 +1036,7 @@ class AutoPlayWindow(QMainWindow):
         self.ui_digit_count_label.setText("UI digit min count")
         self.ground_note_ratio_label.setText("Ground note ratio")
         self.arc_cap_threshold_label.setText("Arc cap threshold")
-        self.overlay_detach_check.setText("Detach overlay window")
+        self.overlay_debug_check.setText(self._t("vision_overlay"))
 
         self.run_state_label.setText(self._t("idle"))
         self.controller_state_label.setText(
@@ -1468,13 +1495,6 @@ class AutoPlayWindow(QMainWindow):
         qimg = QImage(
             rgb.data, rgb.shape[1], rgb.shape[0], rgb.strides[0], QImage.Format_RGB888
         )
-        pix = QPixmap.fromImage(qimg).scaled(
-            self.overlay_preview_label.width(),
-            self.overlay_preview_label.height(),
-            Qt.KeepAspectRatio,
-            Qt.SmoothTransformation,
-        )
-        self.overlay_preview_label.setPixmap(pix)
 
         self.roi_values_label.setText(
             "UI=({:.3f},{:.3f},{:.3f},{:.3f}) Ground=({:.3f},{:.3f},{:.3f},{:.3f}) Arc=({:.3f},{:.3f},{:.3f},{:.3f})".format(
@@ -1493,21 +1513,78 @@ class AutoPlayWindow(QMainWindow):
             )
         )
 
-        if self.overlay_detach_check.isChecked():
-            self.overlay_window.show()
-            pix2 = QPixmap.fromImage(qimg).scaled(
-                self.overlay_window_label.width(),
-                self.overlay_window_label.height(),
-                Qt.KeepAspectRatio,
-                Qt.SmoothTransformation,
-            )
-            self.overlay_window_label.setPixmap(pix2)
-        else:
-            self.overlay_window.hide()
+        self.overlay_window.show()
+        pix = QPixmap.fromImage(qimg).scaled(
+            self.overlay_window_label.width(),
+            self.overlay_window_label.height(),
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation,
+        )
+        self.overlay_window_label.setPixmap(pix)
 
-    def _on_overlay_detach_toggled(self, checked: bool) -> None:
+    def _on_overlay_toggled(self, checked: bool) -> None:
         if not checked:
             self.overlay_window.hide()
+            return
+        self.overlay_window.show()
+
+    def _reflow_coord_grid(self, compact: bool) -> None:
+        while self.coord_grid.count():
+            item = self.coord_grid.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+
+        if compact:
+            self.coord_grid.addWidget(self.top_left_label, 0, 0)
+            self.coord_grid.addWidget(self.top_left_edit, 0, 1)
+            self.coord_grid.addWidget(self.top_right_label, 1, 0)
+            self.coord_grid.addWidget(self.top_right_edit, 1, 1)
+            self.coord_grid.addWidget(self.bottom_left_label, 2, 0)
+            self.coord_grid.addWidget(self.bottom_left_edit, 2, 1)
+            self.coord_grid.addWidget(self.bottom_right_label, 3, 0)
+            self.coord_grid.addWidget(self.bottom_right_edit, 3, 1)
+            return
+
+        self.coord_grid.addWidget(self.top_left_label, 0, 0)
+        self.coord_grid.addWidget(self.top_left_edit, 0, 1)
+        self.coord_grid.addWidget(self.top_right_label, 0, 2)
+        self.coord_grid.addWidget(self.top_right_edit, 0, 3)
+        self.coord_grid.addWidget(self.bottom_left_label, 1, 0)
+        self.coord_grid.addWidget(self.bottom_left_edit, 1, 1)
+        self.coord_grid.addWidget(self.bottom_right_label, 1, 2)
+        self.coord_grid.addWidget(self.bottom_right_edit, 1, 3)
+
+    def _reflow_settings_layout(self) -> None:
+        if not hasattr(self, "settings_grid"):
+            return
+
+        width = self.settings_page.width()
+        compact = width < 900
+
+        self.settings_grid.removeWidget(self.settings_basic_group)
+        self.settings_grid.removeWidget(self.settings_vision_group)
+        if compact:
+            self.settings_grid.addWidget(self.settings_basic_group, 0, 0)
+            self.settings_grid.addWidget(self.settings_vision_group, 1, 0)
+        else:
+            self.settings_grid.addWidget(self.settings_basic_group, 0, 0)
+            self.settings_grid.addWidget(self.settings_vision_group, 0, 1)
+
+        self.settings_grid.setColumnStretch(0, 1)
+        self.settings_grid.setColumnStretch(1, 1 if not compact else 0)
+        self._reflow_coord_grid(compact)
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._reflow_settings_layout()
+
+    def closeEvent(self, event) -> None:
+        try:
+            self.overlay_window.hide()
+        except Exception:
+            pass
+        super().closeEvent(event)
 
     def _poll_auto_start(self) -> None:
         if not self.auto_start_cv_check.isChecked():
@@ -1607,13 +1684,17 @@ class AutoPlayWindow(QMainWindow):
 
         self.stream_max_fps = int(vision.stream_max_fps)
         self.stream_max_size = int(vision.stream_max_size)
+        self.stream_bitrate_enabled = bool(vision.stream_bitrate_enabled)
+        self.stream_bitrate_mbps = int(vision.stream_bitrate_mbps)
         self.stream_fps_spin.setValue(self.stream_max_fps)
         self.stream_size_spin.setValue(self.stream_max_size)
+        self.stream_bitrate_enable_check.setChecked(self.stream_bitrate_enabled)
+        self.stream_bitrate_spin.setValue(self.stream_bitrate_mbps)
+        self.overlay_debug_check.setChecked(bool(vision.overlay_enabled))
         self.ui_template_threshold_spin.setValue(float(vision.ui_template_threshold))
         self.ui_digit_count_spin.setValue(int(vision.ui_digit_min_count))
         self.ground_note_ratio_spin.setValue(float(vision.ground_note_ratio))
         self.arc_cap_threshold_spin.setValue(float(vision.arc_cap_threshold))
-        self.overlay_detach_check.setChecked(bool(vision.overlay_detached))
 
         self.ui_x0_spin.setValue(float(vision.ui_roi[0]))
         self.ui_y0_spin.setValue(float(vision.ui_roi[1]))
@@ -1643,13 +1724,18 @@ class AutoPlayWindow(QMainWindow):
 
             vision.stream_max_fps = int(self.stream_fps_spin.value())
             vision.stream_max_size = int(self.stream_size_spin.value())
+            vision.stream_bitrate_enabled = bool(
+                self.stream_bitrate_enable_check.isChecked()
+            )
+            vision.stream_bitrate_mbps = int(self.stream_bitrate_spin.value())
+            vision.overlay_enabled = bool(self.overlay_debug_check.isChecked())
             vision.ui_template_threshold = float(
                 self.ui_template_threshold_spin.value()
             )
             vision.ui_digit_min_count = int(self.ui_digit_count_spin.value())
             vision.ground_note_ratio = float(self.ground_note_ratio_spin.value())
             vision.arc_cap_threshold = float(self.arc_cap_threshold_spin.value())
-            vision.overlay_detached = bool(self.overlay_detach_check.isChecked())
+            vision.overlay_detached = True
             vision.ui_roi = (
                 float(self.ui_x0_spin.value()),
                 float(self.ui_y0_spin.value()),
@@ -1752,9 +1838,13 @@ class AutoPlayWindow(QMainWindow):
         )
 
     def _start_warmup(self) -> None:
+        bit_rate = None
+        if self.stream_bitrate_enabled:
+            bit_rate = int(self.stream_bitrate_mbps) * 1_000_000
         self.warmup_worker = ControllerWarmupWorker(
             max_fps=self.stream_max_fps,
             max_size=self.stream_max_size,
+            video_bit_rate=bit_rate,
         )
         self.warmup_worker.started_warmup.connect(self._on_warmup_start)
         self.warmup_worker.warmup_ok.connect(self._on_warmup_ok)
@@ -1778,15 +1868,26 @@ class AutoPlayWindow(QMainWindow):
     def _on_save_clicked(self) -> None:
         old_fps = self.stream_max_fps
         old_size = self.stream_max_size
+        old_bitrate_enabled = self.stream_bitrate_enabled
+        old_bitrate_mbps = self.stream_bitrate_mbps
         new_fps = int(self.stream_fps_spin.value())
         new_size = int(self.stream_size_spin.value())
+        new_bitrate_enabled = bool(self.stream_bitrate_enable_check.isChecked())
+        new_bitrate_mbps = int(self.stream_bitrate_spin.value())
 
         self.stream_max_fps = new_fps
         self.stream_max_size = new_size
+        self.stream_bitrate_enabled = new_bitrate_enabled
+        self.stream_bitrate_mbps = new_bitrate_mbps
 
-        if (old_fps, old_size) != (self.stream_max_fps, self.stream_max_size):
+        if (old_fps, old_size, old_bitrate_enabled, old_bitrate_mbps) != (
+            self.stream_max_fps,
+            self.stream_max_size,
+            self.stream_bitrate_enabled,
+            self.stream_bitrate_mbps,
+        ):
             self._append_log(
-                f"[INFO] Restarting scrcpy stream with max_fps={self.stream_max_fps}, max_size={self.stream_max_size}"
+                f"[INFO] Restarting scrcpy stream with max_fps={self.stream_max_fps}, max_size={self.stream_max_size}, bitrate={'off' if not self.stream_bitrate_enabled else f'{self.stream_bitrate_mbps}Mbps'}"
             )
             if self.controller is not None:
                 try:

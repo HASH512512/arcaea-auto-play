@@ -4,7 +4,7 @@ import subprocess
 import threading
 import time
 import random
-import os
+from pathlib import Path
 
 import av
 import numpy as np
@@ -34,17 +34,23 @@ class DeviceController:
         serial: str | None = None,
         port: int = 27188,
         push_server: bool = True,
-        server_dir: str = ".",
+        server_dir: str | Path | None = None,
         max_fps: int = 60,
         max_size: int = 1280,
+        video_bit_rate: int | None = None,
     ) -> None:
         self.serial = serial
         adb = ("adb",) if serial is None else ("adb", "-s", serial)
         self.session_id = format(random.randint(0, 0x7FFFFFFF), "08x")
-        server_file = next(
-            filter(lambda p: p.startswith("scrcpy-server-v"), os.listdir(server_dir))
-        )
-        server_file = os.path.join(server_dir, server_file)
+        if server_dir is None:
+            server_dir_path = Path(__file__).resolve().parent
+        else:
+            server_dir_path = Path(server_dir)
+
+        server_candidates = sorted(server_dir_path.glob("scrcpy-server-v*"))
+        if not server_candidates:
+            raise FileNotFoundError(f"No scrcpy-server-v* found in {server_dir_path}")
+        server_file = str(server_candidates[0])
         server_version = server_file.split("v")[-1]
         if push_server:
             subprocess.run(
@@ -72,6 +78,8 @@ class DeviceController:
             f"max_size={max_size}",
             f"max_fps={max_fps}",
         ]
+        if video_bit_rate is not None:
+            command_line.append(f"video_bit_rate={int(video_bit_rate)}")
         self.server_process = subprocess.Popen(command_line)
         self.video_socket, _ = skt.accept()
         self.control_socket, _ = skt.accept()

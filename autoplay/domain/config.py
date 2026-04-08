@@ -59,6 +59,9 @@ class VisionConfig:
     arc_cap_threshold: float = 0.44
     stream_max_fps: int = 60
     stream_max_size: int = 960
+    stream_bitrate_enabled: bool = False
+    stream_bitrate_mbps: int = 8
+    overlay_enabled: bool = False
     overlay_detached: bool = True
 
     @classmethod
@@ -75,6 +78,9 @@ class VisionConfig:
             arc_cap_threshold=float(data.get("arc_cap_threshold", 0.44)),
             stream_max_fps=int(data.get("stream_max_fps", 60)),
             stream_max_size=int(data.get("stream_max_size", 960)),
+            stream_bitrate_enabled=bool(data.get("stream_bitrate_enabled", False)),
+            stream_bitrate_mbps=int(data.get("stream_bitrate_mbps", 8)),
+            overlay_enabled=bool(data.get("overlay_enabled", False)),
             overlay_detached=bool(data.get("overlay_detached", True)),
         )
 
@@ -89,6 +95,9 @@ class VisionConfig:
             "arc_cap_threshold": self.arc_cap_threshold,
             "stream_max_fps": self.stream_max_fps,
             "stream_max_size": self.stream_max_size,
+            "stream_bitrate_enabled": self.stream_bitrate_enabled,
+            "stream_bitrate_mbps": self.stream_bitrate_mbps,
+            "overlay_enabled": self.overlay_enabled,
             "overlay_detached": self.overlay_detached,
         }
 

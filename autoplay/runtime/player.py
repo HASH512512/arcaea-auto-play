@@ -92,9 +92,15 @@ def start_input_listener(state: FineTuneState, on_command) -> threading.Thread:
 
 
 def prepare_device_controller(
-    max_fps: int = 60, max_size: int = 960
+    max_fps: int = 60,
+    max_size: int = 960,
+    video_bit_rate: int | None = None,
 ) -> DeviceController:
-    return DeviceController(server_dir=".", max_fps=max_fps, max_size=max_size)
+    return DeviceController(
+        max_fps=max_fps,
+        max_size=max_size,
+        video_bit_rate=video_bit_rate,
+    )
 
 
 def run_touch_events(
