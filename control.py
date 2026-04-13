@@ -22,12 +22,18 @@ class DeviceController:
     control_collector: threading.Thread
     device_width: int
     device_height: int
+    video_width: int
+    video_height: int
     collector_running: bool
     immediate_send_lock: threading.Lock
     latest_frame_lock: threading.Lock
     latest_frame: np.ndarray | None
     decode_fps_lock: threading.Lock
     decode_fps: float
+    latest_frame_timestamp_lock: threading.Lock
+    latest_frame_timestamp: float | None
+    latest_frame_seq_lock: threading.Lock
+    latest_frame_seq: int
 
     def __init__(
         self,
@@ -36,7 +42,6 @@ class DeviceController:
         push_server: bool = True,
         server_dir: str | Path | None = None,
         max_fps: int = 60,
-        max_size: int = 1280,
         video_bit_rate: int | None = None,
     ) -> None:
         self.serial = serial
@@ -75,7 +80,6 @@ class DeviceController:
             "log_level=info",
             "audio=false",
             "clipboard_autosync=false",
-            f"max_size={max_size}",
             f"max_fps={max_fps}",
         ]
         if video_bit_rate is not None:
@@ -93,6 +97,10 @@ class DeviceController:
         self.latest_frame = None
         self.decode_fps_lock = threading.Lock()
         self.decode_fps = 0.0
+        self.latest_frame_timestamp_lock = threading.Lock()
+        self.latest_frame_timestamp = None
+        self.latest_frame_seq_lock = threading.Lock()
+        self.latest_frame_seq = 0
 
         def streaming_decoder():
             codec = av.CodecContext.create("h264", "r")
@@ -102,24 +110,35 @@ class DeviceController:
                 while self.collector_running:
                     _pts = self.video_socket.recv(8)
                     size = int.from_bytes(self.video_socket.recv(4), "big")
-                    packets = codec.parse(self.video_socket.recv(size))
+                    packet_data = bytearray()
+                    while len(packet_data) < size:
+                        chunk = self.video_socket.recv(size - len(packet_data))
+                        if not chunk:
+                            raise ConnectionError("scrcpy video socket closed")
+                        packet_data.extend(chunk)
+                    packets = codec.parse(bytes(packet_data))
                     for packet in packets:
                         frames = codec.decode(packet)
                         for frame in frames:
                             if (
-                                self.device_width != frame.width
-                                or self.device_height != frame.height
+                                self.video_width != frame.width
+                                or self.video_height != frame.height
                             ):
                                 print(
                                     "[client]",
-                                    f"device_size: {self.device_width}x{self.device_height} -> {frame.width}x{frame.height}",
+                                    f"video_size: {self.video_width}x{self.video_height} -> {frame.width}x{frame.height}",
                                 )
-                                self.device_width = frame.width
-                                self.device_height = frame.height
+                                self.video_width = frame.width
+                                self.video_height = frame.height
                             try:
                                 frame_data = frame.to_ndarray(format="bgr24")
+                                frame_ts = time.perf_counter()
                                 with self.latest_frame_lock:
                                     self.latest_frame = frame_data
+                                with self.latest_frame_timestamp_lock:
+                                    self.latest_frame_timestamp = frame_ts
+                                with self.latest_frame_seq_lock:
+                                    self.latest_frame_seq += 1
                                 frame_counter += 1
                                 now = time.perf_counter()
                                 elapsed = now - window_start
@@ -130,8 +149,18 @@ class DeviceController:
                                     window_start = now
                             except Exception:
                                 pass
-                            break
-                        break
+                for frame in codec.decode(None):
+                    try:
+                        frame_data = frame.to_ndarray(format="bgr24")
+                        frame_ts = time.perf_counter()
+                        with self.latest_frame_lock:
+                            self.latest_frame = frame_data
+                        with self.latest_frame_timestamp_lock:
+                            self.latest_frame_timestamp = frame_ts
+                        with self.latest_frame_seq_lock:
+                            self.latest_frame_seq += 1
+                    except Exception:
+                        pass
             except Exception as e:
                 print(e.with_traceback(None))
                 self.collector_running = False
@@ -150,6 +179,8 @@ class DeviceController:
         codec_id = self.video_socket.recv(4).decode()
         self.device_width = int.from_bytes(self.video_socket.recv(4), "big")
         self.device_height = int.from_bytes(self.video_socket.recv(4), "big")
+        self.video_width = self.device_width
+        self.video_height = self.device_height
 
         print(
             "[client]",
@@ -197,6 +228,14 @@ class DeviceController:
     def get_decode_fps(self) -> float:
         with self.decode_fps_lock:
             return self.decode_fps
+
+    def get_latest_frame_timestamp(self) -> float | None:
+        with self.latest_frame_timestamp_lock:
+            return self.latest_frame_timestamp
+
+    def get_latest_frame_seq(self) -> int:
+        with self.latest_frame_seq_lock:
+            return self.latest_frame_seq
 
     def close(self) -> None:
         self.collector_running = False

@@ -93,12 +93,10 @@ def start_input_listener(state: FineTuneState, on_command) -> threading.Thread:
 
 def prepare_device_controller(
     max_fps: int = 60,
-    max_size: int = 960,
     video_bit_rate: int | None = None,
 ) -> DeviceController:
     return DeviceController(
         max_fps=max_fps,
-        max_size=max_size,
         video_bit_rate=video_bit_rate,
     )
 
@@ -110,6 +108,8 @@ def run_touch_events(
     controller: DeviceController | None = None,
     log: Callable[[str], None] | None = None,
     on_progress: Callable[[int, list, int | None, list | None], None] | None = None,
+    on_first_dispatch: Callable[[dict[str, float]], None] | None = None,
+    start_signal: threading.Event | None = None,
     debug: bool = False,
     optimize_high_priority: bool = False,
     optimize_timer_resolution: bool = False,
@@ -161,7 +161,16 @@ def run_touch_events(
             if debug:
                 _log(f"[DEBUG] Failed to set playback thread priority: {exc}")
 
+    if start_signal is not None:
+        if debug:
+            _log("[DEBUG] Waiting for external start signal")
+        while state.input_listener_active and not start_signal.wait(0.001):
+            pass
+        if not state.input_listener_active:
+            return
+
     start_time = time.perf_counter() + base_delay
+    first_dispatch_sent = False
     if debug:
         _log(
             f"[DEBUG] Scheduler armed: base_delay={base_delay:.6f}s, first_tick={ms}, queue_ticks={len(sorted_events)}"
@@ -179,7 +188,21 @@ def run_touch_events(
 
                 for event in events:
                     x, y = event.pos
+                    dispatch_started_at = time.perf_counter()
                     controller.touch(x, y, event.action, event.pointer)
+                    if not first_dispatch_sent and on_first_dispatch is not None:
+                        first_dispatch_sent = True
+                        on_first_dispatch(
+                            {
+                                "scheduled_tick_ms": float(ms),
+                                "dispatch_loop_time_ms": now,
+                                "lateness_ms": float(now - ms),
+                                "touch_send_call_ms": (
+                                    time.perf_counter() - dispatch_started_at
+                                )
+                                * 1000.0,
+                            }
+                        )
                     if event.action in {
                         TouchAction.DOWN,
                         TouchAction.MOVE,

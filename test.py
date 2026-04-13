@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 
 from autoplay.debug_pipeline import generate_debug_artifacts
-from autoplay.runtime import load_app_config
+from autoplay.runtime import CONFIG_FILE, load_app_config
 
 
 def main() -> None:
@@ -34,7 +34,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--config-file",
-        default="auto_arcaea_config.json",
+        default=str(CONFIG_FILE),
         help="Path to app config file for screen calibration",
     )
     args = parser.parse_args()

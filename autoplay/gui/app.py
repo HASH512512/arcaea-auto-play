@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import json
+import threading
+import threading
 import time
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, is_dataclass
+from enum import Enum
 from pathlib import Path
 
 import cv2
@@ -48,7 +52,7 @@ from autoplay.runtime import (
     save_app_config,
 )
 from autoplay.runtime.player import FineTuneState
-from autoplay.solver import CoordConv, solve_chart_auto
+from autoplay.solver import CoordConv, build_logical_events_for_chart, solve_chart_auto
 from autoplay.vision import VisionDetector, VisionRuntimeConfig
 
 
@@ -56,7 +60,29 @@ LEFT_MIN_WIDTH = 460
 RIGHT_MIN_WIDTH = 440
 WINDOW_MIN_WIDTH = LEFT_MIN_WIDTH + RIGHT_MIN_WIDTH
 WINDOW_MIN_HEIGHT = 600
-REF_OPENCV_DIR = Path("ref") / "opencv"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+REF_OPENCV_DIR = REPO_ROOT / "ref" / "opencv"
+DEBUG_DIR = REPO_ROOT / "debug"
+
+
+def _to_serializable(value):
+    if is_dataclass(value) and not isinstance(value, type):
+        return {k: _to_serializable(v) for k, v in asdict(value).items()}
+    if isinstance(value, dict):
+        return {str(k): _to_serializable(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_to_serializable(v) for v in value]
+    if isinstance(value, tuple):
+        return [_to_serializable(v) for v in value]
+    if isinstance(value, Enum):
+        return value.name
+    if hasattr(value, "__dict__"):
+        return {
+            key: _to_serializable(val)
+            for key, val in vars(value).items()
+            if not key.startswith("_")
+        }
+    return value
 
 
 TEXT = {
@@ -124,24 +150,23 @@ TEXT = {
         "detail_next_event": "下一 TouchEvent 详情",
         "log_clear": "清除日志",
         "log_limit": "日志最大条数",
-        "debug_verbose": "输出详细调度日志",
-        "debug_verbose_hint": "开启后会输出调度器装载、每次事件派发的延迟(lateness)以及首发延迟统计。",
+        "debug_verbose": "调试模式",
+        "debug_verbose_hint": "开启后会输出详细调度日志，并在每次开始自动输入时将触摸事件快照写入 debug 文件夹。",
         "opt_high_prio": "播放线程高优先级",
         "auto_start_cv": "视觉自动开始",
-        "auto_start_hint": "自动识别是否进入可交互界面，并在首个 tap/hold 接近判定线时自动触发开始。",
+        "auto_start_hint": "自动识别游戏界面；界面通过后按首 note 类型选择更轻量的视觉触发逻辑。",
         "auto_start_wait": "[信息] 视觉自动开始：等待游戏界面...",
-        "auto_start_ready": "[信息] 已检测到游戏界面，等待首个地面 note 进入判定。",
+        "auto_start_ready": "[信息] 已检测到游戏界面，等待首 note 触发区域命中。",
         "auto_start_fire": "[信息] 自动开始条件满足，已触发播放",
-        "auto_start_arc_todo": "[信息] 首 note 为 arc/arctap，仅完成第一层识别，第二层触发规则待下一轮实现。",
         "stream_fps": "流 FPS 上限",
-        "stream_size": "流 max_size",
         "stream_bitrate_enable": "启用码率限制",
         "stream_bitrate": "码率上限 (Mbps)",
         "vision_overlay": "Vision Overlay",
-        "ui_gate_mode": "UI判定模式",
-        "ui_gate_right": "仅右侧",
-        "ui_gate_left": "仅左侧",
-        "ui_gate_weighted": "左右加权(3:1)",
+        "vision_perf_success_only": "仅成功时输出性能日志",
+        "ground_blue_ratio_threshold": "地键蓝色占比阈值",
+        "arc_color_ratio_threshold": "天键颜色占比阈值",
+        "arc_logic_roi_half_x": "天键逻辑ROI半宽",
+        "arc_logic_roi_half_y": "天键逻辑ROI半高",
     },
     "en": {
         "window_title": "Arcaea Auto Play GUI",
@@ -207,24 +232,23 @@ TEXT = {
         "detail_next_event": "Next TouchEvent Detail",
         "log_clear": "Clear Logs",
         "log_limit": "Log Max Entries",
-        "debug_verbose": "Verbose scheduler debug logs",
-        "debug_verbose_hint": "When enabled, outputs scheduler arm info, per-dispatch lateness, and start-to-first-dispatch latency.",
+        "debug_verbose": "Debug mode",
+        "debug_verbose_hint": "When enabled, emits verbose scheduler logs and writes a touch-event snapshot to the debug folder on each playback start.",
         "opt_high_prio": "High thread priority",
         "auto_start_cv": "Vision auto start",
-        "auto_start_hint": "Automatically detects gameplay screen and starts when first tap/hold nears judgment line.",
+        "auto_start_hint": "Detect gameplay UI first, then switch to a lighter trigger path based on the first note type.",
         "auto_start_wait": "[INFO] Vision auto-start: waiting gameplay screen...",
-        "auto_start_ready": "[INFO] Gameplay screen detected, waiting first ground note timing...",
+        "auto_start_ready": "[INFO] Gameplay screen detected, waiting first-note trigger area...",
         "auto_start_fire": "[INFO] Auto-start condition met, playback triggered",
-        "auto_start_arc_todo": "[INFO] First note is arc/arctap; only stage-1 is active now. Stage-2 trigger will be finalized next round.",
         "stream_fps": "Stream FPS Limit",
-        "stream_size": "Stream max_size",
         "stream_bitrate_enable": "Enable bitrate limit",
         "stream_bitrate": "Bitrate limit (Mbps)",
         "vision_overlay": "Vision Overlay",
-        "ui_gate_mode": "UI gate mode",
-        "ui_gate_right": "Right only",
-        "ui_gate_left": "Left only",
-        "ui_gate_weighted": "Weighted (3:1)",
+        "vision_perf_success_only": "Log perf only on success",
+        "ground_blue_ratio_threshold": "Ground blue ratio threshold",
+        "arc_color_ratio_threshold": "Arc color ratio threshold",
+        "arc_logic_roi_half_x": "Arc logic ROI half width",
+        "arc_logic_roi_half_y": "Arc logic ROI half height",
     },
 }
 
@@ -248,7 +272,9 @@ class PreparedRunData:
     events_by_time: dict[int, list]
     note_meta: dict[int, dict[str, object]]
     first_ground_tick: int | None
+    first_ground_logic_x: float | None
     first_note_types: tuple[str, ...]
+    first_note_logic_pos: tuple[float, float] | None
 
 
 def _coord_to_text(coord: tuple[int, int]) -> str:
@@ -280,28 +306,64 @@ def _build_note_meta(chart) -> dict[int, dict[str, object]]:
     chart_ir = chart.ir
     if chart_ir is None:
         return result
+
+    logical_events = build_logical_events_for_chart(chart)
+    logical_by_note: dict[int, list] = {}
+    for event in logical_events:
+        logical_by_note.setdefault(event.source_note_id, []).append(event)
+
+    def _logical_span(
+        note_id: int,
+    ) -> tuple[tuple[float, float] | None, tuple[float, float] | None]:
+        events = logical_by_note.get(note_id, [])
+        if not events:
+            return None, None
+        ordered = sorted(
+            events, key=lambda item: (item.tick, item.action.value, item.pointer)
+        )
+        start = (float(ordered[0].x), float(ordered[0].y))
+        end = (float(ordered[-1].x), float(ordered[-1].y))
+        return start, end
+
     for note in chart_ir.notes:
         if isinstance(note, TapIR):
+            logical_start, logical_end = _logical_span(note.note_id)
             result[note.note_id] = {
                 "type": "tap",
                 "tick": note.tick,
-                "start": (note.lane, 0.0),
-                "end": (note.lane, 0.0),
+                "start": logical_start
+                if logical_start is not None
+                else (note.lane, 0.0),
+                "end": logical_end if logical_end is not None else (note.lane, 0.0),
+                "raw_start": (note.lane, 0.0),
+                "raw_end": (note.lane, 0.0),
             }
         elif isinstance(note, HoldIR):
+            logical_start, logical_end = _logical_span(note.note_id)
             result[note.note_id] = {
                 "type": "hold",
                 "tick": note.start,
-                "start": (note.lane, 0.0),
-                "end": (note.lane, 0.0),
+                "start": logical_start
+                if logical_start is not None
+                else (note.lane, 0.0),
+                "end": logical_end if logical_end is not None else (note.lane, 0.0),
+                "raw_start": (note.lane, 0.0),
+                "raw_end": (note.lane, 0.0),
                 "end_tick": note.end,
             }
         elif isinstance(note, ArcIR):
+            logical_start, logical_end = _logical_span(note.note_id)
             result[note.note_id] = {
                 "type": "arc" if not note.trace_arc else "trace_arc",
                 "tick": note.start,
-                "start": (note.start_x, note.start_y),
-                "end": (note.end_x, note.end_y),
+                "start": logical_start
+                if logical_start is not None
+                else (note.start_x, note.start_y),
+                "end": logical_end
+                if logical_end is not None
+                else (note.end_x, note.end_y),
+                "raw_start": (note.start_x, note.start_y),
+                "raw_end": (note.end_x, note.end_y),
                 "end_tick": note.end,
             }
     return result
@@ -347,12 +409,10 @@ class ControllerWarmupWorker(QThread):
     def __init__(
         self,
         max_fps: int,
-        max_size: int,
         video_bit_rate: int | None,
     ) -> None:
         super().__init__()
         self.max_fps = max_fps
-        self.max_size = max_size
         self.video_bit_rate = video_bit_rate
 
     def run(self) -> None:
@@ -360,7 +420,6 @@ class ControllerWarmupWorker(QThread):
         try:
             controller = prepare_device_controller(
                 max_fps=self.max_fps,
-                max_size=self.max_size,
                 video_bit_rate=self.video_bit_rate,
             )
         except Exception as exc:
@@ -412,12 +471,30 @@ class PrepareWorker(QThread):
             return
 
         first_ground_tick: int | None = None
+        first_ground_logic_x: float | None = None
         first_tick = min(events.keys())
         first_types = {str(event.source_type) for event in events[first_tick]}
+        first_note_logic_pos: tuple[float, float] | None = None
+        for event in events[first_tick]:
+            logical_pos = getattr(event, "logical_pos", None)
+            if (
+                isinstance(logical_pos, tuple)
+                and len(logical_pos) == 2
+                and all(isinstance(v, (int, float)) for v in logical_pos)
+            ):
+                first_note_logic_pos = (float(logical_pos[0]), float(logical_pos[1]))
+                break
         for tick in sorted(events.keys()):
             for event in events[tick]:
                 if event.source_type in {"tap", "hold"}:
                     first_ground_tick = tick
+                    logical_pos = getattr(event, "logical_pos", None)
+                    if (
+                        isinstance(logical_pos, tuple)
+                        and len(logical_pos) == 2
+                        and isinstance(logical_pos[0], (int, float))
+                    ):
+                        first_ground_logic_x = float(logical_pos[0])
                     break
             if first_ground_tick is not None:
                 break
@@ -429,7 +506,9 @@ class PrepareWorker(QThread):
             events_by_time=events,
             note_meta=_build_note_meta(chart),
             first_ground_tick=first_ground_tick,
+            first_ground_logic_x=first_ground_logic_x,
             first_note_types=tuple(sorted(first_types)),
+            first_note_logic_pos=first_note_logic_pos,
         )
         self.prepared_ok.emit(payload)
 
@@ -439,6 +518,7 @@ class PlaybackWorker(QThread):
     started_playback = Signal()
     finished_playback = Signal(bool, str)
     progress = Signal(object)
+    first_dispatch_metrics = Signal(object)
 
     def __init__(
         self,
@@ -447,6 +527,7 @@ class PlaybackWorker(QThread):
         debug_verbose: bool,
         optimize_high_priority: bool,
         optimize_timer_resolution: bool,
+        start_signal: threading.Event | None = None,
     ) -> None:
         super().__init__()
         self.prepared = prepared
@@ -454,6 +535,7 @@ class PlaybackWorker(QThread):
         self.debug_verbose = debug_verbose
         self.optimize_high_priority = optimize_high_priority
         self.optimize_timer_resolution = optimize_timer_resolution
+        self.start_signal = start_signal
         self.state: FineTuneState | None = None
 
     def current_offset(self) -> float:
@@ -508,6 +590,9 @@ class PlaybackWorker(QThread):
             }
         )
 
+    def _on_first_dispatch_metrics(self, payload: dict[str, float]) -> None:
+        self.first_dispatch_metrics.emit(payload)
+
     def run(self) -> None:
         self.state = FineTuneState(self.prepared.run_config.fine_tune_step)
         self.state.input_listener_active = True
@@ -520,6 +605,8 @@ class PlaybackWorker(QThread):
             controller=self.controller,
             log=self.log_message.emit,
             on_progress=self._on_progress,
+            on_first_dispatch=self._on_first_dispatch_metrics,
+            start_signal=self.start_signal,
             debug=self.debug_verbose,
             optimize_high_priority=self.optimize_high_priority,
             optimize_timer_resolution=self.optimize_timer_resolution,
@@ -528,6 +615,8 @@ class PlaybackWorker(QThread):
 
 
 class AutoPlayWindow(QMainWindow):
+    auto_start_frame_ready = Signal()
+
     def __init__(self) -> None:
         super().__init__()
         self.locale = "zh"
@@ -545,23 +634,29 @@ class AutoPlayWindow(QMainWindow):
         self.log_limit = 500
         self._start_click_time: float | None = None
         self._first_dispatch_logged = False
+        self._auto_start_detection_started_at: float | None = None
+        self._auto_start_triggered_at: float | None = None
+        self._auto_start_frame_timestamp: float | None = None
+        self._auto_start_vision_total_ms: float = 0.0
+        self._vision_perf_success_only = True
+        self._auto_start_last_frame_seq = -1
+        self._auto_start_playback_armed = False
+        self._auto_start_start_signal: threading.Event | None = None
         self.vision_detector = VisionDetector(REF_OPENCV_DIR, use_cuda=True)
         self.stream_max_fps = 60
-        self.stream_max_size = 960
         self.stream_bitrate_enabled = False
         self.stream_bitrate_mbps = 8
 
         self._build_ui()
         self._load_config_to_form()
         self._apply_texts()
+        self._report_missing_vision_templates()
+        self.auto_start_frame_ready.connect(self._poll_auto_start)
 
         self.offset_timer = QTimer(self)
         self.offset_timer.setInterval(80)
         self.offset_timer.timeout.connect(self._refresh_offset)
 
-        self.auto_start_timer = QTimer(self)
-        self.auto_start_timer.setInterval(16)
-        self.auto_start_timer.timeout.connect(self._poll_auto_start)
         self._auto_start_stage = "idle"
 
         self.overlay_timer = QTimer(self)
@@ -781,15 +876,10 @@ class AutoPlayWindow(QMainWindow):
         self.stream_fps_spin = QSpinBox()
         self.stream_fps_spin.setRange(30, 200)
         self.stream_fps_spin.setValue(self.stream_max_fps)
-        self.stream_size_label = QLabel("Stream max_size")
-        self.stream_size_spin = QSpinBox()
-        self.stream_size_spin.setRange(640, 1440)
-        self.stream_size_spin.setSingleStep(80)
-        self.stream_size_spin.setValue(self.stream_max_size)
         self.stream_bitrate_enable_check = QCheckBox()
         self.stream_bitrate_enable_check.setChecked(False)
         self.stream_bitrate_spin = QSpinBox()
-        self.stream_bitrate_spin.setRange(1, 40)
+        self.stream_bitrate_spin.setRange(1, 100)
         self.stream_bitrate_spin.setSuffix(" Mbps")
         self.stream_bitrate_spin.setValue(self.stream_bitrate_mbps)
         self.stream_bitrate_spin.setEnabled(False)
@@ -797,7 +887,6 @@ class AutoPlayWindow(QMainWindow):
             self.stream_bitrate_spin.setEnabled
         )
         stream_form.addRow(self.stream_fps_label, self.stream_fps_spin)
-        stream_form.addRow(self.stream_size_label, self.stream_size_spin)
         stream_form.addRow(self.stream_bitrate_enable_check, self.stream_bitrate_spin)
         basic_form.addRow(stream_group)
 
@@ -807,18 +896,10 @@ class AutoPlayWindow(QMainWindow):
         self.log_limit_spin.setValue(self.log_limit)
         basic_form.addRow(self.log_limit_label, self.log_limit_spin)
 
-        self.debug_verbose_label = QLabel()
-        self.debug_verbose_combo = QComboBox()
-        self.debug_verbose_combo.addItem("OFF", False)
-        self.debug_verbose_combo.addItem("ON", True)
+        self.debug_verbose_check = QCheckBox()
         self.debug_verbose_hint = QLabel()
         self.debug_verbose_hint.setWordWrap(True)
-        debug_row = QHBoxLayout()
-        debug_row.addWidget(self.debug_verbose_label)
-        debug_row.addWidget(self.debug_verbose_combo)
-        debug_widget = QWidget()
-        debug_widget.setLayout(debug_row)
-        basic_form.addRow(debug_widget)
+        basic_form.addRow(self.debug_verbose_check)
         basic_form.addRow(self.debug_verbose_hint)
 
         self.opt_high_prio_check = QCheckBox()
@@ -843,36 +924,45 @@ class AutoPlayWindow(QMainWindow):
 
         self.ui_template_threshold_label = QLabel("UI template threshold")
         self.ui_template_threshold_spin = QDoubleSpinBox()
-        self.ui_template_threshold_spin.setRange(0.10, 0.95)
+        self.ui_template_threshold_spin.setRange(0.00, 0.95)
         self.ui_template_threshold_spin.setSingleStep(0.01)
         self.ui_template_threshold_spin.setValue(0.42)
 
-        self.ui_gate_mode_label = QLabel()
-        self.ui_gate_mode_combo = QComboBox()
-        self.ui_gate_mode_combo.addItem("", "right")
-        self.ui_gate_mode_combo.addItem("", "left")
-        self.ui_gate_mode_combo.addItem("", "weighted")
+        self.ground_blue_ratio_threshold_label = QLabel("Ground blue ratio")
+        self.ground_blue_ratio_threshold_spin = QDoubleSpinBox()
+        self.ground_blue_ratio_threshold_spin.setRange(0.001, 0.50)
+        self.ground_blue_ratio_threshold_spin.setSingleStep(0.005)
+        self.ground_blue_ratio_threshold_spin.setValue(0.03)
 
-        self.ui_digit_count_label = QLabel("UI digit min count")
-        self.ui_digit_count_spin = QSpinBox()
-        self.ui_digit_count_spin.setRange(1, 20)
-        self.ui_digit_count_spin.setValue(7)
+        self.arc_color_ratio_threshold_label = QLabel("Arc color ratio")
+        self.arc_color_ratio_threshold_spin = QDoubleSpinBox()
+        self.arc_color_ratio_threshold_spin.setRange(0.001, 0.50)
+        self.arc_color_ratio_threshold_spin.setSingleStep(0.005)
+        self.arc_color_ratio_threshold_spin.setValue(0.02)
 
-        self.ground_note_ratio_label = QLabel("Ground note ratio")
-        self.ground_note_ratio_spin = QDoubleSpinBox()
-        self.ground_note_ratio_spin.setRange(0.005, 0.50)
-        self.ground_note_ratio_spin.setSingleStep(0.005)
-        self.ground_note_ratio_spin.setValue(0.045)
+        self.arc_logic_roi_half_x_label = QLabel("Arc logic ROI half width")
+        self.arc_logic_roi_half_x_spin = QDoubleSpinBox()
+        self.arc_logic_roi_half_x_spin.setRange(0.01, 1.00)
+        self.arc_logic_roi_half_x_spin.setSingleStep(0.01)
+        self.arc_logic_roi_half_x_spin.setValue(0.25)
 
-        self.arc_cap_threshold_label = QLabel("Arc cap threshold")
-        self.arc_cap_threshold_spin = QDoubleSpinBox()
-        self.arc_cap_threshold_spin.setRange(0.10, 0.95)
-        self.arc_cap_threshold_spin.setSingleStep(0.01)
-        self.arc_cap_threshold_spin.setValue(0.44)
+        self.arc_logic_roi_half_y_label = QLabel("Arc logic ROI half height")
+        self.arc_logic_roi_half_y_spin = QDoubleSpinBox()
+        self.arc_logic_roi_half_y_spin.setRange(0.01, 1.00)
+        self.arc_logic_roi_half_y_spin.setSingleStep(0.01)
+        self.arc_logic_roi_half_y_spin.setValue(0.25)
+
+        self.processing_scale_label = QLabel("Vision processing scale")
+        self.processing_scale_spin = QDoubleSpinBox()
+        self.processing_scale_spin.setRange(0.10, 1.00)
+        self.processing_scale_spin.setSingleStep(0.05)
+        self.processing_scale_spin.setValue(1.00)
 
         self.overlay_debug_check = QCheckBox("Vision overlay")
         self.overlay_debug_check.setChecked(False)
         self.overlay_debug_check.toggled.connect(self._on_overlay_toggled)
+        self.vision_perf_success_only_check = QCheckBox()
+        self.vision_perf_success_only_check.setChecked(True)
 
         self.overlay_window = QWidget(None)
         self.overlay_window.setWindowFlag(Qt.Window, True)
@@ -886,10 +976,6 @@ class AutoPlayWindow(QMainWindow):
         self.overlay_window.resize(920, 560)
         self.overlay_window.hide()
 
-        self.ui_x0_spin = QDoubleSpinBox()
-        self.ui_y0_spin = QDoubleSpinBox()
-        self.ui_x1_spin = QDoubleSpinBox()
-        self.ui_y1_spin = QDoubleSpinBox()
         self.ui_left_x0_spin = QDoubleSpinBox()
         self.ui_left_y0_spin = QDoubleSpinBox()
         self.ui_left_x1_spin = QDoubleSpinBox()
@@ -898,16 +984,8 @@ class AutoPlayWindow(QMainWindow):
         self.ground_y0_spin = QDoubleSpinBox()
         self.ground_x1_spin = QDoubleSpinBox()
         self.ground_y1_spin = QDoubleSpinBox()
-        self.arc_x0_spin = QDoubleSpinBox()
-        self.arc_y0_spin = QDoubleSpinBox()
-        self.arc_x1_spin = QDoubleSpinBox()
-        self.arc_y1_spin = QDoubleSpinBox()
 
         for spin in (
-            self.ui_x0_spin,
-            self.ui_y0_spin,
-            self.ui_x1_spin,
-            self.ui_y1_spin,
             self.ui_left_x0_spin,
             self.ui_left_y0_spin,
             self.ui_left_x1_spin,
@@ -916,19 +994,11 @@ class AutoPlayWindow(QMainWindow):
             self.ground_y0_spin,
             self.ground_x1_spin,
             self.ground_y1_spin,
-            self.arc_x0_spin,
-            self.arc_y0_spin,
-            self.arc_x1_spin,
-            self.arc_y1_spin,
         ):
             spin.setRange(0.0, 1.0)
             spin.setSingleStep(0.005)
             spin.setDecimals(3)
 
-        self.ui_x0_spin.setValue(0.66)
-        self.ui_y0_spin.setValue(0.02)
-        self.ui_x1_spin.setValue(0.995)
-        self.ui_y1_spin.setValue(0.20)
         self.ui_left_x0_spin.setValue(0.005)
         self.ui_left_y0_spin.setValue(0.02)
         self.ui_left_x1_spin.setValue(0.34)
@@ -937,33 +1007,19 @@ class AutoPlayWindow(QMainWindow):
         self.ground_y0_spin.setValue(1310 / 1440)
         self.ground_x1_spin.setValue(0.88)
         self.ground_y1_spin.setValue(1345 / 1440)
-        self.arc_x0_spin.setValue(0.18)
-        self.arc_y0_spin.setValue(0.22)
-        self.arc_x1_spin.setValue(0.82)
-        self.arc_y1_spin.setValue(0.80)
 
         roi_group = QGroupBox("ROI")
         roi_grid = QGridLayout(roi_group)
-        roi_grid.addWidget(QLabel("UI x0,y0,x1,y1"), 0, 0)
-        roi_grid.addWidget(self.ui_x0_spin, 0, 1)
-        roi_grid.addWidget(self.ui_y0_spin, 0, 2)
-        roi_grid.addWidget(self.ui_x1_spin, 0, 3)
-        roi_grid.addWidget(self.ui_y1_spin, 0, 4)
-        roi_grid.addWidget(QLabel("UI-L x0,y0,x1,y1"), 1, 0)
-        roi_grid.addWidget(self.ui_left_x0_spin, 1, 1)
-        roi_grid.addWidget(self.ui_left_y0_spin, 1, 2)
-        roi_grid.addWidget(self.ui_left_x1_spin, 1, 3)
-        roi_grid.addWidget(self.ui_left_y1_spin, 1, 4)
-        roi_grid.addWidget(QLabel("Ground x0,y0,x1,y1"), 2, 0)
-        roi_grid.addWidget(self.ground_x0_spin, 2, 1)
-        roi_grid.addWidget(self.ground_y0_spin, 2, 2)
-        roi_grid.addWidget(self.ground_x1_spin, 2, 3)
-        roi_grid.addWidget(self.ground_y1_spin, 2, 4)
-        roi_grid.addWidget(QLabel("Arc x0,y0,x1,y1"), 3, 0)
-        roi_grid.addWidget(self.arc_x0_spin, 3, 1)
-        roi_grid.addWidget(self.arc_y0_spin, 3, 2)
-        roi_grid.addWidget(self.arc_x1_spin, 3, 3)
-        roi_grid.addWidget(self.arc_y1_spin, 3, 4)
+        roi_grid.addWidget(QLabel("UI-L x0,y0,x1,y1"), 0, 0)
+        roi_grid.addWidget(self.ui_left_x0_spin, 0, 1)
+        roi_grid.addWidget(self.ui_left_y0_spin, 0, 2)
+        roi_grid.addWidget(self.ui_left_x1_spin, 0, 3)
+        roi_grid.addWidget(self.ui_left_y1_spin, 0, 4)
+        roi_grid.addWidget(QLabel("Ground x0,y0,x1,y1"), 1, 0)
+        roi_grid.addWidget(self.ground_x0_spin, 1, 1)
+        roi_grid.addWidget(self.ground_y0_spin, 1, 2)
+        roi_grid.addWidget(self.ground_x1_spin, 1, 3)
+        roi_grid.addWidget(self.ground_y1_spin, 1, 4)
 
         self.roi_values_label = QLabel("roi_values")
         self.roi_values_label.setWordWrap(True)
@@ -971,10 +1027,27 @@ class AutoPlayWindow(QMainWindow):
         vision_form.addRow(
             self.ui_template_threshold_label, self.ui_template_threshold_spin
         )
-        vision_form.addRow(self.ui_gate_mode_label, self.ui_gate_mode_combo)
-        vision_form.addRow(self.ui_digit_count_label, self.ui_digit_count_spin)
-        vision_form.addRow(self.ground_note_ratio_label, self.ground_note_ratio_spin)
-        vision_form.addRow(self.arc_cap_threshold_label, self.arc_cap_threshold_spin)
+        vision_form.addRow(
+            self.ground_blue_ratio_threshold_label,
+            self.ground_blue_ratio_threshold_spin,
+        )
+        vision_form.addRow(
+            self.arc_color_ratio_threshold_label,
+            self.arc_color_ratio_threshold_spin,
+        )
+        vision_form.addRow(
+            self.arc_logic_roi_half_x_label,
+            self.arc_logic_roi_half_x_spin,
+        )
+        vision_form.addRow(
+            self.arc_logic_roi_half_y_label,
+            self.arc_logic_roi_half_y_spin,
+        )
+        vision_form.addRow(
+            self.processing_scale_label,
+            self.processing_scale_spin,
+        )
+        vision_form.addRow(self.vision_perf_success_only_check)
         vision_form.addRow(self.overlay_debug_check)
         vision_form.addRow(roi_group)
         vision_form.addRow(self.roi_values_label)
@@ -1033,25 +1106,27 @@ class AutoPlayWindow(QMainWindow):
 
         self.clear_log_btn.setText(self._t("log_clear"))
         self.stream_fps_label.setText(self._t("stream_fps"))
-        self.stream_size_label.setText(self._t("stream_size"))
         self.stream_bitrate_enable_check.setText(self._t("stream_bitrate_enable"))
         self.stream_bitrate_spin.setSuffix(
             f" {self._t('stream_bitrate').split('(')[-1].rstrip(')')}"
         )
         self.log_limit_label.setText(self._t("log_limit"))
-        self.debug_verbose_label.setText(self._t("debug_verbose"))
+        self.debug_verbose_check.setText(self._t("debug_verbose"))
         self.debug_verbose_hint.setText(self._t("debug_verbose_hint"))
         self.opt_high_prio_check.setText(self._t("opt_high_prio"))
         self.auto_start_cv_check.setText(self._t("auto_start_cv"))
         self.auto_start_hint.setText(self._t("auto_start_hint"))
         self.ui_template_threshold_label.setText("UI template threshold")
-        self.ui_gate_mode_label.setText(self._t("ui_gate_mode"))
-        self.ui_gate_mode_combo.setItemText(0, self._t("ui_gate_right"))
-        self.ui_gate_mode_combo.setItemText(1, self._t("ui_gate_left"))
-        self.ui_gate_mode_combo.setItemText(2, self._t("ui_gate_weighted"))
-        self.ui_digit_count_label.setText("UI digit min count")
-        self.ground_note_ratio_label.setText("Ground note ratio")
-        self.arc_cap_threshold_label.setText("Arc cap threshold")
+        self.ground_blue_ratio_threshold_label.setText(
+            self._t("ground_blue_ratio_threshold")
+        )
+        self.arc_color_ratio_threshold_label.setText(
+            self._t("arc_color_ratio_threshold")
+        )
+        self.arc_logic_roi_half_x_label.setText(self._t("arc_logic_roi_half_x"))
+        self.arc_logic_roi_half_y_label.setText(self._t("arc_logic_roi_half_y"))
+        self.processing_scale_label.setText("Vision processing scale")
+        self.vision_perf_success_only_check.setText(self._t("vision_perf_success_only"))
         self.overlay_debug_check.setText(self._t("vision_overlay"))
 
         self.run_state_label.setText(self._t("idle"))
@@ -1076,6 +1151,70 @@ class AutoPlayWindow(QMainWindow):
         self.log_output.verticalScrollBar().setValue(
             self.log_output.verticalScrollBar().maximum()
         )
+
+    def _write_touch_event_snapshot(self) -> Path | None:
+        if self.prepared is None:
+            return None
+        DEBUG_DIR.mkdir(parents=True, exist_ok=True)
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        chart_name = Path(self.prepared.run_config.chart_path).stem or "chart"
+        out_json = DEBUG_DIR / f"gui_touch_snapshot_{chart_name}_{timestamp}.json"
+
+        touch_events_flat: list[dict[str, object]] = []
+        for tick in sorted(self.prepared.events_by_time.keys()):
+            for event in self.prepared.events_by_time[tick]:
+                touch_events_flat.append(
+                    {
+                        "tick": tick,
+                        "pointer": event.pointer,
+                        "action": event.action.name,
+                        "position": list(event.pos),
+                        "source_note_id": event.source_note_id,
+                        "source_type": event.source_type,
+                        "logical_tick": event.logical_tick,
+                        "logical_pos": list(event.logical_pos)
+                        if event.logical_pos is not None
+                        else None,
+                    }
+                )
+
+        snapshot = {
+            "stats": {
+                "touch_event_ticks": len(self.prepared.events_by_time),
+                "touch_events_total": len(touch_events_flat),
+                "first_note_types": list(self.prepared.first_note_types),
+                "first_ground_tick": self.prepared.first_ground_tick,
+                "first_note_logic_pos": _to_serializable(
+                    self.prepared.first_note_logic_pos
+                ),
+            },
+            "run_config": _to_serializable(self.prepared.run_config),
+            "note_meta": _to_serializable(self.prepared.note_meta),
+            "touch_events": touch_events_flat,
+        }
+        out_json.write_text(
+            json.dumps(snapshot, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        return out_json
+
+    def _report_missing_vision_templates(self) -> None:
+        metrics = self.vision_detector.metrics
+        if metrics.ui_left_template_count > 0 and metrics.ui_left_descriptor_ready:
+            return
+        self._append_log(
+            "[VISION][ERROR] UI-left templates not loaded. template_dir={} template_count={} descriptor_ready={}".format(
+                metrics.ui_left_template_dir,
+                metrics.ui_left_template_count,
+                metrics.ui_left_descriptor_ready,
+            )
+        )
+        expected = ["uileft.png", "uileft_2.png", "pause.png"]
+        for name in expected:
+            path = Path(metrics.ui_left_template_dir) / name
+            self._append_log(
+                f"[VISION][ERROR] expected template: {path} exists={path.exists()}"
+            )
 
     def _clear_logs(self) -> None:
         self.log_lines.clear()
@@ -1168,51 +1307,118 @@ class AutoPlayWindow(QMainWindow):
         self.next_note_detail.set_text(next_note_detail + "\n" + next_note_l2)
         self.next_event_detail.set_text(next_evt_detail)
 
+    def _log_vision_perf(self, label: str, passed: bool) -> None:
+        if self._vision_perf_success_only and not passed:
+            return
+        perf = self.vision_detector.perf
+        metrics = self.vision_detector.metrics
+        self._append_log(
+            "[VISION] {} total={:.3f}ms roi={:.3f}ms resize={:.3f}ms gray={:.3f}ms orb={:.3f}ms match={:.3f}ms homography={:.3f}ms hsv={:.3f}ms mask={:.3f}ms count={:.3f}ms decision={:.3f}ms ui_kp={} ui_tpl={} ui_tpl_kp_max={} ui_roi={} desc_ready={}".format(
+                label,
+                perf.total_ms,
+                perf.roi_ms,
+                perf.resize_ms,
+                perf.gray_ms,
+                perf.orb_ms,
+                perf.match_ms,
+                perf.homography_ms,
+                perf.hsv_ms,
+                perf.mask_ms,
+                perf.count_ms,
+                perf.decision_ms,
+                metrics.ui_left_keypoints,
+                metrics.ui_left_template_count,
+                metrics.ui_left_template_keypoints_max,
+                metrics.ui_left_roi_shape,
+                metrics.ui_left_descriptor_ready,
+            )
+        )
+
+    def _on_first_dispatch_metrics(self, payload: dict[str, float]) -> None:
+        if self._auto_start_triggered_at is None:
+            return
+        trigger_to_dispatch_ms = (
+            time.perf_counter() - self._auto_start_triggered_at
+        ) * 1000.0
+        frame_to_dispatch_ms = None
+        if self._auto_start_frame_timestamp is not None:
+            frame_to_dispatch_ms = (
+                time.perf_counter() - self._auto_start_frame_timestamp
+            ) * 1000.0
+        detect_to_dispatch_ms = None
+        if self._auto_start_detection_started_at is not None:
+            detect_to_dispatch_ms = (
+                time.perf_counter() - self._auto_start_detection_started_at
+            ) * 1000.0
+        message = "[VISION] end-to-end trigger->dispatch={:.2f}ms detect->dispatch={:.2f}ms vision_total={:.2f}ms scheduler_lateness={:.2f}ms touch_send={:.3f}ms".format(
+            trigger_to_dispatch_ms,
+            detect_to_dispatch_ms if detect_to_dispatch_ms is not None else -1.0,
+            self._auto_start_vision_total_ms,
+            float(payload.get("lateness_ms", 0.0)),
+            float(payload.get("touch_send_call_ms", 0.0)),
+        )
+        if frame_to_dispatch_ms is not None:
+            message += " frame->dispatch={:.2f}ms".format(frame_to_dispatch_ms)
+        self._append_log(message)
+        self._auto_start_detection_started_at = None
+        self._auto_start_triggered_at = None
+        self._auto_start_frame_timestamp = None
+        self._auto_start_vision_total_ms = 0.0
+
     def _build_vision_runtime(self) -> VisionRuntimeConfig:
         return VisionRuntimeConfig(
-            ui_roi=(
-                float(self.ui_x0_spin.value()),
-                float(self.ui_y0_spin.value()),
-                float(self.ui_x1_spin.value()),
-                float(self.ui_y1_spin.value()),
-            ),
             ui_left_roi=(
                 float(self.ui_left_x0_spin.value()),
                 float(self.ui_left_y0_spin.value()),
                 float(self.ui_left_x1_spin.value()),
                 float(self.ui_left_y1_spin.value()),
             ),
-            ui_gate_mode=str(self.ui_gate_mode_combo.currentData()),
             ground_roi=(
                 float(self.ground_x0_spin.value()),
                 float(self.ground_y0_spin.value()),
                 float(self.ground_x1_spin.value()),
                 float(self.ground_y1_spin.value()),
             ),
-            arc_roi=(
-                float(self.arc_x0_spin.value()),
-                float(self.arc_y0_spin.value()),
-                float(self.arc_x1_spin.value()),
-                float(self.arc_y1_spin.value()),
-            ),
             ui_feature_threshold=float(self.ui_template_threshold_spin.value()),
-            ground_overlap_threshold=float(self.ground_note_ratio_spin.value()),
-            arc_overlap_threshold=float(self.arc_cap_threshold_spin.value()),
+            ground_blue_ratio_threshold=float(
+                self.ground_blue_ratio_threshold_spin.value()
+            ),
+            arc_color_ratio_threshold=float(
+                self.arc_color_ratio_threshold_spin.value()
+            ),
+            arc_logic_roi_half_x=float(self.arc_logic_roi_half_x_spin.value()),
+            arc_logic_roi_half_y=float(self.arc_logic_roi_half_y_spin.value()),
+            processing_scale=float(self.processing_scale_spin.value()),
         )
 
     def _is_gameplay_screen(self, frame: np.ndarray) -> bool:
         self.vision_detector.set_runtime(self._build_vision_runtime())
-        return self.vision_detector.detect_ui_panel(frame)
+        passed = self.vision_detector.detect_ui_panel(frame)
+        self._log_vision_perf("ui_left", passed)
+        return passed
 
     def _is_first_ground_note_on_judgment(self, frame: np.ndarray) -> bool:
-        if self.prepared is None or self.prepared.first_ground_tick is None:
+        if (
+            self.prepared is None
+            or self.prepared.first_ground_tick is None
+            or self.prepared.first_ground_logic_x is None
+        ):
             return False
         self.vision_detector.set_runtime(self._build_vision_runtime())
-        return self.vision_detector.detect_ground_overlap(frame)
+        passed = self.vision_detector.detect_ground_overlap(
+            frame, self.prepared.first_ground_logic_x
+        )
+        self._log_vision_perf("ground", passed)
+        return passed
 
     def _is_arc_cap_triggered(self, frame: np.ndarray) -> bool:
+        if self.prepared is None or self.prepared.first_note_logic_pos is None:
+            return False
         self.vision_detector.set_runtime(self._build_vision_runtime())
-        return self.vision_detector.detect_arc_overlap(frame)
+        logic_x, logic_y = self.prepared.first_note_logic_pos
+        passed = self.vision_detector.detect_arc_overlap(frame, logic_x, logic_y)
+        self._log_vision_perf("arc", passed)
+        return passed
 
     def _update_overlay_preview(self, frame: np.ndarray) -> None:
         if not self.overlay_debug_check.isChecked():
@@ -1220,8 +1426,20 @@ class AutoPlayWindow(QMainWindow):
             return
 
         self.vision_detector.set_runtime(self._build_vision_runtime())
+        overlay_source = frame
+        if self._auto_start_stage == "wait_ui":
+            self.vision_detector.detect_ui_panel(frame)
+        elif self._auto_start_stage == "wait_ground":
+            self.vision_detector.detect_ground_overlap(frame)
+        elif self._auto_start_stage == "wait_arc":
+            if (
+                self.prepared is not None
+                and self.prepared.first_note_logic_pos is not None
+            ):
+                logic_x, logic_y = self.prepared.first_note_logic_pos
+                self.vision_detector.detect_arc_overlap(frame, logic_x, logic_y)
         overlay = self.vision_detector.render_overlay(
-            frame,
+            overlay_source,
             self._auto_start_stage,
             self.controller.get_decode_fps() if self.controller is not None else None,
         )
@@ -1231,11 +1449,7 @@ class AutoPlayWindow(QMainWindow):
         )
 
         self.roi_values_label.setText(
-            "UI-R=({:.3f},{:.3f},{:.3f},{:.3f}) UI-L=({:.3f},{:.3f},{:.3f},{:.3f}) Ground=({:.3f},{:.3f},{:.3f},{:.3f}) Arc=({:.3f},{:.3f},{:.3f},{:.3f})".format(
-                float(self.ui_x0_spin.value()),
-                float(self.ui_y0_spin.value()),
-                float(self.ui_x1_spin.value()),
-                float(self.ui_y1_spin.value()),
+            "UI-L=({:.3f},{:.3f},{:.3f},{:.3f}) Ground=({:.3f},{:.3f},{:.3f},{:.3f}) ArcLogicHalf=({:.3f},{:.3f})".format(
                 float(self.ui_left_x0_spin.value()),
                 float(self.ui_left_y0_spin.value()),
                 float(self.ui_left_x1_spin.value()),
@@ -1244,21 +1458,19 @@ class AutoPlayWindow(QMainWindow):
                 float(self.ground_y0_spin.value()),
                 float(self.ground_x1_spin.value()),
                 float(self.ground_y1_spin.value()),
-                float(self.arc_x0_spin.value()),
-                float(self.arc_y0_spin.value()),
-                float(self.arc_x1_spin.value()),
-                float(self.arc_y1_spin.value()),
+                float(self.arc_logic_roi_half_x_spin.value()),
+                float(self.arc_logic_roi_half_y_spin.value()),
             )
         )
         metrics = self.vision_detector.metrics
         self.roi_values_label.setText(
             self.roi_values_label.text()
-            + " | ui_score={:.3f} good={} inliers={} ground_overlap={:.3f} arc_overlap={:.3f}".format(
-                metrics.ui_feature_score,
-                metrics.ui_good_matches,
-                metrics.ui_inliers,
-                metrics.ground_overlap_ratio,
-                metrics.arc_overlap_ratio,
+            + " | ui_left={:.3f} good={} inliers={} ground_blue={:.3f} arc_color={:.3f}".format(
+                metrics.ui_left_feature_score,
+                metrics.ui_left_good_matches,
+                metrics.ui_left_inliers,
+                metrics.ground_blue_ratio,
+                metrics.arc_color_ratio,
             )
         )
 
@@ -1340,75 +1552,89 @@ class AutoPlayWindow(QMainWindow):
 
     def _poll_auto_start(self) -> None:
         if not self.auto_start_cv_check.isChecked():
-            self.auto_start_timer.stop()
             self._auto_start_stage = "idle"
-            return
-        if self.worker is not None and self.worker.isRunning():
-            self.auto_start_timer.stop()
-            self._auto_start_stage = "idle"
+            self._auto_start_playback_armed = False
             return
         if self.controller is None or self.prepared is None:
+            return
+        if (
+            self.worker is not None
+            and self.worker.isRunning()
+            and not self._auto_start_playback_armed
+        ):
             return
 
         frame = self.controller.get_latest_frame(copy_frame=True)
         if frame is None:
             return
+        frame_timestamp = None
+        if hasattr(self.controller, "get_latest_frame_timestamp"):
+            frame_timestamp = self.controller.get_latest_frame_timestamp()
+        self._auto_start_frame_timestamp = frame_timestamp
 
         if self._auto_start_stage == "idle":
             self._append_log(self._t("auto_start_wait"))
             self._auto_start_stage = "wait_ui"
+            self._arm_auto_start_playback()
 
         if self._auto_start_stage == "wait_ui":
+            self._auto_start_detection_started_at = time.perf_counter()
             if self._is_gameplay_screen(frame):
-                if self.prepared is not None:
-                    first_types = set(self.prepared.first_note_types)
-                    if first_types and first_types.issubset(
-                        {"arc", "arctap", "zero_arc"}
-                    ):
-                        self._append_log(self._t("auto_start_ready"))
-                        self._auto_start_stage = "wait_arc_cap"
-                        return
+                first_types = set(self.prepared.first_note_types)
+                if first_types and first_types.issubset({"arc", "arctap", "zero_arc"}):
+                    self._append_log(self._t("auto_start_ready"))
+                    self._auto_start_stage = "wait_arc"
+                    return
                 self._append_log(self._t("auto_start_ready"))
-                self._auto_start_stage = "wait_note"
+                self._auto_start_stage = "wait_ground"
             return
 
-        if self._auto_start_stage == "wait_arc_cap" and self._is_arc_cap_triggered(
-            frame
-        ):
-            self._append_log(self._t("auto_start_fire"))
-            self.auto_start_timer.stop()
-            self._auto_start_stage = "idle"
-            self._start_playback()
+        if self._auto_start_stage == "wait_arc":
+            self._auto_start_detection_started_at = time.perf_counter()
+            if self._is_arc_cap_triggered(frame):
+                self._auto_start_vision_total_ms = self.vision_detector.perf.total_ms
+                self._auto_start_triggered_at = time.perf_counter()
+                self._append_log(self._t("auto_start_fire"))
+                self._auto_start_stage = "idle"
+                self._release_auto_start_playback()
             return
 
-        if (
-            self._auto_start_stage == "wait_note"
-            and self._is_first_ground_note_on_judgment(frame)
-        ):
-            self._append_log(self._t("auto_start_fire"))
-            self.auto_start_timer.stop()
-            self._auto_start_stage = "idle"
-            self._start_playback()
+        if self._auto_start_stage == "wait_ground":
+            self._auto_start_detection_started_at = time.perf_counter()
+            if self._is_first_ground_note_on_judgment(frame):
+                self._auto_start_vision_total_ms = self.vision_detector.perf.total_ms
+                self._auto_start_triggered_at = time.perf_counter()
+                self._append_log(self._t("auto_start_fire"))
+                self._auto_start_stage = "idle"
+                self._release_auto_start_playback()
 
     def _on_auto_start_toggled(self, checked: bool) -> None:
         if not checked:
-            self.auto_start_timer.stop()
             self._auto_start_stage = "idle"
+            self._auto_start_playback_armed = False
+            if self._auto_start_start_signal is not None:
+                self._auto_start_start_signal.set()
+            self._auto_start_start_signal = None
             return
-        if (
-            self.controller_ready
-            and self.prepared is not None
-            and not self.auto_start_timer.isActive()
-        ):
-            self.auto_start_timer.start()
 
     def _poll_overlay(self) -> None:
-        if not self.overlay_debug_check.isChecked():
-            return
         if self.controller is None:
             return
+        latest_seq = (
+            self.controller.get_latest_frame_seq()
+            if hasattr(self.controller, "get_latest_frame_seq")
+            else self._auto_start_last_frame_seq
+        )
+        if latest_seq == self._auto_start_last_frame_seq:
+            return
+        self._auto_start_last_frame_seq = latest_seq
+
         frame = self.controller.get_latest_frame(copy_frame=True)
         if frame is None:
+            return
+        if self.auto_start_cv_check.isChecked() and self.prepared is not None:
+            self.auto_start_frame_ready.emit()
+        if not self.overlay_debug_check.isChecked():
             return
         self._update_overlay_preview(frame)
 
@@ -1443,27 +1669,26 @@ class AutoPlayWindow(QMainWindow):
         self.delay_label.setText(f"{self.app_config.delay:.3f}s")
 
         self.stream_max_fps = int(vision.stream_max_fps)
-        self.stream_max_size = int(vision.stream_max_size)
         self.stream_bitrate_enabled = bool(vision.stream_bitrate_enabled)
         self.stream_bitrate_mbps = int(vision.stream_bitrate_mbps)
+        self._vision_perf_success_only = bool(vision.perf_log_on_success_only)
         self.stream_fps_spin.setValue(self.stream_max_fps)
-        self.stream_size_spin.setValue(self.stream_max_size)
         self.stream_bitrate_enable_check.setChecked(self.stream_bitrate_enabled)
         self.stream_bitrate_spin.setValue(self.stream_bitrate_mbps)
         self.overlay_debug_check.setChecked(bool(vision.overlay_enabled))
-        self.ui_template_threshold_spin.setValue(float(vision.ui_template_threshold))
-        gate_mode = str(getattr(vision, "ui_gate_mode", "weighted"))
-        self.ui_gate_mode_combo.setCurrentIndex(
-            0 if gate_mode == "right" else 1 if gate_mode == "left" else 2
+        self.vision_perf_success_only_check.setChecked(
+            bool(vision.perf_log_on_success_only)
         )
-        self.ui_digit_count_spin.setValue(int(vision.ui_digit_min_count))
-        self.ground_note_ratio_spin.setValue(float(vision.ground_note_ratio))
-        self.arc_cap_threshold_spin.setValue(float(vision.arc_cap_threshold))
-
-        self.ui_x0_spin.setValue(float(vision.ui_roi[0]))
-        self.ui_y0_spin.setValue(float(vision.ui_roi[1]))
-        self.ui_x1_spin.setValue(float(vision.ui_roi[2]))
-        self.ui_y1_spin.setValue(float(vision.ui_roi[3]))
+        self.ui_template_threshold_spin.setValue(float(vision.ui_template_threshold))
+        self.ground_blue_ratio_threshold_spin.setValue(
+            float(vision.ground_blue_ratio_threshold)
+        )
+        self.arc_color_ratio_threshold_spin.setValue(
+            float(vision.arc_color_ratio_threshold)
+        )
+        self.arc_logic_roi_half_x_spin.setValue(float(vision.arc_logic_roi_half_x))
+        self.arc_logic_roi_half_y_spin.setValue(float(vision.arc_logic_roi_half_y))
+        self.processing_scale_spin.setValue(float(vision.processing_scale))
         self.ui_left_x0_spin.setValue(float(vision.ui_left_roi[0]))
         self.ui_left_y0_spin.setValue(float(vision.ui_left_roi[1]))
         self.ui_left_x1_spin.setValue(float(vision.ui_left_roi[2]))
@@ -1472,10 +1697,6 @@ class AutoPlayWindow(QMainWindow):
         self.ground_y0_spin.setValue(float(vision.ground_roi[1]))
         self.ground_x1_spin.setValue(float(vision.ground_roi[2]))
         self.ground_y1_spin.setValue(float(vision.ground_roi[3]))
-        self.arc_x0_spin.setValue(float(vision.arc_roi[0]))
-        self.arc_y0_spin.setValue(float(vision.arc_roi[1]))
-        self.arc_x1_spin.setValue(float(vision.arc_roi[2]))
-        self.arc_y1_spin.setValue(float(vision.arc_roi[3]))
 
     def _save_form_to_config(self) -> bool:
         cfg = self.app_config.global_config
@@ -1491,26 +1712,28 @@ class AutoPlayWindow(QMainWindow):
             cfg.fine_tune_step = int(self.step_spin.value())
 
             vision.stream_max_fps = int(self.stream_fps_spin.value())
-            vision.stream_max_size = int(self.stream_size_spin.value())
             vision.stream_bitrate_enabled = bool(
                 self.stream_bitrate_enable_check.isChecked()
             )
             vision.stream_bitrate_mbps = int(self.stream_bitrate_spin.value())
             vision.overlay_enabled = bool(self.overlay_debug_check.isChecked())
+            vision.perf_log_on_success_only = bool(
+                self.vision_perf_success_only_check.isChecked()
+            )
+            self._vision_perf_success_only = vision.perf_log_on_success_only
             vision.ui_template_threshold = float(
                 self.ui_template_threshold_spin.value()
             )
-            vision.ui_gate_mode = str(self.ui_gate_mode_combo.currentData())
-            vision.ui_digit_min_count = int(self.ui_digit_count_spin.value())
-            vision.ground_note_ratio = float(self.ground_note_ratio_spin.value())
-            vision.arc_cap_threshold = float(self.arc_cap_threshold_spin.value())
-            vision.overlay_detached = True
-            vision.ui_roi = (
-                float(self.ui_x0_spin.value()),
-                float(self.ui_y0_spin.value()),
-                float(self.ui_x1_spin.value()),
-                float(self.ui_y1_spin.value()),
+            vision.ground_blue_ratio_threshold = float(
+                self.ground_blue_ratio_threshold_spin.value()
             )
+            vision.arc_color_ratio_threshold = float(
+                self.arc_color_ratio_threshold_spin.value()
+            )
+            vision.arc_logic_roi_half_x = float(self.arc_logic_roi_half_x_spin.value())
+            vision.arc_logic_roi_half_y = float(self.arc_logic_roi_half_y_spin.value())
+            vision.processing_scale = float(self.processing_scale_spin.value())
+            vision.overlay_detached = True
             vision.ui_left_roi = (
                 float(self.ui_left_x0_spin.value()),
                 float(self.ui_left_y0_spin.value()),
@@ -1522,12 +1745,6 @@ class AutoPlayWindow(QMainWindow):
                 float(self.ground_y0_spin.value()),
                 float(self.ground_x1_spin.value()),
                 float(self.ground_y1_spin.value()),
-            )
-            vision.arc_roi = (
-                float(self.arc_x0_spin.value()),
-                float(self.arc_y0_spin.value()),
-                float(self.arc_x1_spin.value()),
-                float(self.arc_y1_spin.value()),
             )
         except ValueError as exc:
             QMessageBox.critical(self, self._t("config_error"), str(exc))
@@ -1618,7 +1835,6 @@ class AutoPlayWindow(QMainWindow):
             bit_rate = int(self.stream_bitrate_mbps) * 1_000_000
         self.warmup_worker = ControllerWarmupWorker(
             max_fps=self.stream_max_fps,
-            max_size=self.stream_max_size,
             video_bit_rate=bit_rate,
         )
         self.warmup_worker.started_warmup.connect(self._on_warmup_start)
@@ -1642,27 +1858,23 @@ class AutoPlayWindow(QMainWindow):
 
     def _on_save_clicked(self) -> None:
         old_fps = self.stream_max_fps
-        old_size = self.stream_max_size
         old_bitrate_enabled = self.stream_bitrate_enabled
         old_bitrate_mbps = self.stream_bitrate_mbps
         new_fps = int(self.stream_fps_spin.value())
-        new_size = int(self.stream_size_spin.value())
         new_bitrate_enabled = bool(self.stream_bitrate_enable_check.isChecked())
         new_bitrate_mbps = int(self.stream_bitrate_spin.value())
 
         self.stream_max_fps = new_fps
-        self.stream_max_size = new_size
         self.stream_bitrate_enabled = new_bitrate_enabled
         self.stream_bitrate_mbps = new_bitrate_mbps
 
-        if (old_fps, old_size, old_bitrate_enabled, old_bitrate_mbps) != (
+        if (old_fps, old_bitrate_enabled, old_bitrate_mbps) != (
             self.stream_max_fps,
-            self.stream_max_size,
             self.stream_bitrate_enabled,
             self.stream_bitrate_mbps,
         ):
             self._append_log(
-                f"[INFO] Restarting scrcpy stream with max_fps={self.stream_max_fps}, max_size={self.stream_max_size}, bitrate={'off' if not self.stream_bitrate_enabled else f'{self.stream_bitrate_mbps}Mbps'}"
+                f"[INFO] Restarting scrcpy stream with max_fps={self.stream_max_fps}, native resolution, bitrate={'off' if not self.stream_bitrate_enabled else f'{self.stream_bitrate_mbps}Mbps'}"
             )
             if self.controller is not None:
                 try:
@@ -1694,6 +1906,9 @@ class AutoPlayWindow(QMainWindow):
         self.offset_label.setText(f"{self.worker.current_offset():.3f}s")
 
     def _start_playback(self) -> None:
+        self._start_playback_internal(start_armed=False)
+
+    def _start_playback_internal(self, start_armed: bool) -> None:
         if self.worker is not None and self.worker.isRunning():
             return
         if not self.controller_ready or self.controller is None:
@@ -1711,27 +1926,52 @@ class AutoPlayWindow(QMainWindow):
             QMessageBox.information(self, self._t("error"), self._t("prepare_mismatch"))
             return
 
+        start_signal = None
+        if start_armed:
+            start_signal = threading.Event()
+            self._auto_start_start_signal = start_signal
+
         self.worker = PlaybackWorker(
             self.prepared,
             self.controller,
-            debug_verbose=bool(self.debug_verbose_combo.currentData()),
+            debug_verbose=self.debug_verbose_check.isChecked(),
             optimize_high_priority=self.opt_high_prio_check.isChecked(),
             optimize_timer_resolution=False,
+            start_signal=start_signal,
         )
         self.worker.log_message.connect(self._append_log)
         self.worker.started_playback.connect(self._on_play_started)
         self.worker.finished_playback.connect(self._on_play_finished)
         self.worker.progress.connect(self._on_progress)
+        self.worker.first_dispatch_metrics.connect(self._on_first_dispatch_metrics)
 
         self._append_log(self._t("log_play_start"))
+        if self.debug_verbose_check.isChecked():
+            snapshot_path = self._write_touch_event_snapshot()
+            if snapshot_path is not None:
+                self._append_log(f"[DEBUG] Touch snapshot written: {snapshot_path}")
         self._start_click_time = time.perf_counter()
         self._first_dispatch_logged = False
         self.worker.start()
+
+    def _arm_auto_start_playback(self) -> None:
+        if self._auto_start_playback_armed:
+            return
+        self._auto_start_playback_armed = True
+        self._start_playback_internal(start_armed=True)
+
+    def _release_auto_start_playback(self) -> None:
+        if self._auto_start_start_signal is not None:
+            self._auto_start_start_signal.set()
+        self._auto_start_start_signal = None
+        self._auto_start_playback_armed = False
 
     def _stop_playback(self) -> None:
         if self.worker is None:
             return
         self._append_log(self._t("log_stop"))
+        if self._auto_start_start_signal is not None:
+            self._auto_start_start_signal.set()
         self.worker.stop_playback()
 
     def _fine_tune_plus(self) -> None:
@@ -1757,6 +1997,8 @@ class AutoPlayWindow(QMainWindow):
         self.run_state_label.setText(self._t("idle") if success else self._t("error"))
         if success:
             self._append_log(self._t("log_play_finish"))
+        self._auto_start_start_signal = None
+        self._auto_start_playback_armed = False
 
     def _on_warmup_start(self) -> None:
         self.controller_state_label.setText(self._t("warming"))
@@ -1767,6 +2009,9 @@ class AutoPlayWindow(QMainWindow):
         self.controller_ready = True
         self.controller_state_label.setText(self._t("ready"))
         self._append_log(self._t("log_warm_ok"))
+        if self.prepared is not None:
+            self._request_prepare(auto=True)
+        self.overlay_timer.start()
 
     def _on_warmup_fail(self, error: str) -> None:
         self.controller = None
@@ -1791,11 +2036,6 @@ class AutoPlayWindow(QMainWindow):
                 delay=prepared.delay,
             )
         )
-        if (
-            self.auto_start_cv_check.isChecked()
-            and not self.auto_start_timer.isActive()
-        ):
-            self.auto_start_timer.start()
 
     def _on_prepare_fail(self, token: str) -> None:
         self.prepared = None

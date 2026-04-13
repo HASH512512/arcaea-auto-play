@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 from pathlib import Path
 
 import cv2
 import numpy as np
+
+cv2.setUseOptimized(True)
 
 
 def _imread_unicode(path: Path, flags: int = cv2.IMREAD_COLOR):
@@ -19,14 +22,14 @@ def _imread_unicode(path: Path, flags: int = cv2.IMREAD_COLOR):
 
 @dataclass(slots=True)
 class VisionRuntimeConfig:
-    ui_roi: tuple[float, float, float, float]
     ui_left_roi: tuple[float, float, float, float]
-    ui_gate_mode: str
     ground_roi: tuple[float, float, float, float]
-    arc_roi: tuple[float, float, float, float]
     ui_feature_threshold: float
-    ground_overlap_threshold: float
-    arc_overlap_threshold: float
+    ground_blue_ratio_threshold: float
+    arc_color_ratio_threshold: float
+    arc_logic_roi_half_x: float
+    arc_logic_roi_half_y: float
+    processing_scale: float
 
 
 FEATURE_ROI_MAX_WIDTH = 420
@@ -34,65 +37,74 @@ FEATURE_ROI_MAX_WIDTH = 420
 
 @dataclass(slots=True)
 class VisionMetrics:
-    ui_feature_score: float = 0.0
-    ui_good_matches: int = 0
-    ui_inliers: int = 0
     ui_left_feature_score: float = 0.0
     ui_left_good_matches: int = 0
     ui_left_inliers: int = 0
+    ui_left_keypoints: int = 0
+    ui_left_template_count: int = 0
+    ui_left_template_keypoints_max: int = 0
+    ui_left_roi_shape: tuple[int, int] = (0, 0)
+    ui_left_descriptor_ready: bool = False
+    ui_left_template_dir: str = ""
     ui_pass: bool = False
-    ground_overlap_ratio: float = 0.0
-    ground_line_pixels: int = 0
-    ground_note_pixels: int = 0
+    ground_blue_ratio: float = 0.0
+    ground_blue_pixels: int = 0
+    ground_roi_pixels: int = 0
+    ground_band_ratio: float = 0.0
+    ground_band_rect: tuple[int, int, int, int] | None = None
     ground_pass: bool = False
-    arc_overlap_ratio: float = 0.0
-    arc_cap_pixels: int = 0
-    arc_note_pixels: int = 0
+    arc_color_ratio: float = 0.0
+    arc_color_pixels: int = 0
+    arc_roi_pixels: int = 0
+    arc_target_distance: float = 0.0
     arc_pass: bool = False
     last_arc_rect: tuple[int, int, int, int] | None = None
+
+
+@dataclass(slots=True)
+class VisionPerfMetrics:
+    stage: str = "idle"
+    total_ms: float = 0.0
+    roi_ms: float = 0.0
+    resize_ms: float = 0.0
+    gray_ms: float = 0.0
+    orb_ms: float = 0.0
+    match_ms: float = 0.0
+    homography_ms: float = 0.0
+    hsv_ms: float = 0.0
+    mask_ms: float = 0.0
+    count_ms: float = 0.0
+    decision_ms: float = 0.0
 
 
 class VisionDetector:
     def __init__(self, ref_dir: Path, use_cuda: bool = True) -> None:
         self.ref_dir = ref_dir
+        self.debug_dump_enabled = os.getenv("VISION_DEBUG_DUMP", "0") == "1"
+        self.debug_dump_dir = self.ref_dir.resolve() / "_vision_debug"
         self.metrics = VisionMetrics()
+        self.perf = VisionPerfMetrics()
+        self._ground_hit_streak = 0
+        self._arc_hit_streak = 0
         self.runtime = VisionRuntimeConfig(
-            ui_roi=(0.66, 0.02, 0.995, 0.20),
             ui_left_roi=(0.005, 0.02, 0.34, 0.20),
-            ui_gate_mode="weighted",
             ground_roi=(0.12, 1310 / 1440, 0.88, 1345 / 1440),
-            arc_roi=(0.18, 0.22, 0.82, 0.80),
             ui_feature_threshold=0.08,
-            ground_overlap_threshold=0.045,
-            arc_overlap_threshold=0.44,
+            ground_blue_ratio_threshold=0.03,
+            arc_color_ratio_threshold=0.02,
+            arc_logic_roi_half_x=0.25,
+            arc_logic_roi_half_y=0.25,
+            processing_scale=1.0,
         )
 
         self.cuda_enabled = False
         self.cuda_canny = None
-        if use_cuda:
-            try:
-                if cv2.cuda.getCudaEnabledDeviceCount() > 0:
-                    self.cuda_enabled = True
-                    self.cuda_canny = cv2.cuda.createCannyEdgeDetector(50, 150)
-            except Exception:
-                self.cuda_enabled = False
-
-        self.ui_templates = self._load_ui_templates()
         self.ui_left_templates = self._load_ui_left_templates()
-        self.arc_cap_template = self._load_arc_cap_template()
 
         self.orb = cv2.ORB_create(
             nfeatures=1100, fastThreshold=10, scaleFactor=1.15, nlevels=8
         )
         self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=False)
-
-        self.ui_template_features: list[
-            tuple[list, np.ndarray | None, tuple[int, int]]
-        ] = []
-        for tpl in self.ui_templates:
-            gray = cv2.cvtColor(tpl, cv2.COLOR_BGR2GRAY)
-            kp, des = self.orb.detectAndCompute(gray, None)
-            self.ui_template_features.append((kp, des, gray.shape[:2]))
 
         self.ui_left_template_features: list[
             tuple[list, np.ndarray | None, tuple[int, int]]
@@ -101,31 +113,39 @@ class VisionDetector:
             gray = cv2.cvtColor(tpl, cv2.COLOR_BGR2GRAY)
             kp, des = self.orb.detectAndCompute(gray, None)
             self.ui_left_template_features.append((kp, des, gray.shape[:2]))
+        self.metrics.ui_left_template_count = len(self.ui_left_template_features)
+        self.metrics.ui_left_template_keypoints_max = max(
+            (len(kp) for kp, _des, _shape in self.ui_left_template_features),
+            default=0,
+        )
+        self.metrics.ui_left_descriptor_ready = bool(self.ui_left_template_features)
+        self.metrics.ui_left_template_dir = str(self.ref_dir.resolve())
+
+    def _template_crop_variants(self, image: np.ndarray) -> list[np.ndarray]:
+        h, w = image.shape[:2]
+        variants = [image]
+        if w < 40 or h < 20:
+            return variants
+
+        crop_ratios = (0.55, 0.70, 0.85)
+        for ratio in crop_ratios:
+            crop_w = max(16, int(w * ratio))
+            if crop_w >= w:
+                continue
+            variants.append(image[:, :crop_w])
+            variants.append(image[:, w - crop_w :])
+
+        return variants
 
     def set_runtime(self, runtime: VisionRuntimeConfig) -> None:
         self.runtime = runtime
 
-    def _load_ui_templates(self) -> list[np.ndarray]:
-        templates: list[np.ndarray] = []
-        for name in ("uiright.png", "uiright_2.png", "uiright-real.png"):
-            img = _imread_unicode(self.ref_dir / name, cv2.IMREAD_COLOR)
-            if img is not None:
-                templates.append(img)
-        return templates
-
     def _load_ui_left_templates(self) -> list[np.ndarray]:
         templates: list[np.ndarray] = []
-        for name in ("uileft.png", "uileft_2.png", "pause.png"):
-            img = _imread_unicode(self.ref_dir / name, cv2.IMREAD_COLOR)
-            if img is not None:
-                templates.append(img)
+        img = _imread_unicode(self.ref_dir / "uileft.png", cv2.IMREAD_COLOR)
+        if img is not None:
+            templates.extend(self._template_crop_variants(img))
         return templates
-
-    def _load_arc_cap_template(self) -> np.ndarray | None:
-        return _imread_unicode(
-            self.ref_dir / "Playfield" / "Note" / "arc_cap.png",
-            cv2.IMREAD_UNCHANGED,
-        )
 
     def _roi_rect(
         self, frame: np.ndarray, roi: tuple[float, float, float, float]
@@ -139,33 +159,51 @@ class VisionDetector:
         y0, y1 = sorted((max(0, y0), min(h, y1)))
         return x0, y0, x1, y1
 
-    def _canny(self, gray: np.ndarray) -> np.ndarray:
-        if self.cuda_enabled and self.cuda_canny is not None:
-            try:
-                gpu = cv2.cuda_GpuMat()
-                gpu.upload(gray)
-                return self.cuda_canny.detect(gpu).download()
-            except Exception:
-                pass
-        return cv2.Canny(gray, 50, 150)
+    def _resize_roi_for_processing(self, roi: np.ndarray) -> tuple[np.ndarray, float]:
+        scale = float(self.runtime.processing_scale)
+        if roi.size == 0 or scale >= 0.999:
+            return roi, 0.0
+        target_w = max(1, int(round(roi.shape[1] * scale)))
+        target_h = max(1, int(round(roi.shape[0] * scale)))
+        t0 = cv2.getTickCount()
+        resized = cv2.resize(roi, (target_w, target_h), interpolation=cv2.INTER_AREA)
+        resize_ms = (cv2.getTickCount() - t0) / cv2.getTickFrequency() * 1000.0
+        return resized, resize_ms
 
     def _match_feature_score(
         self,
         roi: np.ndarray,
         template_features: list[tuple[list, np.ndarray | None, tuple[int, int]]],
-    ) -> tuple[float, int, int]:
+    ) -> tuple[float, int, int, dict[str, float]]:
+        perf = {
+            "resize_ms": 0.0,
+            "gray_ms": 0.0,
+            "orb_ms": 0.0,
+            "match_ms": 0.0,
+            "homography_ms": 0.0,
+            "roi_keypoints": 0.0,
+        }
         if roi.shape[1] > FEATURE_ROI_MAX_WIDTH:
+            t0 = cv2.getTickCount()
             scale = FEATURE_ROI_MAX_WIDTH / float(roi.shape[1])
             roi = cv2.resize(
                 roi,
                 (FEATURE_ROI_MAX_WIDTH, max(1, int(roi.shape[0] * scale))),
                 interpolation=cv2.INTER_AREA,
             )
+            perf["resize_ms"] += (
+                (cv2.getTickCount() - t0) / cv2.getTickFrequency() * 1000.0
+            )
 
+        t0 = cv2.getTickCount()
         gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+        perf["gray_ms"] += (cv2.getTickCount() - t0) / cv2.getTickFrequency() * 1000.0
+        t0 = cv2.getTickCount()
         kp_f, des_f = self.orb.detectAndCompute(gray, None)
+        perf["orb_ms"] += (cv2.getTickCount() - t0) / cv2.getTickFrequency() * 1000.0
+        perf["roi_keypoints"] = float(len(kp_f))
         if des_f is None or len(kp_f) < 8:
-            return 0.0, 0, 0
+            return 0.0, 0, 0, perf
 
         best_score = 0.0
         best_good = 0
@@ -174,6 +212,7 @@ class VisionDetector:
             if des_t is None or len(kp_t) < 8:
                 continue
 
+            t0 = cv2.getTickCount()
             knn = self.matcher.knnMatch(des_t, des_f, k=2)
             good = []
             for pair in knn:
@@ -182,14 +221,21 @@ class VisionDetector:
                 m, n = pair
                 if m.distance < 0.72 * n.distance:
                     good.append(m)
+            perf["match_ms"] += (
+                (cv2.getTickCount() - t0) / cv2.getTickFrequency() * 1000.0
+            )
 
             inliers = 0
             if len(good) >= 8:
+                t0 = cv2.getTickCount()
                 src = np.float32([kp_t[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
                 dst = np.float32([kp_f[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
                 _h, mask = cv2.findHomography(src, dst, cv2.RANSAC, 2.5)
                 if mask is not None:
                     inliers = int(mask.sum())
+                perf["homography_ms"] += (
+                    (cv2.getTickCount() - t0) / cv2.getTickFrequency() * 1000.0
+                )
 
             denom = max(len(kp_t), 1)
             score = (0.55 * len(good) + 0.95 * inliers) / float(denom)
@@ -197,163 +243,241 @@ class VisionDetector:
                 best_score = score
                 best_good = len(good)
                 best_inliers = inliers
-        return best_score, best_good, best_inliers
+        return best_score, best_good, best_inliers, perf
 
     def detect_ui_panel(self, frame: np.ndarray) -> bool:
-        mode = self.runtime.ui_gate_mode
-        x0, y0, x1, y1 = self._roi_rect(frame, self.runtime.ui_roi)
-        right_roi = frame[y0:y1, x0:x1]
-
-        right_score, right_good, right_inliers = 0.0, 0, 0
-        if right_roi.size > 0 and mode in {"right", "weighted"}:
-            right_score, right_good, right_inliers = self._match_feature_score(
-                right_roi,
-                self.ui_template_features,
-            )
-
+        total_start = cv2.getTickCount()
+        roi_start = cv2.getTickCount()
+        self.metrics.arc_pass = False
+        self.metrics.arc_color_ratio = 0.0
+        self.metrics.arc_color_pixels = 0
+        self.metrics.arc_roi_pixels = 0
+        self.metrics.last_arc_rect = None
         left_score, left_good, left_inliers = 0.0, 0, 0
         lx0, ly0, lx1, ly1 = self._roi_rect(frame, self.runtime.ui_left_roi)
         left_roi = frame[ly0:ly1, lx0:lx1]
-        if (
-            left_roi.size > 0
-            and self.ui_left_template_features
-            and mode in {"left", "weighted"}
-        ):
-            left_score, left_good, left_inliers = self._match_feature_score(
-                left_roi,
-                self.ui_left_template_features,
+        roi_ms = (cv2.getTickCount() - roi_start) / cv2.getTickFrequency() * 1000.0
+        feature_perf = {
+            "resize_ms": 0.0,
+            "gray_ms": 0.0,
+            "orb_ms": 0.0,
+            "match_ms": 0.0,
+            "homography_ms": 0.0,
+            "roi_keypoints": 0.0,
+        }
+        if left_roi.size > 0 and self.ui_left_template_features:
+            left_roi, prep_resize_ms = self._resize_roi_for_processing(left_roi)
+            left_score, left_good, left_inliers, feature_perf = (
+                self._match_feature_score(
+                    left_roi,
+                    self.ui_left_template_features,
+                )
             )
+            feature_perf["resize_ms"] += prep_resize_ms
 
-        self.metrics.ui_feature_score = right_score
-        self.metrics.ui_good_matches = right_good
-        self.metrics.ui_inliers = right_inliers
         self.metrics.ui_left_feature_score = left_score
         self.metrics.ui_left_good_matches = left_good
         self.metrics.ui_left_inliers = left_inliers
-
-        th = self.runtime.ui_feature_threshold
-        if mode == "right":
-            passed = right_score >= th
-        elif mode == "left":
-            passed = left_score >= th
-        else:
-            fused = 0.75 * right_score + 0.25 * left_score
-            passed = (right_score >= th) or (left_score >= th) or (fused >= th)
-
-        self.metrics.ui_pass = passed
-        return passed
-
-    def detect_ground_overlap(self, frame: np.ndarray) -> bool:
-        x0, y0, x1, y1 = self._roi_rect(frame, self.runtime.ground_roi)
-        roi = frame[y0:y1, x0:x1]
-        if roi.size == 0:
-            self.metrics.ground_pass = False
-            return False
-
-        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-        edge = self._canny(gray)
-        lines = cv2.HoughLinesP(
-            edge,
-            1,
-            np.pi / 180,
-            threshold=35,
-            minLineLength=max(12, int(roi.shape[1] * 0.35)),
-            maxLineGap=8,
+        self.metrics.ui_left_keypoints = int(feature_perf["roi_keypoints"])
+        self.metrics.ui_left_roi_shape = (
+            int(left_roi.shape[1]) if left_roi.size > 0 else 0,
+            int(left_roi.shape[0]) if left_roi.size > 0 else 0,
         )
 
-        line_mask = np.zeros(gray.shape, dtype=np.uint8)
-        if lines is not None:
-            for entry in lines:
-                x_a, y_a, x_b, y_b = entry[0]
-                cv2.line(line_mask, (x_a, y_a), (x_b, y_b), 255, 2)
+        decision_start = cv2.getTickCount()
+        passed = left_score >= self.runtime.ui_feature_threshold
+        decision_ms = (
+            (cv2.getTickCount() - decision_start) / cv2.getTickFrequency() * 1000.0
+        )
+        self.metrics.ui_pass = passed
+        total_ms = (cv2.getTickCount() - total_start) / cv2.getTickFrequency() * 1000.0
+        self.perf = VisionPerfMetrics(
+            stage="ui_left",
+            total_ms=total_ms,
+            roi_ms=roi_ms,
+            resize_ms=feature_perf["resize_ms"],
+            gray_ms=feature_perf["gray_ms"],
+            orb_ms=feature_perf["orb_ms"],
+            match_ms=feature_perf["match_ms"],
+            homography_ms=feature_perf["homography_ms"],
+            decision_ms=decision_ms,
+        )
+        return passed
 
-        hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-        note_mask = ((hsv[:, :, 1] > 85) & (hsv[:, :, 2] > 105)).astype(np.uint8) * 255
+    def detect_ground_overlap(self, frame: np.ndarray, logic_x: float) -> bool:
+        total_start = cv2.getTickCount()
+        roi_start = cv2.getTickCount()
+        self.metrics.last_arc_rect = None
+        self.metrics.arc_pass = False
+        self.metrics.arc_color_ratio = 0.0
+        self.metrics.arc_color_pixels = 0
+        self.metrics.arc_roi_pixels = 0
+        x0, y0, x1, y1 = self._roi_rect(frame, self.runtime.ground_roi)
+        roi = frame[y0:y1, x0:x1]
+        roi_ms = (cv2.getTickCount() - roi_start) / cv2.getTickFrequency() * 1000.0
+        if roi.size == 0:
+            self.metrics.ground_pass = False
+            self.perf = VisionPerfMetrics(stage="ground", roi_ms=roi_ms)
+            return False
+        roi, resize_ms = self._resize_roi_for_processing(roi)
+        band_w = max(6, int(round(roi.shape[1] * 0.08)))
+        center_x = int(round(self._logic_x_to_norm(logic_x) * roi.shape[1]))
+        bx0 = max(0, min(roi.shape[1] - 1, center_x - band_w // 2))
+        bx1 = max(bx0 + 1, min(roi.shape[1], bx0 + band_w))
+        band = roi[:, bx0:bx1]
+        self.metrics.ground_band_rect = (x0 + bx0, y0, x0 + bx1, y1)
+        hsv_start = cv2.getTickCount()
+        hsv = cv2.cvtColor(band, cv2.COLOR_BGR2HSV)
+        hsv_ms = (cv2.getTickCount() - hsv_start) / cv2.getTickFrequency() * 1000.0
+        mask_start = cv2.getTickCount()
+        blue_mask = (
+            (hsv[:, :, 0] >= 90)
+            & (hsv[:, :, 0] <= 135)
+            & (hsv[:, :, 1] >= 70)
+            & (hsv[:, :, 2] >= 70)
+        ).astype(np.uint8) * 255
+        mask_ms = (cv2.getTickCount() - mask_start) / cv2.getTickFrequency() * 1000.0
 
-        overlap = cv2.bitwise_and(line_mask, note_mask)
-        line_pixels = int(cv2.countNonZero(line_mask))
-        note_pixels = int(cv2.countNonZero(note_mask))
-        overlap_pixels = int(cv2.countNonZero(overlap))
-        ratio = overlap_pixels / float(max(1, line_pixels))
+        count_start = cv2.getTickCount()
+        blue_pixels = int(cv2.countNonZero(blue_mask))
+        roi_pixels = int(band.shape[0] * band.shape[1])
+        ratio = blue_pixels / float(max(1, roi_pixels))
+        count_ms = (cv2.getTickCount() - count_start) / cv2.getTickFrequency() * 1000.0
 
-        self.metrics.ground_line_pixels = line_pixels
-        self.metrics.ground_note_pixels = note_pixels
-        self.metrics.ground_overlap_ratio = ratio
-        self.metrics.ground_pass = ratio >= self.runtime.ground_overlap_threshold
+        self.metrics.ground_blue_pixels = blue_pixels
+        self.metrics.ground_roi_pixels = roi_pixels
+        self.metrics.ground_blue_ratio = ratio
+        self.metrics.ground_band_ratio = ratio
+        decision_start = cv2.getTickCount()
+        hit = ratio >= self.runtime.ground_blue_ratio_threshold
+        self.metrics.ground_pass = self._continuous_pass(hit, "_ground_hit_streak")
+        decision_ms = (
+            (cv2.getTickCount() - decision_start) / cv2.getTickFrequency() * 1000.0
+        )
+        total_ms = (cv2.getTickCount() - total_start) / cv2.getTickFrequency() * 1000.0
+        self.perf = VisionPerfMetrics(
+            stage="ground",
+            total_ms=total_ms,
+            roi_ms=roi_ms,
+            resize_ms=resize_ms,
+            hsv_ms=hsv_ms,
+            mask_ms=mask_ms,
+            count_ms=count_ms,
+            decision_ms=decision_ms,
+        )
         return self.metrics.ground_pass
 
-    def detect_arc_overlap(self, frame: np.ndarray) -> bool:
-        if self.arc_cap_template is None:
-            self.metrics.arc_pass = False
-            return False
+    def _logic_to_pixel_rect(
+        self,
+        frame: np.ndarray,
+        logic_x: float,
+        logic_y: float,
+    ) -> tuple[int, int, int, int]:
+        half_x = self.runtime.arc_logic_roi_half_x
+        half_y = self.runtime.arc_logic_roi_half_y
+        lx0 = max(0.0, min(1.0, logic_x - half_x))
+        ly0 = max(0.0, min(1.0, logic_y - half_y))
+        lx1 = max(0.0, min(1.0, logic_x + half_x))
+        ly1 = max(0.0, min(1.0, logic_y + half_y))
+        return self._roi_rect(frame, (lx0, ly0, lx1, ly1))
 
-        x0, y0, x1, y1 = self._roi_rect(frame, self.runtime.arc_roi)
+    def _logic_x_to_norm(self, logic_x: float) -> float:
+        return max(0.0, min(1.0, (logic_x + 0.25) / 1.5))
+
+    def _continuous_pass(self, hit: bool, streak_name: str) -> bool:
+        current = getattr(self, streak_name)
+        current = current + 1 if hit else 0
+        setattr(self, streak_name, current)
+        return current >= 2
+
+    def detect_arc_overlap(
+        self, frame: np.ndarray, logic_x: float, logic_y: float
+    ) -> bool:
+        total_start = cv2.getTickCount()
+        roi_start = cv2.getTickCount()
+        x0, y0, x1, y1 = self._logic_to_pixel_rect(frame, logic_x, logic_y)
+        self.metrics.last_arc_rect = (x0, y0, x1, y1)
         roi = frame[y0:y1, x0:x1]
+        roi_ms = (cv2.getTickCount() - roi_start) / cv2.getTickFrequency() * 1000.0
         if roi.size == 0:
             self.metrics.arc_pass = False
+            self.perf = VisionPerfMetrics(stage="arc", roi_ms=roi_ms)
             return False
 
-        if self.arc_cap_template.ndim == 3 and self.arc_cap_template.shape[2] == 4:
-            cap_bgr = self.arc_cap_template[:, :, :3]
-            cap_alpha = self.arc_cap_template[:, :, 3]
-        else:
-            cap_bgr = self.arc_cap_template
-            cap_alpha = np.ones(cap_bgr.shape[:2], dtype=np.uint8) * 255
-
-        best_score = -1.0
-        best_rect: tuple[int, int, int, int] | None = None
-        best_alpha: np.ndarray | None = None
-        for scale in (0.45, 0.55, 0.65, 0.75, 0.9, 1.0, 1.15):
-            tpl = cv2.resize(
-                cap_bgr, None, fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR
-            )
-            alp = cv2.resize(
-                cap_alpha, None, fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR
-            )
-            th, tw = tpl.shape[:2]
-            if th < 10 or tw < 10 or th >= roi.shape[0] or tw >= roi.shape[1]:
-                continue
-            score_map = cv2.matchTemplate(roi, tpl, cv2.TM_CCOEFF_NORMED)
-            _minv, maxv, _minl, maxl = cv2.minMaxLoc(score_map)
-            if maxv > best_score:
-                best_score = float(maxv)
-                best_rect = (maxl[0], maxl[1], maxl[0] + tw, maxl[1] + th)
-                best_alpha = alp
-
-        if best_rect is None or best_alpha is None:
-            self.metrics.arc_pass = False
-            return False
-
-        cap_mask = np.zeros(roi.shape[:2], dtype=np.uint8)
-        bx0, by0, bx1, by1 = best_rect
-        cap_mask[by0:by1, bx0:bx1] = (best_alpha > 20).astype(np.uint8) * 255
-
+        roi, resize_ms = self._resize_roi_for_processing(roi)
+        hsv_start = cv2.getTickCount()
         hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-        arc_mask = ((hsv[:, :, 1] > 60) & (hsv[:, :, 2] > 80)).astype(np.uint8) * 255
+        hsv_ms = (cv2.getTickCount() - hsv_start) / cv2.getTickFrequency() * 1000.0
+        mask_start = cv2.getTickCount()
+        blue_mask = (
+            (hsv[:, :, 0] >= 90)
+            & (hsv[:, :, 0] <= 135)
+            & (hsv[:, :, 1] >= 60)
+            & (hsv[:, :, 2] >= 70)
+        )
+        red_mask = (
+            ((hsv[:, :, 0] <= 10) | (hsv[:, :, 0] >= 165))
+            & (hsv[:, :, 1] >= 60)
+            & (hsv[:, :, 2] >= 70)
+        )
+        purple_white_mask = (
+            (hsv[:, :, 0] >= 120)
+            & (hsv[:, :, 0] <= 165)
+            & (hsv[:, :, 1] >= 20)
+            & (hsv[:, :, 2] >= 120)
+        )
+        arc_mask = (blue_mask | red_mask | purple_white_mask).astype(np.uint8) * 255
+        mask_ms = (cv2.getTickCount() - mask_start) / cv2.getTickFrequency() * 1000.0
 
-        overlap = cv2.bitwise_and(cap_mask, arc_mask)
-        cap_pixels = int(cv2.countNonZero(cap_mask))
-        arc_pixels = int(cv2.countNonZero(arc_mask))
-        overlap_pixels = int(cv2.countNonZero(overlap))
-        ratio = overlap_pixels / float(max(1, cap_pixels))
+        count_start = cv2.getTickCount()
+        color_pixels = int(cv2.countNonZero(arc_mask))
+        roi_pixels = int(roi.shape[0] * roi.shape[1])
+        ratio = color_pixels / float(max(1, roi_pixels))
+        target_distance = float("inf")
+        moments = cv2.moments(arc_mask, binaryImage=True)
+        if moments["m00"] > 0.0:
+            cx = moments["m10"] / moments["m00"]
+            cy = moments["m01"] / moments["m00"]
+            target_distance = (
+                (cx - roi.shape[1] / 2.0) ** 2 + (cy - roi.shape[0] / 2.0) ** 2
+            ) ** 0.5
+        count_ms = (cv2.getTickCount() - count_start) / cv2.getTickFrequency() * 1000.0
 
-        self.metrics.arc_cap_pixels = cap_pixels
-        self.metrics.arc_note_pixels = arc_pixels
-        self.metrics.arc_overlap_ratio = ratio
-        self.metrics.arc_pass = ratio >= self.runtime.arc_overlap_threshold
-        self.metrics.last_arc_rect = best_rect
+        self.metrics.arc_color_pixels = color_pixels
+        self.metrics.arc_roi_pixels = roi_pixels
+        self.metrics.arc_color_ratio = ratio
+        self.metrics.arc_target_distance = (
+            0.0 if target_distance == float("inf") else target_distance
+        )
+        decision_start = cv2.getTickCount()
+        distance_threshold = max(2.0, min(roi.shape[:2]) * 0.18)
+        hit = (
+            ratio >= self.runtime.arc_color_ratio_threshold
+            and target_distance <= distance_threshold
+        )
+        self.metrics.arc_pass = self._continuous_pass(hit, "_arc_hit_streak")
+        decision_ms = (
+            (cv2.getTickCount() - decision_start) / cv2.getTickFrequency() * 1000.0
+        )
+        total_ms = (cv2.getTickCount() - total_start) / cv2.getTickFrequency() * 1000.0
+        self.perf = VisionPerfMetrics(
+            stage="arc",
+            total_ms=total_ms,
+            roi_ms=roi_ms,
+            resize_ms=resize_ms,
+            hsv_ms=hsv_ms,
+            mask_ms=mask_ms,
+            count_ms=count_ms,
+            decision_ms=decision_ms,
+        )
         return self.metrics.arc_pass
 
     def render_overlay(
         self, frame: np.ndarray, stage: str, decode_fps: float | None
     ) -> np.ndarray:
         overlay = frame.copy()
-        ui = self._roi_rect(frame, self.runtime.ui_roi)
         ui_left = self._roi_rect(frame, self.runtime.ui_left_roi)
         ground = self._roi_rect(frame, self.runtime.ground_roi)
-        arc = self._roi_rect(frame, self.runtime.arc_roi)
-
-        cv2.rectangle(overlay, (ui[0], ui[1]), (ui[2], ui[3]), (0, 220, 255), 2)
         cv2.rectangle(
             overlay,
             (ui_left[0], ui_left[1]),
@@ -364,14 +488,16 @@ class VisionDetector:
         cv2.rectangle(
             overlay, (ground[0], ground[1]), (ground[2], ground[3]), (80, 255, 80), 2
         )
-        cv2.rectangle(overlay, (arc[0], arc[1]), (arc[2], arc[3]), (255, 120, 80), 2)
+        if self.metrics.ground_band_rect is not None:
+            gx0, gy0, gx1, gy1 = self.metrics.ground_band_rect
+            cv2.rectangle(overlay, (gx0, gy0), (gx1, gy1), (0, 255, 255), 2)
 
         if self.metrics.last_arc_rect is not None:
             ax0, ay0, ax1, ay1 = self.metrics.last_arc_rect
             cv2.rectangle(
                 overlay,
-                (arc[0] + ax0, arc[1] + ay0),
-                (arc[0] + ax1, arc[1] + ay1),
+                (ax0, ay0),
+                (ax1, ay1),
                 (255, 255, 0),
                 2,
             )
@@ -379,10 +505,9 @@ class VisionDetector:
         lines = [
             f"stage={stage}",
             f"fps={decode_fps:.1f}" if decode_fps is not None else "fps=n/a",
-            f"ui pass={self.metrics.ui_pass} mode={self.runtime.ui_gate_mode} right={self.metrics.ui_feature_score:.3f} left={self.metrics.ui_left_feature_score:.3f}",
-            f"ground pass={self.metrics.ground_pass} overlap={self.metrics.ground_overlap_ratio:.3f}",
-            f"arc pass={self.metrics.arc_pass} overlap={self.metrics.arc_overlap_ratio:.3f}",
-            f"cuda={self.cuda_enabled}",
+            f"ui pass={self.metrics.ui_pass} left={self.metrics.ui_left_feature_score:.3f}",
+            f"ground pass={self.metrics.ground_pass} band={self.metrics.ground_band_ratio:.3f}",
+            f"arc pass={self.metrics.arc_pass} color={self.metrics.arc_color_ratio:.3f} dist={self.metrics.arc_target_distance:.1f}",
         ]
         text_metrics = [
             cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.68, 2)[0]
