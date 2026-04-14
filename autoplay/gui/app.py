@@ -85,6 +85,16 @@ def _to_serializable(value):
     return value
 
 
+def _read_image_unicode(path: Path) -> np.ndarray | None:
+    try:
+        data = np.fromfile(str(path), dtype=np.uint8)
+    except OSError:
+        return None
+    if data.size == 0:
+        return None
+    return cv2.imdecode(data, cv2.IMREAD_COLOR)
+
+
 TEXT = {
     "zh": {
         "window_title": "Arcaea Auto Play GUI",
@@ -153,16 +163,38 @@ TEXT = {
         "debug_verbose": "调试模式",
         "debug_verbose_hint": "开启后会输出详细调度日志，并在每次开始自动输入时将触摸事件快照写入 debug 文件夹。",
         "opt_high_prio": "播放线程高优先级",
-        "auto_start_cv": "视觉自动开始",
-        "auto_start_hint": "自动识别游戏界面；界面通过后按首 note 类型选择更轻量的视觉触发逻辑。",
+        "auto_start_cv": "视觉自动开始（单次）",
+        "auto_start_hint": "勾选后仅生效一次：视觉触发完成或手动停止后会自动关闭。",
         "auto_start_wait": "[信息] 视觉自动开始：等待游戏界面...",
         "auto_start_ready": "[信息] 已检测到游戏界面，等待首 note 触发区域命中。",
         "auto_start_fire": "[信息] 自动开始条件满足，已触发播放",
+        "auto_start_off": "[信息] 视觉自动开始已关闭（单次已完成或已中断）",
         "stream_fps": "流 FPS 上限",
         "stream_bitrate_enable": "启用码率限制",
         "stream_bitrate": "码率上限 (Mbps)",
         "vision_overlay": "Vision Overlay",
         "vision_perf_success_only": "仅成功时输出性能日志",
+        "vision_debug_group": "视觉识别 Debug",
+        "vision_debug_source": "输入源",
+        "vision_debug_input": "图片/视频路径",
+        "vision_debug_browse": "浏览",
+        "vision_debug_stages": "识别步骤",
+        "vision_debug_stage_ui": "ui_stage",
+        "vision_debug_stage_ground": "ground",
+        "vision_debug_stage_arc": "arc_pass",
+        "vision_debug_logic_x": "ground/arc logic_x",
+        "vision_debug_logic_y": "arc logic_y",
+        "vision_debug_start": "启动视觉 Debug",
+        "vision_debug_stop": "停止视觉 Debug",
+        "vision_debug_hint": "只做识别与指标输出，不触发自动输入。图片/视频会持续循环。",
+        "vision_debug_idle": "Vision Debug: idle",
+        "vision_debug_running": "Vision Debug: running ({source})",
+        "vision_debug_no_stage": "[VISION-DEBUG] 至少选择一个识别步骤（ui_stage/ground/arc_pass）",
+        "vision_debug_source_not_ready": "[VISION-DEBUG] scrcpy 输入源不可用：控制通道未就绪",
+        "vision_debug_invalid_path": "[VISION-DEBUG] 输入路径无效: {path}",
+        "vision_debug_open_fail": "[VISION-DEBUG] 无法打开输入源: {path}",
+        "vision_debug_started": "[VISION-DEBUG] 已启动，source={source}",
+        "vision_debug_stopped": "[VISION-DEBUG] 已停止",
         "ground_blue_ratio_threshold": "地键蓝色占比阈值",
         "arc_color_ratio_threshold": "天键颜色占比阈值",
         "arc_logic_roi_half_x": "天键逻辑ROI半宽",
@@ -235,16 +267,38 @@ TEXT = {
         "debug_verbose": "Debug mode",
         "debug_verbose_hint": "When enabled, emits verbose scheduler logs and writes a touch-event snapshot to the debug folder on each playback start.",
         "opt_high_prio": "High thread priority",
-        "auto_start_cv": "Vision auto start",
-        "auto_start_hint": "Detect gameplay UI first, then switch to a lighter trigger path based on the first note type.",
+        "auto_start_cv": "Vision auto start (one-shot)",
+        "auto_start_hint": "Arms once only. It auto-disables after trigger fire or manual stop.",
         "auto_start_wait": "[INFO] Vision auto-start: waiting gameplay screen...",
         "auto_start_ready": "[INFO] Gameplay screen detected, waiting first-note trigger area...",
         "auto_start_fire": "[INFO] Auto-start condition met, playback triggered",
+        "auto_start_off": "[INFO] Vision auto-start disabled (one-shot completed or interrupted)",
         "stream_fps": "Stream FPS Limit",
         "stream_bitrate_enable": "Enable bitrate limit",
         "stream_bitrate": "Bitrate limit (Mbps)",
         "vision_overlay": "Vision Overlay",
         "vision_perf_success_only": "Log perf only on success",
+        "vision_debug_group": "Vision Debug",
+        "vision_debug_source": "Input Source",
+        "vision_debug_input": "Image/Video Path",
+        "vision_debug_browse": "Browse",
+        "vision_debug_stages": "Detection Stages",
+        "vision_debug_stage_ui": "ui_stage",
+        "vision_debug_stage_ground": "ground",
+        "vision_debug_stage_arc": "arc_pass",
+        "vision_debug_logic_x": "ground/arc logic_x",
+        "vision_debug_logic_y": "arc logic_y",
+        "vision_debug_start": "Start Vision Debug",
+        "vision_debug_stop": "Stop Vision Debug",
+        "vision_debug_hint": "Recognition only. No automation input is started. Image/video sources keep looping.",
+        "vision_debug_idle": "Vision Debug: idle",
+        "vision_debug_running": "Vision Debug: running ({source})",
+        "vision_debug_no_stage": "[VISION-DEBUG] Select at least one stage (ui_stage/ground/arc_pass)",
+        "vision_debug_source_not_ready": "[VISION-DEBUG] scrcpy source unavailable: controller is not ready",
+        "vision_debug_invalid_path": "[VISION-DEBUG] Invalid input path: {path}",
+        "vision_debug_open_fail": "[VISION-DEBUG] Failed to open input source: {path}",
+        "vision_debug_started": "[VISION-DEBUG] Started, source={source}",
+        "vision_debug_stopped": "[VISION-DEBUG] Stopped",
         "ground_blue_ratio_threshold": "Ground blue ratio threshold",
         "arc_color_ratio_threshold": "Arc color ratio threshold",
         "arc_logic_roi_half_x": "Arc logic ROI half width",
@@ -642,6 +696,13 @@ class AutoPlayWindow(QMainWindow):
         self._auto_start_last_frame_seq = -1
         self._auto_start_playback_armed = False
         self._auto_start_start_signal: threading.Event | None = None
+        self._auto_start_shutdown_logged = False
+        self._vision_debug_running = False
+        self._vision_debug_capture: cv2.VideoCapture | None = None
+        self._vision_debug_static_frame: np.ndarray | None = None
+        self._vision_debug_last_result = ""
+        self._vision_debug_last_log_time = 0.0
+        self._vision_debug_overlay_stage = "debug-idle"
         self.vision_detector = VisionDetector(REF_OPENCV_DIR, use_cuda=True)
         self.stream_max_fps = 60
         self.stream_bitrate_enabled = False
@@ -662,6 +723,7 @@ class AutoPlayWindow(QMainWindow):
         self.overlay_timer = QTimer(self)
         self.overlay_timer.setInterval(90)
         self.overlay_timer.timeout.connect(self._poll_overlay)
+        self.overlay_timer.start()
 
         self._start_warmup()
         self._request_prepare(auto=True)
@@ -1024,6 +1086,83 @@ class AutoPlayWindow(QMainWindow):
         self.roi_values_label = QLabel("roi_values")
         self.roi_values_label.setWordWrap(True)
 
+        self.vision_debug_group = QGroupBox("Vision Debug")
+        vision_debug_form = QFormLayout(self.vision_debug_group)
+        vision_debug_form.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
+        self.vision_debug_source_label = QLabel("Input Source")
+        self.vision_debug_source_combo = QComboBox()
+        self.vision_debug_source_combo.addItem("scrcpy live", "scrcpy")
+        self.vision_debug_source_combo.addItem("image file", "image")
+        self.vision_debug_source_combo.addItem("video file", "video")
+        self.vision_debug_source_combo.currentIndexChanged.connect(
+            self._on_vision_debug_source_changed
+        )
+        self.vision_debug_input_label = QLabel("Image/Video Path")
+        self.vision_debug_path_edit = QLineEdit()
+        self.vision_debug_browse_btn = QPushButton("Browse")
+        self.vision_debug_browse_btn.clicked.connect(self._browse_vision_debug_input)
+        source_path_row = QHBoxLayout()
+        source_path_row.addWidget(self.vision_debug_path_edit)
+        source_path_row.addWidget(self.vision_debug_browse_btn)
+        source_path_widget = QWidget()
+        source_path_widget.setLayout(source_path_row)
+
+        self.vision_debug_stage_label = QLabel("Detection Stages")
+        self.vision_debug_ui_check = QCheckBox("ui_stage")
+        self.vision_debug_ui_check.setChecked(True)
+        self.vision_debug_ground_check = QCheckBox("ground")
+        self.vision_debug_ground_check.setChecked(True)
+        self.vision_debug_arc_check = QCheckBox("arc_pass")
+        self.vision_debug_arc_check.setChecked(True)
+        stage_row = QHBoxLayout()
+        stage_row.addWidget(self.vision_debug_ui_check)
+        stage_row.addWidget(self.vision_debug_ground_check)
+        stage_row.addWidget(self.vision_debug_arc_check)
+        stage_row.addStretch()
+        stage_widget = QWidget()
+        stage_widget.setLayout(stage_row)
+
+        self.vision_debug_logic_x_label = QLabel("ground/arc logic_x")
+        self.vision_debug_logic_x_spin = QDoubleSpinBox()
+        self.vision_debug_logic_x_spin.setRange(-0.25, 1.25)
+        self.vision_debug_logic_x_spin.setDecimals(3)
+        self.vision_debug_logic_x_spin.setSingleStep(0.01)
+        self.vision_debug_logic_x_spin.setValue(0.50)
+
+        self.vision_debug_logic_y_label = QLabel("arc logic_y")
+        self.vision_debug_logic_y_spin = QDoubleSpinBox()
+        self.vision_debug_logic_y_spin.setRange(-0.25, 1.25)
+        self.vision_debug_logic_y_spin.setDecimals(3)
+        self.vision_debug_logic_y_spin.setSingleStep(0.01)
+        self.vision_debug_logic_y_spin.setValue(0.50)
+
+        self.vision_debug_toggle_btn = QPushButton("Start Vision Debug")
+        self.vision_debug_toggle_btn.clicked.connect(self._toggle_vision_debug)
+        self.vision_debug_hint_label = QLabel(
+            "Recognition only. No automation input is started. Image/video sources keep looping."
+        )
+        self.vision_debug_hint_label.setWordWrap(True)
+        self.vision_debug_result_label = QLabel("Vision Debug: idle")
+        self.vision_debug_result_label.setWordWrap(True)
+        self.vision_debug_result_label.setTextInteractionFlags(
+            Qt.TextSelectableByMouse
+        )
+
+        vision_debug_form.addRow(
+            self.vision_debug_source_label, self.vision_debug_source_combo
+        )
+        vision_debug_form.addRow(self.vision_debug_input_label, source_path_widget)
+        vision_debug_form.addRow(self.vision_debug_stage_label, stage_widget)
+        vision_debug_form.addRow(
+            self.vision_debug_logic_x_label, self.vision_debug_logic_x_spin
+        )
+        vision_debug_form.addRow(
+            self.vision_debug_logic_y_label, self.vision_debug_logic_y_spin
+        )
+        vision_debug_form.addRow(self.vision_debug_toggle_btn)
+        vision_debug_form.addRow(self.vision_debug_hint_label)
+        vision_debug_form.addRow(self.vision_debug_result_label)
+
         vision_form.addRow(
             self.ui_template_threshold_label, self.ui_template_threshold_spin
         )
@@ -1051,6 +1190,7 @@ class AutoPlayWindow(QMainWindow):
         vision_form.addRow(self.overlay_debug_check)
         vision_form.addRow(roi_group)
         vision_form.addRow(self.roi_values_label)
+        vision_form.addRow(self.vision_debug_group)
 
         self.settings_grid.addWidget(self.settings_basic_group, 0, 0)
         self.settings_grid.addWidget(self.settings_vision_group, 0, 1)
@@ -1061,6 +1201,7 @@ class AutoPlayWindow(QMainWindow):
 
         self._reflow_coord_grid(False)
         self._reflow_settings_layout()
+        self._on_vision_debug_source_changed()
 
     def _apply_texts(self) -> None:
         self.setWindowTitle(self._t("window_title"))
@@ -1128,6 +1269,24 @@ class AutoPlayWindow(QMainWindow):
         self.processing_scale_label.setText("Vision processing scale")
         self.vision_perf_success_only_check.setText(self._t("vision_perf_success_only"))
         self.overlay_debug_check.setText(self._t("vision_overlay"))
+        self.vision_debug_group.setTitle(self._t("vision_debug_group"))
+        self.vision_debug_source_label.setText(self._t("vision_debug_source"))
+        self.vision_debug_input_label.setText(self._t("vision_debug_input"))
+        self.vision_debug_browse_btn.setText(self._t("vision_debug_browse"))
+        self.vision_debug_stage_label.setText(self._t("vision_debug_stages"))
+        self.vision_debug_ui_check.setText(self._t("vision_debug_stage_ui"))
+        self.vision_debug_ground_check.setText(self._t("vision_debug_stage_ground"))
+        self.vision_debug_arc_check.setText(self._t("vision_debug_stage_arc"))
+        self.vision_debug_logic_x_label.setText(self._t("vision_debug_logic_x"))
+        self.vision_debug_logic_y_label.setText(self._t("vision_debug_logic_y"))
+        self.vision_debug_toggle_btn.setText(
+            self._t("vision_debug_stop")
+            if self._vision_debug_running
+            else self._t("vision_debug_start")
+        )
+        self.vision_debug_hint_label.setText(self._t("vision_debug_hint"))
+        if not self._vision_debug_running:
+            self.vision_debug_result_label.setText(self._t("vision_debug_idle"))
 
         self.run_state_label.setText(self._t("idle"))
         self.controller_state_label.setText(
@@ -1420,28 +1579,46 @@ class AutoPlayWindow(QMainWindow):
         self._log_vision_perf("arc", passed)
         return passed
 
-    def _update_overlay_preview(self, frame: np.ndarray) -> None:
-        if not self.overlay_debug_check.isChecked():
+    def _update_overlay_preview(
+        self,
+        frame: np.ndarray,
+        stage: str | None = None,
+        *,
+        force_show: bool = False,
+        run_detection: bool = True,
+        decode_fps: float | None = None,
+    ) -> None:
+        if not force_show and not self.overlay_debug_check.isChecked():
             self.overlay_window.hide()
             return
 
+        render_stage = stage or self._auto_start_stage
         self.vision_detector.set_runtime(self._build_vision_runtime())
-        overlay_source = frame
-        if self._auto_start_stage == "wait_ui":
-            self.vision_detector.detect_ui_panel(frame)
-        elif self._auto_start_stage == "wait_ground":
-            self.vision_detector.detect_ground_overlap(frame)
-        elif self._auto_start_stage == "wait_arc":
-            if (
-                self.prepared is not None
-                and self.prepared.first_note_logic_pos is not None
-            ):
-                logic_x, logic_y = self.prepared.first_note_logic_pos
-                self.vision_detector.detect_arc_overlap(frame, logic_x, logic_y)
+        if run_detection:
+            if render_stage == "wait_ui":
+                self.vision_detector.detect_ui_panel(frame)
+            elif render_stage == "wait_ground":
+                logic_x = 0.5
+                if (
+                    self.prepared is not None
+                    and self.prepared.first_ground_logic_x is not None
+                ):
+                    logic_x = float(self.prepared.first_ground_logic_x)
+                self.vision_detector.detect_ground_overlap(frame, logic_x)
+            elif render_stage == "wait_arc":
+                if (
+                    self.prepared is not None
+                    and self.prepared.first_note_logic_pos is not None
+                ):
+                    logic_x, logic_y = self.prepared.first_note_logic_pos
+                    self.vision_detector.detect_arc_overlap(frame, logic_x, logic_y)
+
         overlay = self.vision_detector.render_overlay(
-            overlay_source,
-            self._auto_start_stage,
-            self.controller.get_decode_fps() if self.controller is not None else None,
+            frame,
+            render_stage,
+            decode_fps
+            if decode_fps is not None
+            else (self.controller.get_decode_fps() if self.controller is not None else None),
         )
         rgb = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
         qimg = QImage(
@@ -1486,11 +1663,8 @@ class AutoPlayWindow(QMainWindow):
     def _on_overlay_toggled(self, checked: bool) -> None:
         if not checked:
             self.overlay_window.hide()
-            self.overlay_timer.stop()
             return
         self.overlay_window.show()
-        if not self.overlay_timer.isActive():
-            self.overlay_timer.start()
 
     def _reflow_coord_grid(self, compact: bool) -> None:
         while self.coord_grid.count():
@@ -1548,12 +1722,244 @@ class AutoPlayWindow(QMainWindow):
             self.overlay_window.hide()
         except Exception:
             pass
+        self._stop_vision_debug(log_message=False)
         super().closeEvent(event)
+
+    def _reset_auto_start_state(self, *, clear_timing: bool = True) -> None:
+        self._auto_start_stage = "idle"
+        self._auto_start_playback_armed = False
+        if clear_timing:
+            self._auto_start_detection_started_at = None
+            self._auto_start_triggered_at = None
+            self._auto_start_frame_timestamp = None
+            self._auto_start_vision_total_ms = 0.0
+        if self._auto_start_start_signal is not None:
+            self._auto_start_start_signal.set()
+        self._auto_start_start_signal = None
+
+    def _disable_auto_start_one_shot(self, emit_log: bool, *, clear_timing: bool) -> None:
+        was_checked = self.auto_start_cv_check.isChecked()
+        self.auto_start_cv_check.blockSignals(True)
+        self.auto_start_cv_check.setChecked(False)
+        self.auto_start_cv_check.blockSignals(False)
+        self._reset_auto_start_state(clear_timing=clear_timing)
+        if emit_log and was_checked and not self._auto_start_shutdown_logged:
+            self._append_log(self._t("auto_start_off"))
+        self._auto_start_shutdown_logged = True
+
+    def _on_vision_debug_source_changed(self, _index: int | None = None) -> None:
+        source = str(self.vision_debug_source_combo.currentData())
+        requires_path = source in {"image", "video"}
+        self.vision_debug_path_edit.setEnabled(requires_path)
+        self.vision_debug_browse_btn.setEnabled(requires_path)
+
+    def _browse_vision_debug_input(self) -> None:
+        source = str(self.vision_debug_source_combo.currentData())
+        if source == "image":
+            file_path, _ = QFileDialog.getOpenFileName(
+                self,
+                self._t("vision_debug_input"),
+                "",
+                "Image Files (*.png *.jpg *.jpeg *.bmp *.webp);;All Files (*.*)",
+            )
+        elif source == "video":
+            file_path, _ = QFileDialog.getOpenFileName(
+                self,
+                self._t("vision_debug_input"),
+                "",
+                "Video Files (*.mp4 *.mkv *.avi *.mov *.webm);;All Files (*.*)",
+            )
+        else:
+            return
+        if file_path:
+            self.vision_debug_path_edit.setText(file_path)
+
+    def _toggle_vision_debug(self, _checked: bool = False) -> None:
+        if self._vision_debug_running:
+            self._stop_vision_debug(log_message=True)
+            return
+        self._start_vision_debug()
+
+    def _start_vision_debug(self) -> None:
+        if not (
+            self.vision_debug_ui_check.isChecked()
+            or self.vision_debug_ground_check.isChecked()
+            or self.vision_debug_arc_check.isChecked()
+        ):
+            self._append_log(self._t("vision_debug_no_stage"))
+            return
+        if self.auto_start_cv_check.isChecked():
+            self._disable_auto_start_one_shot(
+                emit_log=True,
+                clear_timing=True,
+            )
+
+        source = str(self.vision_debug_source_combo.currentData())
+        source_name = self.vision_debug_source_combo.currentText()
+        self._stop_vision_debug(log_message=False)
+
+        if source == "scrcpy":
+            if not self.controller_ready or self.controller is None:
+                self._append_log(self._t("vision_debug_source_not_ready"))
+                return
+        elif source == "image":
+            path = Path(self.vision_debug_path_edit.text().strip())
+            if not path.exists() or not path.is_file():
+                self._append_log(self._t("vision_debug_invalid_path", path=str(path)))
+                return
+            frame = _read_image_unicode(path)
+            if frame is None:
+                self._append_log(self._t("vision_debug_open_fail", path=str(path)))
+                return
+            self._vision_debug_static_frame = frame
+        elif source == "video":
+            path = Path(self.vision_debug_path_edit.text().strip())
+            if not path.exists() or not path.is_file():
+                self._append_log(self._t("vision_debug_invalid_path", path=str(path)))
+                return
+            capture = cv2.VideoCapture(str(path))
+            if not capture.isOpened():
+                self._append_log(self._t("vision_debug_open_fail", path=str(path)))
+                try:
+                    capture.release()
+                except Exception:
+                    pass
+                return
+            self._vision_debug_capture = capture
+
+        self._vision_debug_running = True
+        self._vision_debug_last_log_time = 0.0
+        self._vision_debug_last_result = self._t(
+            "vision_debug_running",
+            source=source_name,
+        )
+        self.vision_debug_result_label.setText(self._vision_debug_last_result)
+        self.vision_debug_toggle_btn.setText(self._t("vision_debug_stop"))
+        self._append_log(self._t("vision_debug_started", source=source_name))
+
+    def _stop_vision_debug(self, *, log_message: bool) -> None:
+        running = self._vision_debug_running
+        self._vision_debug_running = False
+        self._vision_debug_overlay_stage = "debug-idle"
+        self._vision_debug_static_frame = None
+        if self._vision_debug_capture is not None:
+            try:
+                self._vision_debug_capture.release()
+            except Exception:
+                pass
+        self._vision_debug_capture = None
+        if hasattr(self, "vision_debug_toggle_btn"):
+            self.vision_debug_toggle_btn.setText(self._t("vision_debug_start"))
+        if hasattr(self, "vision_debug_result_label"):
+            self.vision_debug_result_label.setText(self._t("vision_debug_idle"))
+        if log_message and running:
+            self._append_log(self._t("vision_debug_stopped"))
+        if not self.overlay_debug_check.isChecked():
+            self.overlay_window.hide()
+
+    def _read_vision_debug_frame(
+        self, controller_frame: np.ndarray | None
+    ) -> tuple[np.ndarray | None, float | None]:
+        if not self._vision_debug_running:
+            return None, None
+
+        source = str(self.vision_debug_source_combo.currentData())
+        if source == "scrcpy":
+            frame = controller_frame
+            if frame is None and self.controller is not None:
+                frame = self.controller.get_latest_frame(copy_frame=True)
+            fps = self.controller.get_decode_fps() if self.controller is not None else None
+            return frame, fps
+
+        if source == "image":
+            if self._vision_debug_static_frame is None:
+                return None, None
+            return self._vision_debug_static_frame.copy(), None
+
+        if self._vision_debug_capture is None:
+            return None, None
+        ok, frame = self._vision_debug_capture.read()
+        if not ok or frame is None:
+            self._vision_debug_capture.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            ok, frame = self._vision_debug_capture.read()
+        if not ok or frame is None:
+            return None, None
+        return frame, None
+
+    def _run_vision_debug_detection(self, frame: np.ndarray) -> None:
+        runtime = self._build_vision_runtime()
+        self.vision_detector.set_runtime(runtime)
+        stages: list[str] = []
+        parts: list[str] = []
+
+        if self.vision_debug_ui_check.isChecked():
+            ui_pass = self.vision_detector.detect_ui_panel(frame)
+            m = self.vision_detector.metrics
+            p = self.vision_detector.perf
+            stages.append("ui_stage")
+            parts.append(
+                "ui pass={} thr={:.3f} score={:.3f} good={} inliers={} ms={:.2f}".format(
+                    int(ui_pass),
+                    runtime.ui_feature_threshold,
+                    m.ui_left_feature_score,
+                    m.ui_left_good_matches,
+                    m.ui_left_inliers,
+                    p.total_ms,
+                )
+            )
+
+        if self.vision_debug_ground_check.isChecked():
+            logic_x = float(self.vision_debug_logic_x_spin.value())
+            ground_pass = self.vision_detector.detect_ground_overlap(frame, logic_x)
+            m = self.vision_detector.metrics
+            p = self.vision_detector.perf
+            stages.append("ground")
+            parts.append(
+                "ground pass={} thr={:.3f} ratio={:.3f} px={}/{} logic_x={:.3f} ms={:.2f}".format(
+                    int(ground_pass),
+                    runtime.ground_blue_ratio_threshold,
+                    m.ground_blue_ratio,
+                    m.ground_blue_pixels,
+                    m.ground_roi_pixels,
+                    logic_x,
+                    p.total_ms,
+                )
+            )
+
+        if self.vision_debug_arc_check.isChecked():
+            logic_x = float(self.vision_debug_logic_x_spin.value())
+            logic_y = float(self.vision_debug_logic_y_spin.value())
+            arc_pass = self.vision_detector.detect_arc_overlap(frame, logic_x, logic_y)
+            m = self.vision_detector.metrics
+            p = self.vision_detector.perf
+            stages.append("arc_pass")
+            parts.append(
+                "arc pass={} thr={:.3f} ratio={:.3f} dist={:.1f} logic=({:.3f},{:.3f}) ms={:.2f}".format(
+                    int(arc_pass),
+                    runtime.arc_color_ratio_threshold,
+                    m.arc_color_ratio,
+                    m.arc_target_distance,
+                    logic_x,
+                    logic_y,
+                    p.total_ms,
+                )
+            )
+
+        self._vision_debug_overlay_stage = (
+            "debug:" + "+".join(stages) if stages else "debug:none"
+        )
+        result_text = " | ".join(parts) if parts else self._t("vision_debug_no_stage")
+        self._vision_debug_last_result = result_text
+        self.vision_debug_result_label.setText(result_text)
+
+        now = time.perf_counter()
+        if now - self._vision_debug_last_log_time >= 1.0:
+            self._append_log(f"[VISION-DEBUG] {result_text}")
+            self._vision_debug_last_log_time = now
 
     def _poll_auto_start(self) -> None:
         if not self.auto_start_cv_check.isChecked():
-            self._auto_start_stage = "idle"
-            self._auto_start_playback_armed = False
+            self._reset_auto_start_state()
             return
         if self.controller is None or self.prepared is None:
             return
@@ -1595,8 +2001,11 @@ class AutoPlayWindow(QMainWindow):
                 self._auto_start_vision_total_ms = self.vision_detector.perf.total_ms
                 self._auto_start_triggered_at = time.perf_counter()
                 self._append_log(self._t("auto_start_fire"))
-                self._auto_start_stage = "idle"
                 self._release_auto_start_playback()
+                self._disable_auto_start_one_shot(
+                    emit_log=True,
+                    clear_timing=False,
+                )
             return
 
         if self._auto_start_stage == "wait_ground":
@@ -1605,38 +2014,66 @@ class AutoPlayWindow(QMainWindow):
                 self._auto_start_vision_total_ms = self.vision_detector.perf.total_ms
                 self._auto_start_triggered_at = time.perf_counter()
                 self._append_log(self._t("auto_start_fire"))
-                self._auto_start_stage = "idle"
                 self._release_auto_start_playback()
+                self._disable_auto_start_one_shot(
+                    emit_log=True,
+                    clear_timing=False,
+                )
 
     def _on_auto_start_toggled(self, checked: bool) -> None:
         if not checked:
-            self._auto_start_stage = "idle"
-            self._auto_start_playback_armed = False
-            if self._auto_start_start_signal is not None:
-                self._auto_start_start_signal.set()
-            self._auto_start_start_signal = None
+            self._reset_auto_start_state()
             return
+        self._auto_start_shutdown_logged = False
 
     def _poll_overlay(self) -> None:
-        if self.controller is None:
-            return
-        latest_seq = (
-            self.controller.get_latest_frame_seq()
-            if hasattr(self.controller, "get_latest_frame_seq")
-            else self._auto_start_last_frame_seq
-        )
-        if latest_seq == self._auto_start_last_frame_seq:
-            return
-        self._auto_start_last_frame_seq = latest_seq
+        has_new_controller_frame = False
+        controller_frame = None
+        controller_fps = None
+        if self.controller is not None:
+            latest_seq = (
+                self.controller.get_latest_frame_seq()
+                if hasattr(self.controller, "get_latest_frame_seq")
+                else self._auto_start_last_frame_seq
+            )
+            if latest_seq != self._auto_start_last_frame_seq:
+                self._auto_start_last_frame_seq = latest_seq
+                controller_frame = self.controller.get_latest_frame(copy_frame=True)
+                has_new_controller_frame = controller_frame is not None
+            controller_fps = self.controller.get_decode_fps()
 
-        frame = self.controller.get_latest_frame(copy_frame=True)
-        if frame is None:
-            return
-        if self.auto_start_cv_check.isChecked() and self.prepared is not None:
+        if (
+            has_new_controller_frame
+            and not self._vision_debug_running
+            and self.auto_start_cv_check.isChecked()
+            and self.prepared is not None
+        ):
             self.auto_start_frame_ready.emit()
+
+        if self._vision_debug_running:
+            debug_frame, debug_fps = self._read_vision_debug_frame(controller_frame)
+            if debug_frame is not None:
+                self._run_vision_debug_detection(debug_frame)
+                self._update_overlay_preview(
+                    debug_frame,
+                    stage=self._vision_debug_overlay_stage,
+                    force_show=True,
+                    run_detection=False,
+                    decode_fps=debug_fps,
+                )
+            return
+
         if not self.overlay_debug_check.isChecked():
             return
-        self._update_overlay_preview(frame)
+        if controller_frame is None:
+            return
+        self._update_overlay_preview(
+            controller_frame,
+            stage=self._auto_start_stage,
+            force_show=False,
+            run_detection=True,
+            decode_fps=controller_fps,
+        )
 
     def _on_language_changed(self) -> None:
         self.locale = self.language_combo.currentData()
@@ -1697,6 +2134,7 @@ class AutoPlayWindow(QMainWindow):
         self.ground_y0_spin.setValue(float(vision.ground_roi[1]))
         self.ground_x1_spin.setValue(float(vision.ground_roi[2]))
         self.ground_y1_spin.setValue(float(vision.ground_roi[3]))
+        self._on_vision_debug_source_changed()
 
     def _save_form_to_config(self) -> bool:
         cfg = self.app_config.global_config
@@ -1873,6 +2311,11 @@ class AutoPlayWindow(QMainWindow):
             self.stream_bitrate_enabled,
             self.stream_bitrate_mbps,
         ):
+            if (
+                self._vision_debug_running
+                and str(self.vision_debug_source_combo.currentData()) == "scrcpy"
+            ):
+                self._stop_vision_debug(log_message=True)
             self._append_log(
                 f"[INFO] Restarting scrcpy stream with max_fps={self.stream_max_fps}, native resolution, bitrate={'off' if not self.stream_bitrate_enabled else f'{self.stream_bitrate_mbps}Mbps'}"
             )
@@ -1972,6 +2415,11 @@ class AutoPlayWindow(QMainWindow):
         self._append_log(self._t("log_stop"))
         if self._auto_start_start_signal is not None:
             self._auto_start_start_signal.set()
+        if self.auto_start_cv_check.isChecked():
+            self._disable_auto_start_one_shot(
+                emit_log=True,
+                clear_timing=True,
+            )
         self.worker.stop_playback()
 
     def _fine_tune_plus(self) -> None:
@@ -1997,8 +2445,7 @@ class AutoPlayWindow(QMainWindow):
         self.run_state_label.setText(self._t("idle") if success else self._t("error"))
         if success:
             self._append_log(self._t("log_play_finish"))
-        self._auto_start_start_signal = None
-        self._auto_start_playback_armed = False
+        self._reset_auto_start_state()
 
     def _on_warmup_start(self) -> None:
         self.controller_state_label.setText(self._t("warming"))
@@ -2011,7 +2458,6 @@ class AutoPlayWindow(QMainWindow):
         self._append_log(self._t("log_warm_ok"))
         if self.prepared is not None:
             self._request_prepare(auto=True)
-        self.overlay_timer.start()
 
     def _on_warmup_fail(self, error: str) -> None:
         self.controller = None
@@ -2027,6 +2473,15 @@ class AutoPlayWindow(QMainWindow):
         self.prepared = prepared
         self.app_config.delay = prepared.delay
         save_app_config(self.app_config)
+        if prepared.first_note_logic_pos is not None:
+            self.vision_debug_logic_x_spin.setValue(
+                float(prepared.first_note_logic_pos[0])
+            )
+            self.vision_debug_logic_y_spin.setValue(
+                float(prepared.first_note_logic_pos[1])
+            )
+        elif prepared.first_ground_logic_x is not None:
+            self.vision_debug_logic_x_spin.setValue(float(prepared.first_ground_logic_x))
         self.delay_label.setText(f"{prepared.delay:.3f}s")
         self.prepare_state_label.setText(self._t("ready"))
         self._append_log(
