@@ -49,24 +49,20 @@ def main() -> None:
     parser.add_argument(
         "--ref-dir", default="ref/opencv", help="Reference material directory"
     )
-    parser.add_argument("--ui-roi", type=_parse_roi, default=(0.66, 0.02, 0.995, 0.20))
     parser.add_argument(
         "--ground-roi",
         type=_parse_roi,
         default=(0.12, 1310 / 1440, 0.88, 1345 / 1440),
     )
-    parser.add_argument("--arc-roi", type=_parse_roi, default=(0.18, 0.22, 0.82, 0.80))
     parser.add_argument(
         "--ui-left-roi", type=_parse_roi, default=(0.005, 0.02, 0.34, 0.20)
     )
-    parser.add_argument(
-        "--ui-gate-mode",
-        choices=["right", "left", "weighted"],
-        default="weighted",
-    )
     parser.add_argument("--ui-threshold", type=float, default=0.08)
-    parser.add_argument("--ground-threshold", type=float, default=0.045)
-    parser.add_argument("--arc-threshold", type=float, default=0.44)
+    parser.add_argument("--ground-threshold", type=float, default=0.03)
+    parser.add_argument("--arc-threshold", type=float, default=0.02)
+    parser.add_argument("--arc-logic-x", type=float, default=0.25)
+    parser.add_argument("--arc-logic-y", type=float, default=0.25)
+    parser.add_argument("--arc-center", nargs=2, type=float, default=(0.5, 0.5))
     parser.add_argument(
         "--save-overlay-dir", default="", help="Output folder for debug overlay images"
     )
@@ -82,14 +78,14 @@ def main() -> None:
     detector = VisionDetector(Path(args.ref_dir), use_cuda=not args.no_cuda)
     detector.set_runtime(
         VisionRuntimeConfig(
-            ui_roi=args.ui_roi,
             ui_left_roi=args.ui_left_roi,
-            ui_gate_mode=args.ui_gate_mode,
             ground_roi=args.ground_roi,
-            arc_roi=args.arc_roi,
             ui_feature_threshold=args.ui_threshold,
-            ground_overlap_threshold=args.ground_threshold,
-            arc_overlap_threshold=args.arc_threshold,
+            ground_blue_ratio_threshold=args.ground_threshold,
+            arc_color_ratio_threshold=args.arc_threshold,
+            arc_logic_roi_half_x=args.arc_logic_x,
+            arc_logic_roi_half_y=args.arc_logic_y,
+            stream_crop_roi=(0.0, 0.0, 1.0, 1.0),
         )
     )
 
@@ -107,12 +103,20 @@ def main() -> None:
             continue
 
         ui_pass = detector.detect_ui_panel(frame)
-        ground_pass = detector.detect_ground_overlap(frame)
-        arc_pass = detector.detect_arc_overlap(frame)
+        ground_pass = detector.detect_ground_overlap(
+            frame,
+            float(args.arc_center[0]),
+            float(args.arc_center[1]),
+        )
+        arc_pass = detector.detect_arc_overlap(
+            frame,
+            float(args.arc_center[0]),
+            float(args.arc_center[1]),
+        )
         m = detector.metrics
 
         print(
-            f"{img_path},{int(ui_pass)},{m.ui_feature_score:.4f},{m.ui_good_matches},{m.ui_inliers},{int(ground_pass)},{m.ground_overlap_ratio:.4f},{int(arc_pass)},{m.arc_overlap_ratio:.4f}"
+            f"{img_path},{int(ui_pass)},{m.ui_left_feature_score:.4f},{m.ui_left_good_matches},{m.ui_left_inliers},{int(ground_pass)},{m.ground_blue_ratio:.4f},{int(arc_pass)},{m.arc_color_ratio:.4f}"
         )
 
         if out_dir is not None:

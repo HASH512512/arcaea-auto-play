@@ -34,6 +34,7 @@ class DeviceController:
     latest_frame_timestamp: float | None
     latest_frame_seq_lock: threading.Lock
     latest_frame_seq: int
+    stream_crop_rect: tuple[int, int, int, int]
 
     def __init__(
         self,
@@ -43,6 +44,7 @@ class DeviceController:
         server_dir: str | Path | None = None,
         max_fps: int = 60,
         video_bit_rate: int | None = None,
+        video_crop: tuple[int, int, int, int] | None = None,
     ) -> None:
         self.serial = serial
         adb = ("adb",) if serial is None else ("adb", "-s", serial)
@@ -84,6 +86,10 @@ class DeviceController:
         ]
         if video_bit_rate is not None:
             command_line.append(f"video_bit_rate={int(video_bit_rate)}")
+        crop_rect = self._normalize_crop(video_crop)
+        if crop_rect is not None:
+            crop_x, crop_y, crop_w, crop_h = crop_rect
+            command_line.append(f"crop={crop_w}:{crop_h}:{crop_x}:{crop_y}")
         self.server_process = subprocess.Popen(command_line)
         self.video_socket, _ = skt.accept()
         self.control_socket, _ = skt.accept()
@@ -181,6 +187,10 @@ class DeviceController:
         self.device_height = int.from_bytes(self.video_socket.recv(4), "big")
         self.video_width = self.device_width
         self.video_height = self.device_height
+        if crop_rect is not None:
+            self.stream_crop_rect = crop_rect
+        else:
+            self.stream_crop_rect = (0, 0, self.device_width, self.device_height)
 
         print(
             "[client]",
@@ -237,6 +247,20 @@ class DeviceController:
         with self.latest_frame_seq_lock:
             return self.latest_frame_seq
 
+    def get_stream_crop_rect(self) -> tuple[int, int, int, int]:
+        return self.stream_crop_rect
+
+    def get_stream_crop_norm(self) -> tuple[float, float, float, float]:
+        crop_x, crop_y, crop_w, crop_h = self.stream_crop_rect
+        full_w = max(1, int(self.device_width))
+        full_h = max(1, int(self.device_height))
+        return (
+            crop_x / float(full_w),
+            crop_y / float(full_h),
+            (crop_x + crop_w) / float(full_w),
+            (crop_y + crop_h) / float(full_h),
+        )
+
     def close(self) -> None:
         self.collector_running = False
         try:
@@ -266,6 +290,21 @@ class DeviceController:
             )
             if status == "device"
         ]
+
+    @staticmethod
+    def _normalize_crop(
+        crop: tuple[int, int, int, int] | None,
+    ) -> tuple[int, int, int, int] | None:
+        if crop is None:
+            return None
+        if len(crop) != 4:
+            return None
+        x, y, w, h = (int(crop[0]), int(crop[1]), int(crop[2]), int(crop[3]))
+        if w <= 0 or h <= 0:
+            return None
+        if x < 0 or y < 0:
+            return None
+        return (x, y, w, h)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import threading
-import threading
 import time
 from dataclasses import asdict, dataclass, is_dataclass
 from enum import Enum
@@ -38,6 +37,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from algo.algo_base import TouchAction
 from autoplay.analyzer import ModeAnalyzer
 from autoplay.domain.arcaea_ir import ArcIR, HoldIR, TapIR
 from autoplay.parser import (
@@ -327,8 +327,17 @@ class PreparedRunData:
     note_meta: dict[int, dict[str, object]]
     first_ground_tick: int | None
     first_ground_logic_x: float | None
+    first_ground_logic_pos: tuple[float, float] | None
     first_note_types: tuple[str, ...]
     first_note_logic_pos: tuple[float, float] | None
+
+
+class StartupPipelineState(Enum):
+    IDLE = "idle"
+    WARMUP = "warmup"
+    PREPARE = "prepare"
+    READY = "ready"
+    ERROR = "error"
 
 
 def _coord_to_text(coord: tuple[int, int]) -> str:
@@ -464,10 +473,12 @@ class ControllerWarmupWorker(QThread):
         self,
         max_fps: int,
         video_bit_rate: int | None,
+        video_crop: tuple[int, int, int, int] | None = None,
     ) -> None:
         super().__init__()
         self.max_fps = max_fps
         self.video_bit_rate = video_bit_rate
+        self.video_crop = video_crop
 
     def run(self) -> None:
         self.started_warmup.emit()
@@ -475,6 +486,7 @@ class ControllerWarmupWorker(QThread):
             controller = prepare_device_controller(
                 max_fps=self.max_fps,
                 video_bit_rate=self.video_bit_rate,
+                video_crop=self.video_crop,
             )
         except Exception as exc:
             self.warmup_fail.emit(str(exc))
@@ -526,6 +538,7 @@ class PrepareWorker(QThread):
 
         first_ground_tick: int | None = None
         first_ground_logic_x: float | None = None
+        first_ground_logic_pos: tuple[float, float] | None = None
         first_tick = min(events.keys())
         first_types = {str(event.source_type) for event in events[first_tick]}
         first_note_logic_pos: tuple[float, float] | None = None
@@ -549,6 +562,11 @@ class PrepareWorker(QThread):
                         and isinstance(logical_pos[0], (int, float))
                     ):
                         first_ground_logic_x = float(logical_pos[0])
+                        if isinstance(logical_pos[1], (int, float)):
+                            first_ground_logic_pos = (
+                                float(logical_pos[0]),
+                                float(logical_pos[1]),
+                            )
                     break
             if first_ground_tick is not None:
                 break
@@ -561,6 +579,7 @@ class PrepareWorker(QThread):
             note_meta=_build_note_meta(chart),
             first_ground_tick=first_ground_tick,
             first_ground_logic_x=first_ground_logic_x,
+            first_ground_logic_pos=first_ground_logic_pos,
             first_note_types=tuple(sorted(first_types)),
             first_note_logic_pos=first_note_logic_pos,
         )
@@ -636,8 +655,10 @@ class PlaybackWorker(QThread):
             {
                 "curr_tick": curr_tick,
                 "curr_event": curr_event,
+                "curr_events": list(curr_events),
                 "next_tick": next_tick,
                 "next_event": next_event,
+                "next_events": list(next_events or []),
                 "curr_size": len(curr_events),
                 "next_size": len(next_events or []),
                 "note_meta": self.prepared.note_meta,
@@ -678,11 +699,14 @@ class AutoPlayWindow(QMainWindow):
 
         self.controller = None
         self.controller_ready = False
+        self.vision_controller = None
+        self.vision_controller_ready = False
         self.prepared: PreparedRunData | None = None
 
         self.worker: PlaybackWorker | None = None
         self.prepare_worker: PrepareWorker | None = None
         self.warmup_worker: ControllerWarmupWorker | None = None
+        self.vision_warmup_worker: ControllerWarmupWorker | None = None
 
         self.log_lines: list[str] = []
         self.log_limit = 500
@@ -694,6 +718,7 @@ class AutoPlayWindow(QMainWindow):
         self._auto_start_vision_total_ms: float = 0.0
         self._vision_perf_success_only = True
         self._auto_start_last_frame_seq = -1
+        self._vision_last_frame_seq = -1
         self._auto_start_playback_armed = False
         self._auto_start_start_signal: threading.Event | None = None
         self._auto_start_shutdown_logged = False
@@ -707,6 +732,16 @@ class AutoPlayWindow(QMainWindow):
         self.stream_max_fps = 60
         self.stream_bitrate_enabled = False
         self.stream_bitrate_mbps = 8
+        self._native_device_size: tuple[int, int] | None = None
+        self._startup_state = StartupPipelineState.IDLE
+        self._prepare_requested_after_warmup = False
+        self._warmup_restart_requested = False
+        self._queued_pipeline_reason: str | None = None
+        self._queued_pipeline_prepare_after_warmup = False
+        self._queued_pipeline_force_touch_restart = False
+        self._active_touch_points: dict[int, tuple[int, int]] = {}
+        self._manual_stop_release_points: dict[int, tuple[int, int]] = {}
+        self._manual_stop_release_pending = False
 
         self._build_ui()
         self._load_config_to_form()
@@ -725,8 +760,11 @@ class AutoPlayWindow(QMainWindow):
         self.overlay_timer.timeout.connect(self._poll_overlay)
         self.overlay_timer.start()
 
-        self._start_warmup()
-        self._request_prepare(auto=True)
+        self._start_startup_pipeline(
+            "startup",
+            prepare_after_warmup=True,
+            force_touch_restart=True,
+        )
 
     def _t(self, key: str, **kwargs) -> str:
         return TEXT[self.locale][key].format(**kwargs)
@@ -922,7 +960,7 @@ class AutoPlayWindow(QMainWindow):
         self.prepare_btn = QPushButton()
         self.save_btn.clicked.connect(self._on_save_clicked)
         self.reload_btn.clicked.connect(self._on_reload_clicked)
-        self.prepare_btn.clicked.connect(lambda: self._request_prepare(auto=False))
+        self.prepare_btn.clicked.connect(lambda: self._request_prepare())
         button_row = QHBoxLayout()
         button_row.addWidget(self.save_btn)
         button_row.addWidget(self.reload_btn)
@@ -1013,12 +1051,6 @@ class AutoPlayWindow(QMainWindow):
         self.arc_logic_roi_half_y_spin.setRange(0.01, 1.00)
         self.arc_logic_roi_half_y_spin.setSingleStep(0.01)
         self.arc_logic_roi_half_y_spin.setValue(0.25)
-
-        self.processing_scale_label = QLabel("Vision processing scale")
-        self.processing_scale_spin = QDoubleSpinBox()
-        self.processing_scale_spin.setRange(0.10, 1.00)
-        self.processing_scale_spin.setSingleStep(0.05)
-        self.processing_scale_spin.setValue(1.00)
 
         self.overlay_debug_check = QCheckBox("Vision overlay")
         self.overlay_debug_check.setChecked(False)
@@ -1182,10 +1214,6 @@ class AutoPlayWindow(QMainWindow):
             self.arc_logic_roi_half_y_label,
             self.arc_logic_roi_half_y_spin,
         )
-        vision_form.addRow(
-            self.processing_scale_label,
-            self.processing_scale_spin,
-        )
         vision_form.addRow(self.vision_perf_success_only_check)
         vision_form.addRow(self.overlay_debug_check)
         vision_form.addRow(roi_group)
@@ -1266,7 +1294,6 @@ class AutoPlayWindow(QMainWindow):
         )
         self.arc_logic_roi_half_x_label.setText(self._t("arc_logic_roi_half_x"))
         self.arc_logic_roi_half_y_label.setText(self._t("arc_logic_roi_half_y"))
-        self.processing_scale_label.setText("Vision processing scale")
         self.vision_perf_success_only_check.setText(self._t("vision_perf_success_only"))
         self.overlay_debug_check.setText(self._t("vision_overlay"))
         self.vision_debug_group.setTitle(self._t("vision_debug_group"))
@@ -1343,6 +1370,9 @@ class AutoPlayWindow(QMainWindow):
                 "touch_events_total": len(touch_events_flat),
                 "first_note_types": list(self.prepared.first_note_types),
                 "first_ground_tick": self.prepared.first_ground_tick,
+                "first_ground_logic_pos": _to_serializable(
+                    self.prepared.first_ground_logic_pos
+                ),
                 "first_note_logic_pos": _to_serializable(
                     self.prepared.first_note_logic_pos
                 ),
@@ -1427,6 +1457,44 @@ class AutoPlayWindow(QMainWindow):
         )
         return line1, line2, detail
 
+    def _track_active_touch_events(self, events: list) -> None:
+        for event in events:
+            action = getattr(event, "action", None)
+            pointer = getattr(event, "pointer", None)
+            pos = getattr(event, "pos", None)
+            if not isinstance(pointer, int):
+                continue
+            if not isinstance(pos, tuple) or len(pos) != 2:
+                continue
+            x = int(pos[0])
+            y = int(pos[1])
+            if action in {TouchAction.DOWN, TouchAction.MOVE, TouchAction.POINTER_DOWN}:
+                self._active_touch_points[pointer] = (x, y)
+            elif action in {TouchAction.UP, TouchAction.POINTER_UP, TouchAction.CANCEL}:
+                self._active_touch_points.pop(pointer, None)
+
+    def _force_release_touch_points(self, points: dict[int, tuple[int, int]]) -> None:
+        if not points:
+            return
+        if self.controller is None or not self.controller_ready:
+            self._append_log(
+                "[WARN] Manual stop touch reset skipped: touch controller is not ready."
+            )
+            return
+        released = 0
+        for pointer, (x, y) in sorted(points.items()):
+            try:
+                self.controller.touch(int(x), int(y), TouchAction.UP, int(pointer))
+                released += 1
+            except Exception as exc:
+                self._append_log(
+                    f"[WARN] Manual stop touch reset failed for pointer={pointer}: {exc}"
+                )
+        if released > 0:
+            self._append_log(
+                f"[INFO] Manual stop touch reset completed: released {released} pointer(s) after 200ms."
+            )
+
     def _on_progress(self, payload: dict) -> None:
         if not self._first_dispatch_logged and self._start_click_time is not None:
             elapsed_ms = (time.perf_counter() - self._start_click_time) * 1000
@@ -1436,6 +1504,9 @@ class AutoPlayWindow(QMainWindow):
             self._first_dispatch_logged = True
 
         note_meta = payload.get("note_meta", {})
+        curr_events = payload.get("curr_events") or []
+        if curr_events:
+            self._track_active_touch_events(curr_events)
         curr_event = payload.get("curr_event")
         next_event = payload.get("next_event")
 
@@ -1524,7 +1595,273 @@ class AutoPlayWindow(QMainWindow):
         self._auto_start_frame_timestamp = None
         self._auto_start_vision_total_ms = 0.0
 
-    def _build_vision_runtime(self) -> VisionRuntimeConfig:
+    @staticmethod
+    def _clamp_roi(
+        roi: tuple[float, float, float, float]
+    ) -> tuple[float, float, float, float]:
+        x0, y0, x1, y1 = roi
+        x0 = max(0.0, min(1.0, float(x0)))
+        y0 = max(0.0, min(1.0, float(y0)))
+        x1 = max(0.0, min(1.0, float(x1)))
+        y1 = max(0.0, min(1.0, float(y1)))
+        x0, x1 = sorted((x0, x1))
+        y0, y1 = sorted((y0, y1))
+        return x0, y0, x1, y1
+
+    def _roi_to_pixel_rect(
+        self,
+        frame: np.ndarray,
+        roi: tuple[float, float, float, float],
+    ) -> tuple[int, int, int, int]:
+        h, w = frame.shape[:2]
+        x0 = max(0, min(w - 1, int(round(roi[0] * w))))
+        y0 = max(0, min(h - 1, int(round(roi[1] * h))))
+        x1 = max(x0 + 1, min(w, int(round(roi[2] * w))))
+        y1 = max(y0 + 1, min(h, int(round(roi[3] * h))))
+        return x0, y0, x1, y1
+
+    def _logic_rect_roi(self, logic_x: float, logic_y: float) -> tuple[float, float, float, float]:
+        half_x = float(self.arc_logic_roi_half_x_spin.value())
+        half_y = float(self.arc_logic_roi_half_y_spin.value())
+        screen_logic_y = 1.0 - float(logic_y)
+        return self._clamp_roi(
+            (
+                logic_x - half_x,
+                screen_logic_y - half_y,
+                logic_x + half_x,
+                screen_logic_y + half_y,
+            )
+        )
+
+    def _compute_pretransport_crop_roi(self) -> tuple[float, float, float, float] | None:
+        rects: list[tuple[float, float, float, float]] = [
+            self._clamp_roi(
+                (
+                    float(self.ui_left_x0_spin.value()),
+                    float(self.ui_left_y0_spin.value()),
+                    float(self.ui_left_x1_spin.value()),
+                    float(self.ui_left_y1_spin.value()),
+                )
+            )
+        ]
+
+        if self.prepared is None:
+            if (
+                self._vision_debug_running
+                and str(self.vision_debug_source_combo.currentData()) == "scrcpy"
+            ):
+                rects.append(
+                    self._logic_rect_roi(
+                        float(self.vision_debug_logic_x_spin.value()),
+                        float(self.vision_debug_logic_y_spin.value()),
+                    )
+                )
+        elif self.prepared.first_note_logic_pos is not None:
+            rects.append(
+                self._logic_rect_roi(
+                    float(self.prepared.first_note_logic_pos[0]),
+                    float(self.prepared.first_note_logic_pos[1]),
+                )
+            )
+
+        if self.prepared is not None and self.prepared.first_ground_logic_pos is not None:
+            rects.append(
+                self._logic_rect_roi(
+                    float(self.prepared.first_ground_logic_pos[0]),
+                    float(self.prepared.first_ground_logic_pos[1]),
+                )
+            )
+        elif self.prepared is not None and self.prepared.first_ground_logic_x is not None:
+            ground_center_screen_y = (
+                float(self.ground_y0_spin.value()) + float(self.ground_y1_spin.value())
+            ) * 0.5
+            ground_center_logic_y = 1.0 - ground_center_screen_y
+            rects.append(
+                self._logic_rect_roi(
+                    float(self.prepared.first_ground_logic_x),
+                    ground_center_logic_y,
+                )
+            )
+
+        if not rects:
+            return None
+
+        x0 = min(rect[0] for rect in rects)
+        y0 = min(rect[1] for rect in rects)
+        x1 = max(rect[2] for rect in rects)
+        y1 = max(rect[3] for rect in rects)
+
+        # Keep a small margin to absorb frame jitter near the crop border.
+        margin_x = 0.02
+        margin_y = 0.02
+        crop = self._clamp_roi((x0 - margin_x, y0 - margin_y, x1 + margin_x, y1 + margin_y))
+
+        if (crop[2] - crop[0]) >= 0.98 and (crop[3] - crop[1]) >= 0.98:
+            return None
+        return crop
+
+    def _compute_pretransport_crop_pixels(
+        self,
+    ) -> tuple[int, int, int, int] | None:
+        roi = self._compute_pretransport_crop_roi()
+        if roi is None:
+            return None
+
+        native_size = self._native_device_size
+        if native_size is None and self.controller is not None:
+            native_size = (
+                int(getattr(self.controller, "device_width", 0)),
+                int(getattr(self.controller, "device_height", 0)),
+            )
+        if native_size is None:
+            return None
+        width, height = native_size
+        if width <= 0 or height <= 0:
+            return None
+
+        x0 = max(0, min(width - 1, int(round(roi[0] * width))))
+        y0 = max(0, min(height - 1, int(round(roi[1] * height))))
+        x1 = max(x0 + 1, min(width, int(round(roi[2] * width))))
+        y1 = max(y0 + 1, min(height, int(round(roi[3] * height))))
+        return (x0, y0, x1 - x0, y1 - y0)
+
+    def _get_active_stream_crop_roi(self) -> tuple[float, float, float, float]:
+        if self.vision_controller is None or not hasattr(
+            self.vision_controller, "get_stream_crop_rect"
+        ):
+            return (0.0, 0.0, 1.0, 1.0)
+        try:
+            crop_rect = tuple(self.vision_controller.get_stream_crop_rect())
+        except Exception:
+            return (0.0, 0.0, 1.0, 1.0)
+        if len(crop_rect) != 4:
+            return (0.0, 0.0, 1.0, 1.0)
+        if self._native_device_size is not None:
+            full_w, full_h = self._native_device_size
+        else:
+            full_w = int(getattr(self.vision_controller, "device_width", 0))
+            full_h = int(getattr(self.vision_controller, "device_height", 0))
+        if full_w <= 0 or full_h <= 0:
+            return (0.0, 0.0, 1.0, 1.0)
+        x, y, w, h = (
+            int(crop_rect[0]),
+            int(crop_rect[1]),
+            int(crop_rect[2]),
+            int(crop_rect[3]),
+        )
+        return self._clamp_roi(
+            (
+                x / float(full_w),
+                y / float(full_h),
+                (x + w) / float(full_w),
+                (y + h) / float(full_h),
+            )
+        )
+
+    def _is_vision_stream_required(self) -> bool:
+        auto_start_on = bool(self.auto_start_cv_check.isChecked())
+        debug_scrcpy_on = bool(
+            self._vision_debug_running
+            and str(self.vision_debug_source_combo.currentData()) == "scrcpy"
+        )
+        return auto_start_on or debug_scrcpy_on
+
+    def _stop_vision_stream(self) -> None:
+        if self.vision_controller is not None:
+            try:
+                self.vision_controller.close()
+            except Exception:
+                pass
+        self.vision_controller = None
+        self.vision_controller_ready = False
+        self._vision_last_frame_seq = -1
+        self.vision_warmup_worker = None
+
+    def _start_vision_warmup(self, video_crop: tuple[int, int, int, int]) -> None:
+        if self.vision_warmup_worker is not None and self.vision_warmup_worker.isRunning():
+            return
+        bit_rate = None
+        if self.stream_bitrate_enabled:
+            bit_rate = int(self.stream_bitrate_mbps) * 1_000_000
+        self.vision_warmup_worker = ControllerWarmupWorker(
+            max_fps=self.stream_max_fps,
+            video_bit_rate=bit_rate,
+            video_crop=video_crop,
+        )
+        self.vision_warmup_worker.started_warmup.connect(self._on_vision_warmup_start)
+        self.vision_warmup_worker.warmup_ok.connect(self._on_vision_warmup_ok)
+        self.vision_warmup_worker.warmup_fail.connect(self._on_vision_warmup_fail)
+        self.vision_warmup_worker.start()
+
+    def _restart_vision_stream_if_needed(self, reason: str, *, force: bool = False) -> None:
+        if not self._is_vision_stream_required():
+            self._stop_vision_stream()
+            return
+        if not self.controller_ready or self.controller is None:
+            return
+        debug_scrcpy_on = bool(
+            self._vision_debug_running
+            and str(self.vision_debug_source_combo.currentData()) == "scrcpy"
+        )
+        if self.prepared is None and not debug_scrcpy_on:
+            return
+
+        desired_crop = self._compute_pretransport_crop_pixels()
+        if desired_crop is None:
+            self._stop_vision_stream()
+            return
+
+        current_crop: tuple[int, int, int, int] | None = None
+        if self.vision_controller is not None and hasattr(
+            self.vision_controller, "get_stream_crop_rect"
+        ):
+            try:
+                raw_crop = tuple(self.vision_controller.get_stream_crop_rect())
+                if len(raw_crop) == 4:
+                    current_crop = (
+                        int(raw_crop[0]),
+                        int(raw_crop[1]),
+                        int(raw_crop[2]),
+                        int(raw_crop[3]),
+                    )
+            except Exception:
+                current_crop = None
+        if not force and current_crop == desired_crop and self.vision_controller_ready:
+            return
+        if (
+            not force
+            and self.vision_warmup_worker is not None
+            and self.vision_warmup_worker.isRunning()
+        ):
+            return
+
+        self._append_log(
+            "[INFO] Restarting vision stream ({}) pre-crop {}:{}:{}:{} (w:h:x:y), fps={}, bitrate={}".format(
+                reason,
+                desired_crop[2],
+                desired_crop[3],
+                desired_crop[0],
+                desired_crop[1],
+                self.stream_max_fps,
+                "off"
+                if not self.stream_bitrate_enabled
+                else f"{self.stream_bitrate_mbps}Mbps",
+            )
+        )
+        self._stop_vision_stream()
+        self._start_vision_warmup(desired_crop)
+
+    def _read_vision_live_frame(self) -> tuple[np.ndarray | None, float | None]:
+        if self.vision_controller is None or not self.vision_controller_ready:
+            return None, None
+        frame = self.vision_controller.get_latest_frame(copy_frame=True)
+        fps = self.vision_controller.get_decode_fps()
+        return frame, fps
+
+    def _build_vision_runtime(
+        self,
+        stream_crop_roi: tuple[float, float, float, float] | None = None,
+    ) -> VisionRuntimeConfig:
         return VisionRuntimeConfig(
             ui_left_roi=(
                 float(self.ui_left_x0_spin.value()),
@@ -1547,7 +1884,11 @@ class AutoPlayWindow(QMainWindow):
             ),
             arc_logic_roi_half_x=float(self.arc_logic_roi_half_x_spin.value()),
             arc_logic_roi_half_y=float(self.arc_logic_roi_half_y_spin.value()),
-            processing_scale=float(self.processing_scale_spin.value()),
+            stream_crop_roi=(
+                self._get_active_stream_crop_roi()
+                if stream_crop_roi is None
+                else self._clamp_roi(stream_crop_roi)
+            ),
         )
 
     def _is_gameplay_screen(self, frame: np.ndarray) -> bool:
@@ -1560,12 +1901,21 @@ class AutoPlayWindow(QMainWindow):
         if (
             self.prepared is None
             or self.prepared.first_ground_tick is None
-            or self.prepared.first_ground_logic_x is None
         ):
+            return False
+        if self.prepared.first_ground_logic_pos is not None:
+            logic_x, logic_y = self.prepared.first_ground_logic_pos
+        elif self.prepared.first_ground_logic_x is not None:
+            logic_x = self.prepared.first_ground_logic_x
+            ground_center_screen_y = (
+                float(self.ground_y0_spin.value()) + float(self.ground_y1_spin.value())
+            ) * 0.5
+            logic_y = 1.0 - ground_center_screen_y
+        else:
             return False
         self.vision_detector.set_runtime(self._build_vision_runtime())
         passed = self.vision_detector.detect_ground_overlap(
-            frame, self.prepared.first_ground_logic_x
+            frame, logic_x, logic_y
         )
         self._log_vision_perf("ground", passed)
         return passed
@@ -1593,18 +1943,31 @@ class AutoPlayWindow(QMainWindow):
             return
 
         render_stage = stage or self._auto_start_stage
-        self.vision_detector.set_runtime(self._build_vision_runtime())
         if run_detection:
+            runtime_crop: tuple[float, float, float, float] | None = None
+            if (
+                render_stage.startswith("debug")
+                and str(self.vision_debug_source_combo.currentData()) != "scrcpy"
+            ):
+                runtime_crop = (0.0, 0.0, 1.0, 1.0)
+            self.vision_detector.set_runtime(
+                self._build_vision_runtime(stream_crop_roi=runtime_crop)
+            )
             if render_stage == "wait_ui":
                 self.vision_detector.detect_ui_panel(frame)
             elif render_stage == "wait_ground":
                 logic_x = 0.5
+                ground_center_screen_y = (
+                    float(self.ground_y0_spin.value()) + float(self.ground_y1_spin.value())
+                ) * 0.5
+                logic_y = 1.0 - ground_center_screen_y
                 if (
                     self.prepared is not None
-                    and self.prepared.first_ground_logic_x is not None
+                    and self.prepared.first_ground_logic_pos is not None
                 ):
-                    logic_x = float(self.prepared.first_ground_logic_x)
-                self.vision_detector.detect_ground_overlap(frame, logic_x)
+                    logic_x = float(self.prepared.first_ground_logic_pos[0])
+                    logic_y = float(self.prepared.first_ground_logic_pos[1])
+                self.vision_detector.detect_ground_overlap(frame, logic_x, logic_y)
             elif render_stage == "wait_arc":
                 if (
                     self.prepared is not None
@@ -1613,13 +1976,90 @@ class AutoPlayWindow(QMainWindow):
                     logic_x, logic_y = self.prepared.first_note_logic_pos
                     self.vision_detector.detect_arc_overlap(frame, logic_x, logic_y)
 
-        overlay = self.vision_detector.render_overlay(
-            frame,
-            render_stage,
+        overlay = frame.copy()
+        runtime_draw = self._build_vision_runtime(stream_crop_roi=(0.0, 0.0, 1.0, 1.0))
+
+        ui_rect = self._roi_to_pixel_rect(overlay, runtime_draw.ui_left_roi)
+        cv2.rectangle(overlay, (ui_rect[0], ui_rect[1]), (ui_rect[2], ui_rect[3]), (220, 180, 40), 2)
+
+        crop_roi = self._get_active_stream_crop_roi()
+        if crop_roi != (0.0, 0.0, 1.0, 1.0):
+            cx0, cy0, cx1, cy1 = self._roi_to_pixel_rect(overlay, crop_roi)
+            cv2.rectangle(overlay, (cx0, cy0), (cx1, cy1), (200, 90, 255), 2)
+
+        debug_mode = render_stage.startswith("debug")
+        ground_logic_x = None
+        ground_logic_y = None
+        arc_logic_x = None
+        arc_logic_y = None
+        if debug_mode:
+            ground_logic_x = float(self.vision_debug_logic_x_spin.value())
+            ground_logic_y = float(self.vision_debug_logic_y_spin.value())
+            arc_logic_x = float(self.vision_debug_logic_x_spin.value())
+            arc_logic_y = float(self.vision_debug_logic_y_spin.value())
+        elif self.prepared is not None:
+            if self.prepared.first_ground_logic_pos is not None:
+                ground_logic_x = float(self.prepared.first_ground_logic_pos[0])
+                ground_logic_y = float(self.prepared.first_ground_logic_pos[1])
+            elif self.prepared.first_ground_logic_x is not None:
+                ground_logic_x = float(self.prepared.first_ground_logic_x)
+                ground_logic_y = 1.0 - (
+                    float(self.ground_y0_spin.value()) + float(self.ground_y1_spin.value())
+                ) * 0.5
+            if self.prepared.first_note_logic_pos is not None:
+                arc_logic_x = float(self.prepared.first_note_logic_pos[0])
+                arc_logic_y = float(self.prepared.first_note_logic_pos[1])
+
+        draw_ground = render_stage == "wait_ground" or "ground" in render_stage
+        draw_arc = render_stage == "wait_arc" or "arc" in render_stage
+        if draw_ground and ground_logic_x is not None and ground_logic_y is not None:
+            gx0, gy0, gx1, gy1 = self._roi_to_pixel_rect(
+                overlay,
+                self._logic_rect_roi(ground_logic_x, ground_logic_y),
+            )
+            cv2.rectangle(overlay, (gx0, gy0), (gx1, gy1), (80, 255, 80), 2)
+        if draw_arc and arc_logic_x is not None and arc_logic_y is not None:
+            ax0, ay0, ax1, ay1 = self._roi_to_pixel_rect(
+                overlay,
+                self._logic_rect_roi(arc_logic_x, arc_logic_y),
+            )
+            cv2.rectangle(overlay, (ax0, ay0), (ax1, ay1), (255, 255, 0), 2)
+
+        metrics = self.vision_detector.metrics
+        fps_value = (
             decode_fps
             if decode_fps is not None
-            else (self.controller.get_decode_fps() if self.controller is not None else None),
+            else (self.controller.get_decode_fps() if self.controller is not None else None)
         )
+        lines = [
+            f"stage={render_stage}",
+            f"fps={fps_value:.1f}" if fps_value is not None else "fps=n/a",
+            f"ui={metrics.ui_left_feature_score:.3f} ground={metrics.ground_blue_ratio:.3f} arc={metrics.arc_color_ratio:.3f}",
+        ]
+        base_y = 28
+        for text in lines:
+            cv2.putText(
+                overlay,
+                text,
+                (14, base_y),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.62,
+                (0, 0, 0),
+                4,
+                cv2.LINE_AA,
+            )
+            cv2.putText(
+                overlay,
+                text,
+                (14, base_y),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.62,
+                (40, 245, 255),
+                2,
+                cv2.LINE_AA,
+            )
+            base_y += 24
+
         rgb = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
         qimg = QImage(
             rgb.data, rgb.shape[1], rgb.shape[0], rgb.strides[0], QImage.Format_RGB888
@@ -1639,10 +2079,13 @@ class AutoPlayWindow(QMainWindow):
                 float(self.arc_logic_roi_half_y_spin.value()),
             )
         )
-        metrics = self.vision_detector.metrics
         self.roi_values_label.setText(
             self.roi_values_label.text()
-            + " | ui_left={:.3f} good={} inliers={} ground_blue={:.3f} arc_color={:.3f}".format(
+            + " | crop=({:.3f},{:.3f},{:.3f},{:.3f}) ui_left={:.3f} good={} inliers={} ground_blue={:.3f} arc_color={:.3f}".format(
+                crop_roi[0],
+                crop_roi[1],
+                crop_roi[2],
+                crop_roi[3],
                 metrics.ui_left_feature_score,
                 metrics.ui_left_good_matches,
                 metrics.ui_left_inliers,
@@ -1722,7 +2165,22 @@ class AutoPlayWindow(QMainWindow):
             self.overlay_window.hide()
         except Exception:
             pass
+        release_points = dict(self._active_touch_points)
+        for pointer, pos in self._manual_stop_release_points.items():
+            release_points.setdefault(pointer, pos)
+        self._active_touch_points.clear()
+        self._manual_stop_release_points.clear()
+        self._manual_stop_release_pending = False
+        self._force_release_touch_points(release_points)
         self._stop_vision_debug(log_message=False)
+        self._stop_vision_stream()
+        if self.controller is not None:
+            try:
+                self.controller.close()
+            except Exception:
+                pass
+            self.controller = None
+            self.controller_ready = False
         super().closeEvent(event)
 
     def _reset_auto_start_state(self, *, clear_timing: bool = True) -> None:
@@ -1743,6 +2201,7 @@ class AutoPlayWindow(QMainWindow):
         self.auto_start_cv_check.setChecked(False)
         self.auto_start_cv_check.blockSignals(False)
         self._reset_auto_start_state(clear_timing=clear_timing)
+        self._restart_vision_stream_if_needed("auto_start_disable")
         if emit_log and was_checked and not self._auto_start_shutdown_logged:
             self._append_log(self._t("auto_start_off"))
         self._auto_start_shutdown_logged = True
@@ -1752,6 +2211,8 @@ class AutoPlayWindow(QMainWindow):
         requires_path = source in {"image", "video"}
         self.vision_debug_path_edit.setEnabled(requires_path)
         self.vision_debug_browse_btn.setEnabled(requires_path)
+        if self._vision_debug_running:
+            self._restart_vision_stream_if_needed("debug_source_changed")
 
     def _browse_vision_debug_input(self) -> None:
         source = str(self.vision_debug_source_combo.currentData())
@@ -1802,6 +2263,8 @@ class AutoPlayWindow(QMainWindow):
             if not self.controller_ready or self.controller is None:
                 self._append_log(self._t("vision_debug_source_not_ready"))
                 return
+            self._vision_debug_running = True
+            self._restart_vision_stream_if_needed("debug_start")
         elif source == "image":
             path = Path(self.vision_debug_path_edit.text().strip())
             if not path.exists() or not path.is_file():
@@ -1854,6 +2317,7 @@ class AutoPlayWindow(QMainWindow):
             self.vision_debug_result_label.setText(self._t("vision_debug_idle"))
         if log_message and running:
             self._append_log(self._t("vision_debug_stopped"))
+        self._restart_vision_stream_if_needed("debug_stop")
         if not self.overlay_debug_check.isChecked():
             self.overlay_window.hide()
 
@@ -1865,10 +2329,7 @@ class AutoPlayWindow(QMainWindow):
 
         source = str(self.vision_debug_source_combo.currentData())
         if source == "scrcpy":
-            frame = controller_frame
-            if frame is None and self.controller is not None:
-                frame = self.controller.get_latest_frame(copy_frame=True)
-            fps = self.controller.get_decode_fps() if self.controller is not None else None
+            frame, fps = self._read_vision_live_frame()
             return frame, fps
 
         if source == "image":
@@ -1888,6 +2349,8 @@ class AutoPlayWindow(QMainWindow):
 
     def _run_vision_debug_detection(self, frame: np.ndarray) -> None:
         runtime = self._build_vision_runtime()
+        if str(self.vision_debug_source_combo.currentData()) != "scrcpy":
+            runtime = self._build_vision_runtime(stream_crop_roi=(0.0, 0.0, 1.0, 1.0))
         self.vision_detector.set_runtime(runtime)
         stages: list[str] = []
         parts: list[str] = []
@@ -1910,7 +2373,10 @@ class AutoPlayWindow(QMainWindow):
 
         if self.vision_debug_ground_check.isChecked():
             logic_x = float(self.vision_debug_logic_x_spin.value())
-            ground_pass = self.vision_detector.detect_ground_overlap(frame, logic_x)
+            logic_y = float(self.vision_debug_logic_y_spin.value())
+            ground_pass = self.vision_detector.detect_ground_overlap(
+                frame, logic_x, logic_y
+            )
             m = self.vision_detector.metrics
             p = self.vision_detector.perf
             stages.append("ground")
@@ -1961,7 +2427,10 @@ class AutoPlayWindow(QMainWindow):
         if not self.auto_start_cv_check.isChecked():
             self._reset_auto_start_state()
             return
-        if self.controller is None or self.prepared is None:
+        if self.prepared is None:
+            return
+        if not self.vision_controller_ready or self.vision_controller is None:
+            self._restart_vision_stream_if_needed("auto_start_poll")
             return
         if (
             self.worker is not None
@@ -1970,12 +2439,12 @@ class AutoPlayWindow(QMainWindow):
         ):
             return
 
-        frame = self.controller.get_latest_frame(copy_frame=True)
+        frame = self.vision_controller.get_latest_frame(copy_frame=True)
         if frame is None:
             return
         frame_timestamp = None
-        if hasattr(self.controller, "get_latest_frame_timestamp"):
-            frame_timestamp = self.controller.get_latest_frame_timestamp()
+        if hasattr(self.vision_controller, "get_latest_frame_timestamp"):
+            frame_timestamp = self.vision_controller.get_latest_frame_timestamp()
         self._auto_start_frame_timestamp = frame_timestamp
 
         if self._auto_start_stage == "idle":
@@ -2023,8 +2492,10 @@ class AutoPlayWindow(QMainWindow):
     def _on_auto_start_toggled(self, checked: bool) -> None:
         if not checked:
             self._reset_auto_start_state()
+            self._restart_vision_stream_if_needed("auto_start_off")
             return
         self._auto_start_shutdown_logged = False
+        self._restart_vision_stream_if_needed("auto_start_on")
 
     def _poll_overlay(self) -> None:
         has_new_controller_frame = False
@@ -2042,24 +2513,43 @@ class AutoPlayWindow(QMainWindow):
                 has_new_controller_frame = controller_frame is not None
             controller_fps = self.controller.get_decode_fps()
 
+        has_new_vision_frame = False
+        if self.vision_controller is not None and self.vision_controller_ready:
+            latest_vision_seq = (
+                self.vision_controller.get_latest_frame_seq()
+                if hasattr(self.vision_controller, "get_latest_frame_seq")
+                else self._vision_last_frame_seq
+            )
+            if latest_vision_seq != self._vision_last_frame_seq:
+                self._vision_last_frame_seq = latest_vision_seq
+                has_new_vision_frame = True
+
         if (
-            has_new_controller_frame
+            has_new_vision_frame
             and not self._vision_debug_running
             and self.auto_start_cv_check.isChecked()
             and self.prepared is not None
         ):
             self.auto_start_frame_ready.emit()
+        elif self.auto_start_cv_check.isChecked() and self.prepared is not None:
+            self._restart_vision_stream_if_needed("overlay_auto_start")
 
         if self._vision_debug_running:
             debug_frame, debug_fps = self._read_vision_debug_frame(controller_frame)
             if debug_frame is not None:
                 self._run_vision_debug_detection(debug_frame)
+                overlay_frame = debug_frame
+                overlay_fps = debug_fps
+                if str(self.vision_debug_source_combo.currentData()) == "scrcpy":
+                    if controller_frame is not None:
+                        overlay_frame = controller_frame
+                    overlay_fps = controller_fps
                 self._update_overlay_preview(
-                    debug_frame,
+                    overlay_frame,
                     stage=self._vision_debug_overlay_stage,
                     force_show=True,
                     run_detection=False,
-                    decode_fps=debug_fps,
+                    decode_fps=overlay_fps,
                 )
             return
 
@@ -2071,7 +2561,7 @@ class AutoPlayWindow(QMainWindow):
             controller_frame,
             stage=self._auto_start_stage,
             force_show=False,
-            run_detection=True,
+            run_detection=False,
             decode_fps=controller_fps,
         )
 
@@ -2125,7 +2615,6 @@ class AutoPlayWindow(QMainWindow):
         )
         self.arc_logic_roi_half_x_spin.setValue(float(vision.arc_logic_roi_half_x))
         self.arc_logic_roi_half_y_spin.setValue(float(vision.arc_logic_roi_half_y))
-        self.processing_scale_spin.setValue(float(vision.processing_scale))
         self.ui_left_x0_spin.setValue(float(vision.ui_left_roi[0]))
         self.ui_left_y0_spin.setValue(float(vision.ui_left_roi[1]))
         self.ui_left_x1_spin.setValue(float(vision.ui_left_roi[2]))
@@ -2136,7 +2625,7 @@ class AutoPlayWindow(QMainWindow):
         self.ground_y1_spin.setValue(float(vision.ground_roi[3]))
         self._on_vision_debug_source_changed()
 
-    def _save_form_to_config(self) -> bool:
+    def _save_form_to_config(self, *, emit_log: bool = True) -> bool:
         cfg = self.app_config.global_config
         vision = self.app_config.vision
         try:
@@ -2170,7 +2659,6 @@ class AutoPlayWindow(QMainWindow):
             )
             vision.arc_logic_roi_half_x = float(self.arc_logic_roi_half_x_spin.value())
             vision.arc_logic_roi_half_y = float(self.arc_logic_roi_half_y_spin.value())
-            vision.processing_scale = float(self.processing_scale_spin.value())
             vision.overlay_detached = True
             vision.ui_left_roi = (
                 float(self.ui_left_x0_spin.value()),
@@ -2192,11 +2680,12 @@ class AutoPlayWindow(QMainWindow):
             self.designant_combo.currentIndex()
         ]
         save_app_config(self.app_config)
-        self._append_log(self._t("log_config_saved"))
+        if emit_log:
+            self._append_log(self._t("log_config_saved"))
         return True
 
-    def _collect_run_config(self) -> RunConfig | None:
-        if not self._save_form_to_config():
+    def _collect_run_config(self, *, save_form: bool = True) -> RunConfig | None:
+        if save_form and not self._save_form_to_config(emit_log=False):
             return None
         cfg = self.app_config.global_config
         chart_path = cfg.chart_path.strip()
@@ -2267,58 +2756,67 @@ class AutoPlayWindow(QMainWindow):
             designant_choice=designant_choice,
         )
 
-    def _start_warmup(self) -> None:
-        bit_rate = None
-        if self.stream_bitrate_enabled:
-            bit_rate = int(self.stream_bitrate_mbps) * 1_000_000
-        self.warmup_worker = ControllerWarmupWorker(
-            max_fps=self.stream_max_fps,
-            video_bit_rate=bit_rate,
-        )
-        self.warmup_worker.started_warmup.connect(self._on_warmup_start)
-        self.warmup_worker.warmup_ok.connect(self._on_warmup_ok)
-        self.warmup_worker.warmup_fail.connect(self._on_warmup_fail)
-        self.warmup_worker.start()
+    def _set_startup_state(self, state: StartupPipelineState) -> None:
+        self._startup_state = state
 
-    def _request_prepare(self, auto: bool) -> None:
-        run_config = self._collect_run_config()
-        if run_config is None:
-            self.prepare_state_label.setText(self._t("error"))
-            return
+    def _sync_stream_settings_from_form(self) -> None:
+        self.stream_max_fps = int(self.stream_fps_spin.value())
+        self.stream_bitrate_enabled = bool(self.stream_bitrate_enable_check.isChecked())
+        self.stream_bitrate_mbps = int(self.stream_bitrate_spin.value())
 
-        self.prepare_worker = PrepareWorker(run_config)
-        self.prepare_worker.started_prepare.connect(self._on_prepare_start)
-        self.prepare_worker.prepared_ok.connect(self._on_prepare_ok)
-        self.prepare_worker.prepared_fail.connect(self._on_prepare_fail)
-        if not auto:
-            self._append_log(self._t("log_prepare_start"))
-        self.prepare_worker.start()
-
-    def _on_save_clicked(self) -> None:
-        old_fps = self.stream_max_fps
-        old_bitrate_enabled = self.stream_bitrate_enabled
-        old_bitrate_mbps = self.stream_bitrate_mbps
-        new_fps = int(self.stream_fps_spin.value())
-        new_bitrate_enabled = bool(self.stream_bitrate_enable_check.isChecked())
-        new_bitrate_mbps = int(self.stream_bitrate_spin.value())
-
-        self.stream_max_fps = new_fps
-        self.stream_bitrate_enabled = new_bitrate_enabled
-        self.stream_bitrate_mbps = new_bitrate_mbps
-
-        if (old_fps, old_bitrate_enabled, old_bitrate_mbps) != (
-            self.stream_max_fps,
-            self.stream_bitrate_enabled,
-            self.stream_bitrate_mbps,
-        ):
-            if (
-                self._vision_debug_running
-                and str(self.vision_debug_source_combo.currentData()) == "scrcpy"
-            ):
-                self._stop_vision_debug(log_message=True)
-            self._append_log(
-                f"[INFO] Restarting scrcpy stream with max_fps={self.stream_max_fps}, native resolution, bitrate={'off' if not self.stream_bitrate_enabled else f'{self.stream_bitrate_mbps}Mbps'}"
+    def _start_startup_pipeline(
+        self,
+        reason: str,
+        *,
+        prepare_after_warmup: bool,
+        force_touch_restart: bool,
+    ) -> None:
+        if self.worker is not None and self.worker.isRunning():
+            QMessageBox.warning(
+                self,
+                self._t("error"),
+                "Stop playback before restarting ADB/scrcpy channels.",
             )
+            return
+        if self.prepare_worker is not None and self.prepare_worker.isRunning():
+            self._queued_pipeline_reason = reason
+            self._queued_pipeline_prepare_after_warmup = prepare_after_warmup
+            self._queued_pipeline_force_touch_restart = force_touch_restart
+            self._append_log(
+                "[INFO] Prepare is running; queued startup pipeline restart after prepare finishes."
+            )
+            return
+        self._prepare_requested_after_warmup = prepare_after_warmup
+        self._sync_stream_settings_from_form()
+        self._start_warmup(force_restart=force_touch_restart, reason=reason)
+
+    def _run_queued_startup_pipeline_if_needed(self) -> bool:
+        if self._queued_pipeline_reason is None:
+            return False
+        reason = self._queued_pipeline_reason
+        prepare_after_warmup = self._queued_pipeline_prepare_after_warmup
+        force_touch_restart = self._queued_pipeline_force_touch_restart
+        self._queued_pipeline_reason = None
+        self._queued_pipeline_prepare_after_warmup = False
+        self._queued_pipeline_force_touch_restart = False
+        self._append_log(f"[INFO] Running queued startup pipeline restart ({reason}).")
+        self._start_startup_pipeline(
+            reason,
+            prepare_after_warmup=prepare_after_warmup,
+            force_touch_restart=force_touch_restart,
+        )
+        return True
+
+    def _start_warmup(self, *, force_restart: bool, reason: str) -> None:
+        if self.warmup_worker is not None and self.warmup_worker.isRunning():
+            if force_restart:
+                self._warmup_restart_requested = True
+                self._append_log(
+                    f"[INFO] Warmup in progress; queued another warmup restart ({reason})."
+                )
+            return
+        if force_restart:
+            self._stop_vision_stream()
             if self.controller is not None:
                 try:
                     self.controller.close()
@@ -2326,14 +2824,59 @@ class AutoPlayWindow(QMainWindow):
                     pass
             self.controller = None
             self.controller_ready = False
-            self._start_warmup()
+            self.controller_state_label.setText(self._t("warming"))
+        self._set_startup_state(StartupPipelineState.WARMUP)
+        bit_rate = None
+        if self.stream_bitrate_enabled:
+            bit_rate = int(self.stream_bitrate_mbps) * 1_000_000
+        self.warmup_worker = ControllerWarmupWorker(
+            max_fps=self.stream_max_fps,
+            video_bit_rate=bit_rate,
+            video_crop=None,
+        )
+        self.warmup_worker.started_warmup.connect(self._on_warmup_start)
+        self.warmup_worker.warmup_ok.connect(self._on_warmup_ok)
+        self.warmup_worker.warmup_fail.connect(self._on_warmup_fail)
+        self.warmup_worker.start()
 
-        if self._save_form_to_config():
-            self._request_prepare(auto=False)
+    def _request_prepare(self, *, save_form: bool = True) -> None:
+        if self.prepare_worker is not None and self.prepare_worker.isRunning():
+            return
+        run_config = self._collect_run_config(save_form=save_form)
+        if run_config is None:
+            self._set_startup_state(StartupPipelineState.ERROR)
+            self.prepare_state_label.setText(self._t("error"))
+            return
+
+        self._set_startup_state(StartupPipelineState.PREPARE)
+        self.prepare_worker = PrepareWorker(run_config)
+        self.prepare_worker.started_prepare.connect(self._on_prepare_start)
+        self.prepare_worker.prepared_ok.connect(self._on_prepare_ok)
+        self.prepare_worker.prepared_fail.connect(self._on_prepare_fail)
+        self.prepare_worker.start()
+
+    def _on_save_clicked(self) -> None:
+        if not self._save_form_to_config(emit_log=True):
+            return
+        self._append_log(
+            "[INFO] Config saved; restarting warmup pipeline (ADB warmup -> chart prepare)."
+        )
+        self._start_startup_pipeline(
+            "save",
+            prepare_after_warmup=True,
+            force_touch_restart=True,
+        )
 
     def _on_reload_clicked(self) -> None:
         self._load_config_to_form()
-        self._request_prepare(auto=False)
+        self._append_log(
+            "[INFO] Config reloaded; restarting warmup pipeline (ADB warmup -> chart prepare)."
+        )
+        self._start_startup_pipeline(
+            "reload",
+            prepare_after_warmup=True,
+            force_touch_restart=True,
+        )
 
     def _set_running_ui(self, running: bool) -> None:
         self.start_btn.setEnabled(not running)
@@ -2365,7 +2908,7 @@ class AutoPlayWindow(QMainWindow):
             QMessageBox.warning(self, self._t("error"), self._t("prepare_not_ready"))
             return
         if self.prepared.config_key != _build_config_key(current_cfg):
-            self._request_prepare(auto=False)
+            self._request_prepare()
             QMessageBox.information(self, self._t("error"), self._t("prepare_mismatch"))
             return
 
@@ -2393,6 +2936,9 @@ class AutoPlayWindow(QMainWindow):
             snapshot_path = self._write_touch_event_snapshot()
             if snapshot_path is not None:
                 self._append_log(f"[DEBUG] Touch snapshot written: {snapshot_path}")
+        self._active_touch_points.clear()
+        self._manual_stop_release_points.clear()
+        self._manual_stop_release_pending = False
         self._start_click_time = time.perf_counter()
         self._first_dispatch_logged = False
         self.worker.start()
@@ -2420,6 +2966,12 @@ class AutoPlayWindow(QMainWindow):
                 emit_log=True,
                 clear_timing=True,
             )
+        self._manual_stop_release_points = dict(self._active_touch_points)
+        self._manual_stop_release_pending = bool(self._manual_stop_release_points)
+        if self._manual_stop_release_pending:
+            self._append_log(
+                f"[INFO] Manual stop captured {len(self._manual_stop_release_points)} active pointer(s); reset UP events will be sent after playback exits."
+            )
         self.worker.stop_playback()
 
     def _fine_tune_plus(self) -> None:
@@ -2440,36 +2992,96 @@ class AutoPlayWindow(QMainWindow):
         self.offset_timer.start()
 
     def _on_play_finished(self, success: bool, _token: str) -> None:
+        self.worker = None
         self.offset_timer.stop()
         self._set_running_ui(False)
         self.run_state_label.setText(self._t("idle") if success else self._t("error"))
         if success:
             self._append_log(self._t("log_play_finish"))
+        if self._manual_stop_release_pending:
+            release_points = dict(self._manual_stop_release_points)
+            self._manual_stop_release_pending = False
+            self._manual_stop_release_points.clear()
+            QTimer.singleShot(
+                200,
+                lambda points=release_points: self._force_release_touch_points(points),
+            )
+        else:
+            self._manual_stop_release_points.clear()
+        self._active_touch_points.clear()
         self._reset_auto_start_state()
 
     def _on_warmup_start(self) -> None:
+        self._set_startup_state(StartupPipelineState.WARMUP)
         self.controller_state_label.setText(self._t("warming"))
         self._append_log(self._t("log_warm_start"))
 
     def _on_warmup_ok(self, controller) -> None:
+        self.warmup_worker = None
+        if self._warmup_restart_requested:
+            self._warmup_restart_requested = False
+            try:
+                controller.close()
+            except Exception:
+                pass
+            self._append_log(
+                "[INFO] Applying queued warmup restart with latest stream parameters."
+            )
+            self._start_warmup(force_restart=True, reason="queued_restart")
+            return
         self.controller = controller
         self.controller_ready = True
+        reported_size = (
+            int(getattr(controller, "device_width", 0)),
+            int(getattr(controller, "device_height", 0)),
+        )
+        if reported_size[0] > 0 and reported_size[1] > 0:
+            self._native_device_size = reported_size
         self.controller_state_label.setText(self._t("ready"))
         self._append_log(self._t("log_warm_ok"))
-        if self.prepared is not None:
-            self._request_prepare(auto=True)
+        need_prepare = self._prepare_requested_after_warmup or self.prepared is None
+        self._prepare_requested_after_warmup = False
+        if need_prepare:
+            self._request_prepare(save_form=False)
+        else:
+            self._set_startup_state(StartupPipelineState.READY)
+            self._restart_vision_stream_if_needed("touch_warmup")
 
     def _on_warmup_fail(self, error: str) -> None:
         self.controller = None
         self.controller_ready = False
+        self.warmup_worker = None
+        self._prepare_requested_after_warmup = False
+        self._warmup_restart_requested = False
+        self._set_startup_state(StartupPipelineState.ERROR)
+        self._stop_vision_stream()
         self.controller_state_label.setText(self._t("error"))
         self._append_log(self._t("log_warm_fail", error=error))
 
+    def _on_vision_warmup_start(self) -> None:
+        self._append_log("[INFO] Starting vision scrcpy stream...")
+
+    def _on_vision_warmup_ok(self, controller) -> None:
+        self.vision_controller = controller
+        self.vision_controller_ready = True
+        self._vision_last_frame_seq = -1
+        self.vision_warmup_worker = None
+        self._append_log("[INFO] Vision scrcpy stream ready")
+
+    def _on_vision_warmup_fail(self, error: str) -> None:
+        self.vision_controller = None
+        self.vision_controller_ready = False
+        self._vision_last_frame_seq = -1
+        self.vision_warmup_worker = None
+        self._append_log(f"[ERROR] Vision scrcpy stream failed: {error}")
+
     def _on_prepare_start(self) -> None:
+        self._set_startup_state(StartupPipelineState.PREPARE)
         self.prepare_state_label.setText(self._t("warming"))
         self._append_log(self._t("log_prepare_start"))
 
     def _on_prepare_ok(self, prepared: PreparedRunData) -> None:
+        self.prepare_worker = None
         self.prepared = prepared
         self.app_config.delay = prepared.delay
         save_app_config(self.app_config)
@@ -2479,6 +3091,13 @@ class AutoPlayWindow(QMainWindow):
             )
             self.vision_debug_logic_y_spin.setValue(
                 float(prepared.first_note_logic_pos[1])
+            )
+        elif prepared.first_ground_logic_pos is not None:
+            self.vision_debug_logic_x_spin.setValue(
+                float(prepared.first_ground_logic_pos[0])
+            )
+            self.vision_debug_logic_y_spin.setValue(
+                float(prepared.first_ground_logic_pos[1])
             )
         elif prepared.first_ground_logic_x is not None:
             self.vision_debug_logic_x_spin.setValue(float(prepared.first_ground_logic_x))
@@ -2491,9 +3110,15 @@ class AutoPlayWindow(QMainWindow):
                 delay=prepared.delay,
             )
         )
+        self._set_startup_state(StartupPipelineState.READY)
+        if self._run_queued_startup_pipeline_if_needed():
+            return
+        self._restart_vision_stream_if_needed("prepare")
 
     def _on_prepare_fail(self, token: str) -> None:
+        self.prepare_worker = None
         self.prepared = None
+        self._set_startup_state(StartupPipelineState.ERROR)
         self.prepare_state_label.setText(self._t("error"))
         if token.startswith("read_error:"):
             msg = self._t("read_error", error=token.split(":", 1)[1])
@@ -2506,6 +3131,9 @@ class AutoPlayWindow(QMainWindow):
         else:
             msg = token
         self._append_log(self._t("log_prepare_fail", error=msg))
+        if self._run_queued_startup_pipeline_if_needed():
+            return
+        self._restart_vision_stream_if_needed("prepare_fail")
 
 
 def run_gui() -> None:

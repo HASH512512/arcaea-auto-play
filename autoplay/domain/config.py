@@ -60,7 +60,6 @@ class VisionConfig:
     arc_color_ratio_threshold: float = 0.02
     arc_logic_roi_half_x: float = 0.25
     arc_logic_roi_half_y: float = 0.25
-    processing_scale: float = 1.0
     stream_max_fps: int = 60
     stream_bitrate_enabled: bool = False
     stream_bitrate_mbps: int = 8
@@ -90,7 +89,6 @@ class VisionConfig:
             ),
             arc_logic_roi_half_x=float(data.get("arc_logic_roi_half_x", 0.25)),
             arc_logic_roi_half_y=float(data.get("arc_logic_roi_half_y", 0.25)),
-            processing_scale=float(data.get("processing_scale", 1.0)),
             stream_max_fps=int(data.get("stream_max_fps", 60)),
             stream_bitrate_enabled=bool(data.get("stream_bitrate_enabled", False)),
             stream_bitrate_mbps=int(data.get("stream_bitrate_mbps", 8)),
@@ -108,7 +106,6 @@ class VisionConfig:
             "arc_color_ratio_threshold": self.arc_color_ratio_threshold,
             "arc_logic_roi_half_x": self.arc_logic_roi_half_x,
             "arc_logic_roi_half_y": self.arc_logic_roi_half_y,
-            "processing_scale": self.processing_scale,
             "stream_max_fps": self.stream_max_fps,
             "stream_bitrate_enabled": self.stream_bitrate_enabled,
             "stream_bitrate_mbps": self.stream_bitrate_mbps,
@@ -165,7 +162,6 @@ class AppConfig:
                 ),
                 "arc_logic_roi_half_x": vision_root.get("arc_logic_roi_half_x", 0.25),
                 "arc_logic_roi_half_y": vision_root.get("arc_logic_roi_half_y", 0.25),
-                "processing_scale": vision_root.get("processing_scale", 1.0),
                 "stream_max_fps": stream.get("max_fps", 60),
                 "stream_bitrate_enabled": stream.get("bitrate_enabled", False),
                 "stream_bitrate_mbps": stream.get("bitrate_mbps", 8),
@@ -204,7 +200,6 @@ class AppConfig:
                 "arc_color_ratio_threshold": vision.arc_color_ratio_threshold,
                 "arc_logic_roi_half_x": vision.arc_logic_roi_half_x,
                 "arc_logic_roi_half_y": vision.arc_logic_roi_half_y,
-                "processing_scale": vision.processing_scale,
                 "roi": {
                     "ui_left": list(vision.ui_left_roi),
                     "ground": list(vision.ground_roi),

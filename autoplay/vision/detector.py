@@ -29,7 +29,7 @@ class VisionRuntimeConfig:
     arc_color_ratio_threshold: float
     arc_logic_roi_half_x: float
     arc_logic_roi_half_y: float
-    processing_scale: float
+    stream_crop_roi: tuple[float, float, float, float]
 
 
 FEATURE_ROI_MAX_WIDTH = 420
@@ -94,7 +94,7 @@ class VisionDetector:
             arc_color_ratio_threshold=0.02,
             arc_logic_roi_half_x=0.25,
             arc_logic_roi_half_y=0.25,
-            processing_scale=1.0,
+            stream_crop_roi=(0.0, 0.0, 1.0, 1.0),
         )
 
         self.cuda_enabled = False
@@ -151,24 +151,20 @@ class VisionDetector:
         self, frame: np.ndarray, roi: tuple[float, float, float, float]
     ) -> tuple[int, int, int, int]:
         h, w = frame.shape[:2]
-        x0 = int(w * roi[0])
-        y0 = int(h * roi[1])
-        x1 = int(w * roi[2])
-        y1 = int(h * roi[3])
+        crop_x0, crop_y0, crop_x1, crop_y1 = self.runtime.stream_crop_roi
+        crop_w = max(1e-6, crop_x1 - crop_x0)
+        crop_h = max(1e-6, crop_y1 - crop_y0)
+        local_x0 = (roi[0] - crop_x0) / crop_w
+        local_y0 = (roi[1] - crop_y0) / crop_h
+        local_x1 = (roi[2] - crop_x0) / crop_w
+        local_y1 = (roi[3] - crop_y0) / crop_h
+        x0 = int(w * local_x0)
+        y0 = int(h * local_y0)
+        x1 = int(w * local_x1)
+        y1 = int(h * local_y1)
         x0, x1 = sorted((max(0, x0), min(w, x1)))
         y0, y1 = sorted((max(0, y0), min(h, y1)))
         return x0, y0, x1, y1
-
-    def _resize_roi_for_processing(self, roi: np.ndarray) -> tuple[np.ndarray, float]:
-        scale = float(self.runtime.processing_scale)
-        if roi.size == 0 or scale >= 0.999:
-            return roi, 0.0
-        target_w = max(1, int(round(roi.shape[1] * scale)))
-        target_h = max(1, int(round(roi.shape[0] * scale)))
-        t0 = cv2.getTickCount()
-        resized = cv2.resize(roi, (target_w, target_h), interpolation=cv2.INTER_AREA)
-        resize_ms = (cv2.getTickCount() - t0) / cv2.getTickFrequency() * 1000.0
-        return resized, resize_ms
 
     def _match_feature_score(
         self,
@@ -266,14 +262,12 @@ class VisionDetector:
             "roi_keypoints": 0.0,
         }
         if left_roi.size > 0 and self.ui_left_template_features:
-            left_roi, prep_resize_ms = self._resize_roi_for_processing(left_roi)
             left_score, left_good, left_inliers, feature_perf = (
                 self._match_feature_score(
                     left_roi,
                     self.ui_left_template_features,
                 )
             )
-            feature_perf["resize_ms"] += prep_resize_ms
 
         self.metrics.ui_left_feature_score = left_score
         self.metrics.ui_left_good_matches = left_good
@@ -304,7 +298,12 @@ class VisionDetector:
         )
         return passed
 
-    def detect_ground_overlap(self, frame: np.ndarray, logic_x: float) -> bool:
+    def detect_ground_overlap(
+        self,
+        frame: np.ndarray,
+        logic_x: float = 0.5,
+        logic_y: float = 0.0,
+    ) -> bool:
         total_start = cv2.getTickCount()
         roi_start = cv2.getTickCount()
         self.metrics.last_arc_rect = None
@@ -312,22 +311,17 @@ class VisionDetector:
         self.metrics.arc_color_ratio = 0.0
         self.metrics.arc_color_pixels = 0
         self.metrics.arc_roi_pixels = 0
-        x0, y0, x1, y1 = self._roi_rect(frame, self.runtime.ground_roi)
+        x0, y0, x1, y1 = self._logic_to_pixel_rect(frame, logic_x, logic_y)
         roi = frame[y0:y1, x0:x1]
         roi_ms = (cv2.getTickCount() - roi_start) / cv2.getTickFrequency() * 1000.0
         if roi.size == 0:
             self.metrics.ground_pass = False
             self.perf = VisionPerfMetrics(stage="ground", roi_ms=roi_ms)
             return False
-        roi, resize_ms = self._resize_roi_for_processing(roi)
-        band_w = max(6, int(round(roi.shape[1] * 0.08)))
-        center_x = int(round(self._logic_x_to_norm(logic_x) * roi.shape[1]))
-        bx0 = max(0, min(roi.shape[1] - 1, center_x - band_w // 2))
-        bx1 = max(bx0 + 1, min(roi.shape[1], bx0 + band_w))
-        band = roi[:, bx0:bx1]
-        self.metrics.ground_band_rect = (x0 + bx0, y0, x0 + bx1, y1)
+        resize_ms = 0.0
+        self.metrics.ground_band_rect = (x0, y0, x1, y1)
         hsv_start = cv2.getTickCount()
-        hsv = cv2.cvtColor(band, cv2.COLOR_BGR2HSV)
+        hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
         hsv_ms = (cv2.getTickCount() - hsv_start) / cv2.getTickFrequency() * 1000.0
         mask_start = cv2.getTickCount()
         blue_mask = (
@@ -340,7 +334,7 @@ class VisionDetector:
 
         count_start = cv2.getTickCount()
         blue_pixels = int(cv2.countNonZero(blue_mask))
-        roi_pixels = int(band.shape[0] * band.shape[1])
+        roi_pixels = int(roi.shape[0] * roi.shape[1])
         ratio = blue_pixels / float(max(1, roi_pixels))
         count_ms = (cv2.getTickCount() - count_start) / cv2.getTickFrequency() * 1000.0
 
@@ -375,10 +369,12 @@ class VisionDetector:
     ) -> tuple[int, int, int, int]:
         half_x = self.runtime.arc_logic_roi_half_x
         half_y = self.runtime.arc_logic_roi_half_y
+        # Solver logical Y uses 0=ground(bottom), 1=sky(top), while image Y is top-down.
+        screen_logic_y = 1.0 - float(logic_y)
         lx0 = max(0.0, min(1.0, logic_x - half_x))
-        ly0 = max(0.0, min(1.0, logic_y - half_y))
+        ly0 = max(0.0, min(1.0, screen_logic_y - half_y))
         lx1 = max(0.0, min(1.0, logic_x + half_x))
-        ly1 = max(0.0, min(1.0, logic_y + half_y))
+        ly1 = max(0.0, min(1.0, screen_logic_y + half_y))
         return self._roi_rect(frame, (lx0, ly0, lx1, ly1))
 
     def _logic_x_to_norm(self, logic_x: float) -> float:
@@ -404,7 +400,7 @@ class VisionDetector:
             self.perf = VisionPerfMetrics(stage="arc", roi_ms=roi_ms)
             return False
 
-        roi, resize_ms = self._resize_roi_for_processing(roi)
+        resize_ms = 0.0
         hsv_start = cv2.getTickCount()
         hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
         hsv_ms = (cv2.getTickCount() - hsv_start) / cv2.getTickFrequency() * 1000.0
